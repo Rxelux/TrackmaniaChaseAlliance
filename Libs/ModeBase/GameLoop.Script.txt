@@ -1,0 +1,101 @@
+#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/ModeBase/GameLoopState.Script.txt" as GameLoop
+
+declare Integer _CurrentNow; // Save the value of Now after the yield
+declare Integer _SleepUntil; // Save the value of Now before the sleep
+declare Integer NextYieldSleepMs; // Number of ms to sleep during yield
+
+//This should be the only place in a game mode script where a script yields
+***Yield***
+***
+	_SleepUntil = Now + NextYieldSleepMs + 1;
+	while (Now < _SleepUntil && GameLoop::ServerIsRunning()) {
+		+++BeforeYield+++
+		if (_CurrentNow > 0 && Now > _CurrentNow) {
+			log("WARNING: A frame was skipped ("^_CurrentNow^" > "^Now^"), Use ---Yield--- to yield and NextYieldSleepMs = x followed by ---Yield--- to sleep");
+		}
+		yield;
+		_CurrentNow = Now;
+		+++AfterYield+++
+	}
+	NextYieldSleepMs = 0;
+***
+Void NOP(){}
+
+main() {
+	GameLoop::Load();
+	GameLoop::StartServer();
+	// First yield to prevent inconsistant use of local variables in yield Label
+	---Yield---
+	
+	+++StartServer+++
+	while (GameLoop::ServerIsRunning()) {
+
+		GameLoop::StartScript();
+		GameLoop::ResetMatchSectionCount();
+		GameLoop::ResetMapSectionCount();
+		GameLoop::ResetRoundSectionCount();
+		
+		+++StartScript+++
+
+		while (GameLoop::ScriptIsRunning()) {
+
+			GameLoop::StartMatch();
+			GameLoop::IncrementMatchSectionCount();
+			GameLoop::ResetMapSectionCount();
+			GameLoop::ResetRoundSectionCount();
+
+			+++StartMatch+++
+		
+			while (GameLoop::MatchIsRunning()) {
+
+				GameLoop::StartMap();
+				GameLoop::IncrementMapSectionCount();
+				GameLoop::ResetRoundSectionCount();
+			
+				+++BeforeLoadMap+++
+
+				if (!MapLoaded) RequestLoadMap();
+				while (!MapLoaded){
+					---Yield---
+				}
+				+++AfterLoadMap+++
+				+++StartMap+++
+
+				while (GameLoop::MapIsRunning()) {
+
+					GameLoop::StartRound();
+					GameLoop::IncrementRoundSectionCount();
+
+					+++StartRound+++
+
+					while (GameLoop::RoundIsRunning()) {
+
+						---Yield---
+						+++PlayLoop+++
+					}
+					+++EndRound+++
+				}
+				+++EndMap+++
+
+				+++BeforeUnloadMap+++
+				//Yield to process and remove every events before unloading the map
+				---Yield---
+				//This is necessary to avoid getting errors in the events about variables that does not exist anymore
+				//because they were deleted by the C++ cleaning at the map unload
+				if (MapLoaded) RequestUnloadMap();
+				while (MapLoaded){
+					---Yield---
+				}
+				+++AfterUnloadMap+++
+				
+				---Yield--- //Needed to properly save persistent variable
+			}
+			+++EndMatch+++
+		}
+		+++EndScript+++
+		
+	}
+	// Last yield for logging
+	---Yield---
+}

@@ -1,0 +1,188 @@
+// #RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+
+declare Integer[Ident] G_BigMessages;
+declare Integer[Ident] G_StatusMessages;
+
+Void _AddMessage(Ident _Id,Boolean _IsBig,Integer _Duration){
+	if(_IsBig){
+		G_BigMessages[_Id] = Now + _Duration;
+	}else{
+		G_StatusMessages[_Id] = Now + _Duration;
+	}
+}
+
+Void _AddMessage(CUIConfig _UIConfig,Boolean _IsBig,Integer _Duration){
+	_AddMessage(GetPlayer(_UIConfig).Id,_IsBig,_Duration);
+}
+
+Void _RemoveMessage(Ident _Id,Boolean _IsBig){
+	if(_IsBig){
+		G_BigMessages.removekey(_Id);
+	}else{
+		G_StatusMessages.removekey(_Id);
+	}
+}
+Void _RemoveMessage(CUIConfig _UIConfig,Boolean _IsBig){
+	_RemoveMessage(GetPlayer(_UIConfig).Id,_IsBig);
+}
+
+Void _Send(CUIConfig _UIConfig,Text _Message,Integer _Duration,CUIConfig::EUISound _Sound,Boolean _IsBig){
+	_UIConfig.BigMessageSound = CUIConfig::EUISound::Silence;
+	if (_Sound != CUIConfig::EUISound::Silence) {
+		_UIConfig.SendNotice(
+			"", 
+			CUIConfig::ENoticeLevel::PlayerInfo, 
+			Null, CUIConfig::EAvatarVariant::Default, 
+			_Sound, 0
+		);
+	}
+	if(_Duration > 0){
+		_AddMessage(_UIConfig,_IsBig,_Duration);
+	}
+	if(_IsBig){
+		_UIConfig.BigMessage = _Message;
+	}else{
+		_UIConfig.StatusMessage = _Message;
+	}
+}
+
+Void SendBig(CUIConfig _UIConfig,Text _Message,Integer _Duration,CUIConfig::EUISound _Sound){
+	if(_UIConfig == Null)return;
+	_Send(_UIConfig,_Message,_Duration,_Sound,True);
+}
+
+Void SendBig(CSmPlayer _Player,Text _Message,Integer _Duration,CUIConfig::EUISound _Sound){
+	SendBig(UIManager.GetUI(_Player),_Message,_Duration,_Sound);
+}
+
+Void SendBig(Integer _Clan,Text _Message,Integer _Duration,CUIConfig::EUISound _Sound){
+	foreach (Player in Players) {
+		if(Player.CurrentClan != _Clan)continue;
+		SendBig(Player,_Message,_Duration,_Sound);
+	}
+}
+
+Void SendStatus(CUIConfig _UIConfig,Text _Message,Integer _Duration,CUIConfig::EUISound _Sound){
+	if(_UIConfig == Null)return;
+	_Send(_UIConfig,_Message,_Duration,_Sound,False);
+}
+
+Void SendStatus(CSmPlayer _Player,Text _Message,Integer _Duration,CUIConfig::EUISound _Sound){
+	SendStatus(UIManager.GetUI(_Player),_Message,_Duration,_Sound);
+}
+
+Void SendStatus(Integer _Clan,Text _Message,Integer _Duration,CUIConfig::EUISound _Sound){
+	foreach (Player in Players) {
+		if(Player.CurrentClan != _Clan)continue;
+		SendStatus(Player,_Message,_Duration,_Sound);
+	}
+}
+
+Void _Clear(CUIConfig _UIConfig,Boolean _IsBig){
+	_RemoveMessage(_UIConfig,_IsBig);
+	if(_IsBig){
+		_UIConfig.BigMessage = "";
+	}else{
+		_UIConfig.StatusMessage = "";
+	}
+}
+
+Void ClearBig(CUIConfig _UIConfig){
+	if(_UIConfig == Null)return;
+	_Clear(_UIConfig,True);
+}
+
+Void ClearBig(CSmPlayer _Player){
+	ClearBig(UIManager.GetUI(_Player));
+}
+
+Void ClearBig(Integer _Clan){
+	foreach (Player in Players) {
+		if(Player.CurrentClan != _Clan)continue;
+		ClearBig(Player);
+	}
+}
+
+Void ClearStatus(CUIConfig _UIConfig){
+	if(_UIConfig == Null)return;
+	_Clear(_UIConfig,False);
+}
+
+Void ClearStatus(CSmPlayer _Player){
+	ClearStatus(UIManager.GetUI(_Player));
+}
+
+Void ClearStatus(Integer _Clan){
+	foreach (Player in Players) {
+		if(Player.CurrentClan != _Clan)continue;
+		ClearStatus(Player);
+	}
+}
+
+Void ClearAll(CUIConfig _UIConfig){
+	ClearBig(_UIConfig);
+	ClearStatus(_UIConfig);
+}
+
+Void ClearAll(CSmPlayer _Player){
+	declare CUIConfig UI = UIManager.GetUI(_Player);
+	ClearBig(UI);
+	ClearStatus(UI);
+}
+
+Void ClearAll(Integer _Clan){
+	foreach (Player in Players) {
+		if(Player.CurrentClan != _Clan)continue;
+		ClearBig(Player);
+		ClearStatus(Player);
+	}
+}
+
+Void ClearAll(){
+	foreach (Player in Players) {
+		ClearBig(Player);
+		ClearStatus(Player);
+	}
+}
+
+Void Yield(){
+	foreach (Idnt => ExpireAt in G_BigMessages) {
+
+		if(!Players.existskey(Idnt)) {
+			_RemoveMessage(Idnt,True);
+			continue;
+		}
+		declare CSmPlayer Player = Players[Idnt];
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		if(UI == Null) {
+			_RemoveMessage(Idnt,True);
+			continue;
+		}
+		if(Now > ExpireAt) ClearBig(UI);
+	}
+	foreach (Idnt => ExpireAt in G_StatusMessages) {
+		if(!Players.existskey(Idnt)) {
+			_RemoveMessage(Idnt,False);
+			continue;
+		}
+		declare CSmPlayer Player = Players[Idnt];
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		if(UI == Null) {
+			_RemoveMessage(Idnt,False);
+			continue;
+		}
+		if(Now > ExpireAt) ClearStatus(UI);
+	}
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+}

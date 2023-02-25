@@ -1,0 +1,239 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
+#Include "ChaseAlliance/Libs/Common/Users.Script.txt" as UsersL
+#Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+#Include "TextLib" as TL
+
+#Const C_LayerName "RUController"
+#Const C_InputsEvent "RUController_Inputs"
+
+#Struct K_RUController {
+	Text FakeUserLogin;
+	Text RealUserLogin;
+	Boolean LockRealPlayer;
+	Boolean FocusFakePlayer;
+}
+
+Void _HandleLockRealPlayer(K_RUController _RUController){
+
+	declare CSmPlayer RealPlayer = GetPlayer(_RUController.RealUserLogin);
+	if(RealPlayer == Null){Log("""[RUController] _HandleLockRealPlayer: RealPlayer is Null skipping Lock!""");return;}
+	if(SetPlayer_DelayedIsFull(RealPlayer)){Log("""[RUController] _HandleLockRealPlayer: couldn't lock/unlock player SetPlayer_DelayedIsFull returned true""");return;}
+	
+	if(_RUController.LockRealPlayer){
+		SetPlayer_Delayed_AccelCoef(RealPlayer,0.);
+	}else{
+		SetPlayer_Delayed_Reset(RealPlayer);
+	}
+}
+
+Void _HandleFocusFakePlayer(K_RUController _RUController){
+	declare CSmPlayer FakePlayer = GetPlayer(_RUController.FakeUserLogin);
+	if(FakePlayer == Null){Log("""[RUController] _HandleFocusFakePlayer: FakePlayer is Null!""");return;}
+	declare CSmPlayer RealPlayer = GetPlayer(_RUController.RealUserLogin);
+	if(RealPlayer == Null){Log("""[RUController] _HandleFocusFakePlayer: RealPlayer is Null skipping Lock!""");return;}
+	declare CUIConfig UI = UIManager.GetUI(RealPlayer);
+	if(UI == Null){Log("""[RUController] _HandleFocusFakePlayer: RealPlayer as no UI""");return;}
+
+	if(_RUController.FocusFakePlayer){
+		UI.ForceSpectator = True;
+		UI.Spectator_SetAutoTarget_User(FakePlayer.User);
+		UI.SpectatorForceCameraType = 1;
+	}else{
+		UI.ForceSpectator = False;
+	}
+}
+
+Void _SetFakePlayerVehicleControl(K_RUController _RUController,Boolean _Control){
+		
+	declare CSmPlayer FakePlayer = GetPlayer(_RUController.FakeUserLogin);
+	if(FakePlayer == Null){Log("""[RUController] _SetFakePlayerVehicleControl: FakePlayer is Null!""");return;}
+	declare CSmPlayer RealPlayer = GetPlayer(_RUController.RealUserLogin);
+	if(RealPlayer == Null){Log("""[RUController] _SetFakePlayerVehicleControl: RealPlayer is Null!""");return;}
+	declare UI <=> UIManager.GetUI(RealPlayer);
+	if(UI == Null){Log("""[RUController] _SetFakePlayerVehicleControl: RealPlayer as no UI""");return;}
+
+	declare Real Controlled_X for UI;
+	declare Integer Controlled_A for UI;
+	declare Integer Controlled_B for UI;
+	if(FakePlayer.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned){
+		SetPlayerVehicle_ControlledByMode(FakePlayer,_Control);
+		if(!_Control) return;
+		SetPlayerVehicle_MaxSpeedValue(FakePlayer,1000.);
+		SetPlayerVehicle_SteerValue(FakePlayer,Controlled_X);
+		SetPlayerVehicle_BrakeValue(FakePlayer,Controlled_B*1.); //[0.-1.]
+		SetPlayerVehicle_Accelerate(FakePlayer,Controlled_A > 0); //true false
+	}
+}
+
+//            FakeUser Login
+declare K_RUController[Text] G_RUControllers;
+
+Boolean _Exists(K_RUController _RUController){
+	return G_RUControllers.existskey(_RUController.FakeUserLogin^_RUController.RealUserLogin);
+}
+
+Void _Create(K_RUController _RUController){
+
+	declare CSmPlayer RealPlayer = GetPlayer(_RUController.RealUserLogin);
+	if(RealPlayer == Null){Log("""[RUController] _SetFakePlayerVehicleControl: RealPlayer is Null!""");return;}
+	
+	_HandleLockRealPlayer(_RUController);
+	_HandleFocusFakePlayer(_RUController);
+
+	Layers::Attach(C_LayerName,RealPlayer);
+
+	G_RUControllers[_RUController.FakeUserLogin^_RUController.RealUserLogin] = _RUController;
+}
+
+Void _Destroy(K_RUController _RUController){
+
+	declare RUController = _RUController;
+	RUController.LockRealPlayer = False;
+	RUController.FocusFakePlayer = False;
+
+	_HandleLockRealPlayer(RUController);
+	_HandleFocusFakePlayer(RUController);
+	_SetFakePlayerVehicleControl(RUController,False);
+	
+	G_RUControllers.removekey(_RUController.FakeUserLogin^_RUController.RealUserLogin);
+	declare CSmPlayer RealPlayer = GetPlayer(_RUController.RealUserLogin);
+	if(RealPlayer == Null) return;
+	
+	Layers::Detach(C_LayerName,RealPlayer);
+}
+
+Void Create(Text _FakeUserLogin,Text _RealUserLogin,Boolean _LockRealPlayer,Boolean _FocusFakePlayer){
+	declare FakeUser = UsersL::GetFakeUserByLogin(_FakeUserLogin);
+	declare RealUser = UsersL::GetRealUserByLogin(_RealUserLogin);
+	if(FakeUser == Null || RealUser == Null)return;
+	declare K_RUController RUController = K_RUController{
+		FakeUserLogin = _FakeUserLogin,
+		RealUserLogin = _RealUserLogin,
+		LockRealPlayer = _LockRealPlayer,
+		FocusFakePlayer = _FocusFakePlayer
+	};
+	_Create(RUController);
+}
+
+Boolean Exists(Text _FakeUserLogin,Text _RealUserLogin){
+	return _Exists(K_RUController{
+		FakeUserLogin = _FakeUserLogin,
+		RealUserLogin = _RealUserLogin
+	});
+}
+
+Void Destroy(Text _FakeUserLogin,Text _RealUserLogin){
+	_Destroy(K_RUController{
+		FakeUserLogin = _FakeUserLogin,
+		RealUserLogin = _RealUserLogin
+	});
+}
+
+Void PassLibEvent(Events::K_Event _Event){
+
+	if(_Event.Params.count == 0) return;
+	if(_Event.Name == "Control" || _Event.Name == "ControlLock" || _Event.Name == "ControlFocus"){
+
+		declare Boolean Lock = _Event.Name == "ControlLock";
+		declare Boolean Focus = _Event.Name == "ControlFocus";
+
+		if(_Event.Params.count == 1){
+			declare FakeUser = UsersL::GetFakeUserByNameId(TL::ToInteger(_Event.Params[0]));
+			if(FakeUser == Null)return;
+			
+			if(Exists(FakeUser.Login,_Event.Source)){
+				Destroy(FakeUser.Login,_Event.Source);
+			}else{
+				Create(FakeUser.Login,_Event.Source,Lock,Focus);
+			}
+		}
+		if(_Event.Params.count == 2){
+			declare FakeUser = UsersL::GetFakeUserByNameId(TL::ToInteger(_Event.Params[0]));
+			if(FakeUser == Null)return;
+			declare RealUser = UsersL::GetRealUserByName(_Event.Params[1]);
+			if(RealUser == Null)return;
+
+			if(Exists(FakeUser.Login,RealUser.Login)){
+				Destroy(FakeUser.Login,RealUser.Login);
+			}else{
+				Create(FakeUser.Login,RealUser.Login,Lock,Focus);
+			}
+		}
+	}
+}
+
+Text ML(){
+	return """<manialink version="3" name="{{{C_LayerName}}}">
+	<script><!--
+	main(){
+		declare Real PrevX;
+		declare Integer PrevA;
+		declare Integer PrevB;
+		while(True){
+			yield;
+			declare Real X;
+			declare Integer A;
+			declare Integer B;
+			foreach (Pad in Input.Pads) {
+				if(Pad.Right > 0) X=1.;
+				if(Pad.Left > 0) X=-1.;
+				if(Pad.LeftStickX != 0) X=Pad.LeftStickX;
+				if(Pad.Up > 0) A=1;
+				if(Pad.A > 0) A=1;
+				if(Pad.Down > 0) B=1;
+				if(Pad.B > 0) B=1;
+			}
+			if(X == PrevX && A == PrevA && B == PrevB) continue;
+			PrevX = X;
+			PrevA = A;
+			PrevB = B;
+			SendCustomEvent("{{{C_InputsEvent}}}",[""^X,""^A,""^B]);
+		}
+	}
+	--></script>
+</manialink>""";
+}
+
+Void PassUIEvent(CUIConfigEvent _Event){
+	if(_Event.Type == CUIConfigEvent::EType::OnLayerCustomEvent){
+		if(_Event.CustomEventType == C_InputsEvent){
+			if(_Event.UI != Null){
+				declare Real Controlled_X for _Event.UI;
+				declare Integer Controlled_A for _Event.UI;
+				declare Integer Controlled_B for _Event.UI;
+				Controlled_X = TL::ToReal(_Event.CustomEventData[0]);
+				Controlled_A = TL::ToInteger(_Event.CustomEventData[1]);
+				Controlled_B = TL::ToInteger(_Event.CustomEventData[2]);
+			}
+		}
+	}
+}
+
+Void Yield(){
+	foreach (RUController in G_RUControllers) {
+		declare CSmPlayer FakePlayer = GetPlayer(RUController.FakeUserLogin);
+		if(FakePlayer == Null){_Destroy(RUController);continue;}
+		declare CSmPlayer RealPlayer = GetPlayer(RUController.RealUserLogin);
+		if(RealPlayer == Null){_Destroy(RUController);continue;}
+		_SetFakePlayerVehicleControl(RUController, True);
+	}
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+	Layers::Destroy(C_LayerName);
+	G_RUControllers = [];
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	UsersL::Load();
+	Layers::Load();
+	Layers::Create(C_LayerName,ML());
+	Layers::SetType(C_LayerName,CUILayer::EUILayerType::Normal);
+}

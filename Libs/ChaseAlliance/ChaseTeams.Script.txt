@@ -1,0 +1,311 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/Common/Messages.Script.txt" as Messages
+#Include "ChaseAlliance/Libs/ModeBase/GameLoopState.Script.txt" as GameLoop
+
+#Const C_K_ChaseTeams """//!
+#Struct K_ChaseTeams {
+	Integer MapPoints;
+	Integer RoundPoints;
+	Integer RelayPoints;
+	Text RelayerLogin;
+	Integer CurrentCp;
+	Integer CpCrossCount;
+	Boolean RelayStarted;
+	Boolean PrevRelayWasSuccess;
+}
+"""
+
+#Struct K_ChaseTeams {
+	Integer MapPoints;
+	Integer RoundPoints;
+	Integer RelayPoints;
+	Text RelayerLogin;
+	Integer CurrentCp;
+	Integer CpCrossCount;
+	Boolean RelayStarted;
+	Boolean PrevRelayWasSuccess;
+}
+
+#Struct K_SME {
+	Integer EventId;
+	Text PlayerLogin;
+	Boolean IsFinish;
+	Integer ReceivedAt;
+}
+
+declare Integer G_RelayerCount;
+declare Integer G_RelayGap;
+declare Integer G_RelaySortDelay;
+
+declare K_ChaseTeams[] G_ChaseTeams;
+
+//SME Sorted Mode Event
+declare Integer G_SMEId;
+declare K_SME[Integer] SMEs;
+declare Integer[Integer] SMEsWaypointTime;
+
+Integer GetSortedEventId(){
+	declare Id_ = G_SMEId;
+	G_SMEId += 1;
+	return Id_;
+}
+
+Void _AddSortedEvent(CSmModeEvent _Event){
+	declare Integer EventId = GetSortedEventId();
+	SMEsWaypointTime[EventId] = _Event.WaypointTime;
+	SMEs[EventId] = K_SME{
+		EventId = EventId,
+		PlayerLogin = _Event.Player.User.Login,
+		IsFinish = _Event.IsFinish,
+		ReceivedAt = Now
+	};
+}
+
+Void _RemoveSortedEvent(K_SME _Event){
+	SMEsWaypointTime.removekey(_Event.EventId);
+	SMEs.removekey(_Event.EventId);
+}
+
+Void _RemoveAllSortedEvent(){	
+	SMEsWaypointTime = [];
+	SMEs = [];
+}
+
+Void SetRelayerCount(Integer _Count){
+	G_RelayerCount = _Count;
+}
+
+Void SetRelayGap(Integer _Count){
+	G_RelayGap = _Count;
+}
+
+Void SetRelaySortDelay(Integer _Delay){
+	G_RelaySortDelay = _Delay;
+}
+
+Void _ToNet(){
+	declare netwrite K_ChaseTeams[] Net_ChaseTeams for Teams[0] = G_ChaseTeams;
+	declare netwrite Integer Net_ChaseTeamsChange for Teams[0] = Now;
+	Net_ChaseTeams = G_ChaseTeams;
+	Net_ChaseTeamsChange = Now;
+}
+
+Void _SetTeamMapPoint(Integer _Clan,Integer _Value){
+	G_ChaseTeams[_Clan-1].MapPoints = _Value;
+	_ToNet();
+}
+
+Void _SetTeamRoundPoint(Integer _Clan,Integer _Value){
+	G_ChaseTeams[_Clan-1].RoundPoints = _Value;
+	_ToNet();
+}
+
+Void _SetTeamRelayPoint(Integer _Clan,Integer _Value){
+	G_ChaseTeams[_Clan-1].RelayPoints = _Value;
+	_ToNet();
+}
+
+Void _SetTeamCurrentCp(Integer _Clan,Integer _Value){
+	G_ChaseTeams[_Clan-1].CurrentCp = _Value;
+	_ToNet();
+}
+
+Void _SetTeamCpCrossCount(Integer _Clan,Integer _Value){
+	G_ChaseTeams[_Clan-1].CpCrossCount = _Value;
+	_ToNet();
+}
+
+Void _SetTeamRelayerLogin(Integer _Clan,Text _Value){
+	G_ChaseTeams[_Clan-1].RelayerLogin = _Value;
+	_ToNet();
+}
+
+Void _SetTeamRelayStarted(Integer _Clan,Boolean _Value){
+	G_ChaseTeams[_Clan-1].RelayStarted = _Value;
+	_ToNet();
+}
+
+Void _SetTeamPrevRelayWasSuccess(Integer _Clan,Boolean _Value){
+	G_ChaseTeams[_Clan-1].PrevRelayWasSuccess = _Value;
+	_ToNet();
+}
+
+Void _IncrementTeamRelayPoint(Integer _Clan){
+	_SetTeamRelayPoint(_Clan,G_ChaseTeams[_Clan-1].RelayPoints + 1);
+}
+
+Void _ResetTeamRelay(Integer _Clan){
+	_SetTeamRelayPoint(_Clan,0);
+	_SetTeamCurrentCp(_Clan,0);
+	_SetTeamCpCrossCount(_Clan,0);
+	_SetTeamRelayerLogin(_Clan,"");
+	_SetTeamRelayStarted(_Clan,False);
+	_SetTeamPrevRelayWasSuccess(_Clan,True);
+}
+
+Void IncrementTeamRoundPoint(Integer _Clan){
+	_SetTeamRoundPoint(_Clan,G_ChaseTeams[_Clan-1].RoundPoints + 1);
+}
+
+Void ResetTeamRoundPoint(Integer _Clan){
+	_SetTeamRoundPoint(_Clan,0);
+}
+
+Void ResetTeamsRoundPoint(){
+	ResetTeamRoundPoint(1);
+	ResetTeamRoundPoint(2);
+}
+
+Void IncrementTeamMapPoint(Integer _Clan){
+	_SetTeamMapPoint(_Clan,G_ChaseTeams[_Clan-1].MapPoints + 1);
+}
+
+Void ResetTeamMapPoint(Integer _Clan){
+	_SetTeamMapPoint(_Clan,0);
+}
+
+Void ResetTeamsMapPoint(){
+	ResetTeamMapPoint(1);
+	ResetTeamMapPoint(2);
+}
+
+Void ResetTeamsRelay(){
+	_ResetTeamRelay(1);
+	_ResetTeamRelay(2);
+	_RemoveAllSortedEvent();
+	Messages::ClearAll();
+}
+
+Void ResetChaseTeams(){
+	ResetTeamsMapPoint();
+	ResetTeamsRoundPoint();
+	ResetTeamsRelay();
+}
+
+Boolean IsComplete(Integer _Clan){
+	return ClansNbPlayers[_Clan] >= G_RelayerCount;
+}
+
+Boolean AreComplete(){
+	return IsComplete(1) && IsComplete(2);
+}
+
+Void PassModeEvent(CSmModeEvent _Event){
+	if(GameState::IsPlaying() && _Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint){
+		if(_Event.Player == Null) return;
+		//add event to sorted event
+		_AddSortedEvent(_Event);
+	}
+}
+
+Void PlayLoop(){
+	if(!IsComplete(1)){
+		IncrementTeamRoundPoint(2);
+		GameLoop::EndRound();
+	}
+	if(!IsComplete(2)){
+		IncrementTeamRoundPoint(1);
+		GameLoop::EndRound();
+	}
+
+	declare K_SME[] SMEToRemove = [];
+	SMEsWaypointTime = SMEsWaypointTime.sort();
+	foreach (EventId => WaypointTime in SMEsWaypointTime) {
+		declare ReceivedAt = SMEs[EventId].ReceivedAt;
+		
+		if (ReceivedAt + G_RelaySortDelay <= Now) {
+			SMEToRemove.add(SMEs[EventId]);
+		} else {
+			break;
+		}
+	}
+
+	//here event are in order
+	foreach (Event in SMEToRemove) {
+
+		declare CSmPlayer Player = GetPlayer(Event.PlayerLogin);
+		if(Player == Null){
+			_RemoveSortedEvent(Event);
+			continue;
+		}
+		declare K_ChaseTeams Team = G_ChaseTeams[Player.CurrentClan-1];
+
+		if(Player.RaceWaypointTimes.count > Team.CurrentCp){ //crossed a new cp
+			Log("Crossed a new cp");
+			
+			if(Team.RelayerLogin == Player.User.Login){//check if player is relayer
+				Log("Player was relayer");
+				//relay passed
+				Log("Relay success");
+				_IncrementTeamRelayPoint(Player.CurrentClan);
+				_SetTeamRelayerLogin(Player.CurrentClan,"");//reset relayer
+				_SetTeamPrevRelayWasSuccess(Player.CurrentClan,True);
+				Messages::SendBig(Player.CurrentClan,"$2E0Relay Success",3000,CUIConfig::EUISound::ScoreProgress);
+				Messages::SendStatus(Player.CurrentClan,"",0,CUIConfig::EUISound::Silence);
+				Messages::SendStatus(Player,"Wait for players",3600000,CUIConfig::EUISound::Silence);
+
+			}else{
+				Log("Player was Not relayer");
+				if(Team.RelayStarted){
+					//relay failed
+					Log("Relay failed");
+					_SetTeamPrevRelayWasSuccess(Player.CurrentClan,False);
+					Messages::SendBig(Player.CurrentClan,"$E02Relay Failed",3000,CUIConfig::EUISound::FirstHit);
+					Messages::SendStatus(Player,"$E02Wait for players",3600000,CUIConfig::EUISound::Silence);
+				}else{
+					//first cp crossed
+					Log("First cp crossed");
+					Messages::SendStatus(Player,"Wait for players",3600000,CUIConfig::EUISound::Silence);
+					_SetTeamRelayStarted(Player.CurrentClan, True);
+				}
+			}
+			_SetTeamCurrentCp(Player.CurrentClan,Player.RaceWaypointTimes.count);
+			_SetTeamCpCrossCount(Player.CurrentClan,1);
+		}
+		if(Player.RaceWaypointTimes.count == Team.CurrentCp){ //crossed the current cp
+			Log("Crossed current cp");
+			if(Team.CpCrossCount == G_RelayerCount-1){//current cp was crossed by all team but this player
+				Log("Current cp was crossed by all team");
+				_SetTeamRelayerLogin(Player.CurrentClan,Player.User.Login);
+				if(Team.PrevRelayWasSuccess){
+					Messages::SendBig(Player.CurrentClan,"$2E0"^Player.User.Name,3000,CUIConfig::EUISound::Warning);
+				}else{
+					Messages::SendBig(Player.CurrentClan,"$E02"^Player.User.Name,3000,CUIConfig::EUISound::Warning);
+				}
+				Messages::SendStatus(Player.CurrentClan,"Wait for "^Player.User.Name,3600000,CUIConfig::EUISound::Silence);
+				Messages::SendStatus(Player,"$2E0Go Go Go!!!",0,CUIConfig::EUISound::Silence);
+			}else{
+				Log("Current cp was Not crossed by all team");
+				Messages::SendStatus(Player,"Wait for players",3600000,CUIConfig::EUISound::Silence);
+			}
+			_SetTeamCpCrossCount(Player.CurrentClan, Team.CpCrossCount + 1);
+		}
+		if(Player.RaceWaypointTimes.count < Team.CurrentCp){
+			Log("Crossed a previous cp");
+		}
+		Log(""^G_ChaseTeams);
+		_RemoveSortedEvent(Event);
+	}
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+	G_ChaseTeams.add(K_ChaseTeams{});
+	G_ChaseTeams.add(K_ChaseTeams{});
+	G_SMEId = 0;
+	G_RelayerCount = 3;
+	G_RelayGap = 3;
+	G_RelaySortDelay = 250;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Messages::Load();
+	GameState::Load();
+	GameLoop::Load();
+}

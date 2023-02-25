@@ -1,0 +1,201 @@
+
+//#RequireContext CSmMode
+
+declare Ident[Text] G_LibLayer_Layers; ///< Stock the registred layers ["LayerName" => #LayerId]
+
+Boolean Exists(Text _LayerName) {
+	if (!G_LibLayer_Layers.existskey(_LayerName)) return False;
+	if (!UIManager.UILayers.existskey(G_LibLayer_Layers[_LayerName])) return False;
+	return True;
+}
+
+CUILayer Get(Text _LayerName) {
+	if (!Exists(_LayerName)) return Null;
+	return UIManager.UILayers[G_LibLayer_Layers[_LayerName]];
+}
+
+CUILayer Get(Ident _LayerId) {
+	if (!UIManager.UILayers.existskey(_LayerId)) return Null;
+	return UIManager.UILayers[_LayerId];
+}
+
+Text GetName(Ident _LayerId) {
+	if (G_LibLayer_Layers.exists(_LayerId)) return G_LibLayer_Layers.keyof(_LayerId);
+	return "";
+}
+
+Text GetName(CUILayer _Layer) {
+	if (_Layer == Null) return "";
+	return GetName(_Layer.Id);
+}
+
+Void Destroy(Text _LayerName) {
+	if (!Exists(_LayerName)) return;
+	UIManager.UILayerDestroy(UIManager.UILayers[G_LibLayer_Layers[_LayerName]]);
+	declare Removed = G_LibLayer_Layers.removekey(_LayerName);
+}
+
+Void DestroyAll() {
+	foreach (LayerName => LayerId in G_LibLayer_Layers) {
+		Destroy(LayerName);
+	}
+}
+
+Void Create(Text _LayerName) {
+	if (Exists(_LayerName)) Destroy(_LayerName);
+	declare NewLayer <=> UIManager.UILayerCreate();
+	G_LibLayer_Layers[_LayerName] = NewLayer.Id;
+}
+
+Void Create(Text _LayerName, Text _LayerManialink) {
+	Create(_LayerName);
+	declare Layer <=> Get(_LayerName);
+	if (Layer != Null) Layer.ManialinkPage = _LayerManialink;
+}
+
+Void Attach(Text _LayerName, CUser _User) {		
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null)return;
+	if (_User == Null) return;
+	declare UI <=> UIManager.GetUI(_User);
+	if (UI == Null)return;
+	if (!UI.UILayers.exists(Layer)) UI.UILayers.add(Layer);
+}
+
+Void Attach(Text _LayerName, CPlayer _Player) {
+	if(_Player == Null) return;	
+	Attach(_LayerName, _Player.User);
+}
+
+Void AttachAll(Text _LayerName) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null)return;
+	if (!UIManager.UIAll.UILayers.exists(Layer)) UIManager.UIAll.UILayers.add(Layer);
+}
+
+Void Detach(Text _LayerName,CUser _User) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null) return;
+	if (_User != Null) return;
+	declare UI <=> UIManager.GetUI(_User);
+	if (UI == Null) return;
+	UI.UILayers.removekey(Layer.Id);
+}
+
+Void Detach(Text _LayerName,CPlayer _Player) {
+	if(_Player == Null) return;	
+	Detach(_LayerName, _Player.User);
+}
+
+Void DetachAll(Text _LayerName) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null) return;
+	UIManager.UIAll.UILayers.removekey(Layer.Id);
+}
+
+Void DetachAll(CPlayer _Player, Boolean _Full) {
+	if (_Player != Null) {
+		declare UI <=> UIManager.GetUI(_Player);
+		if (UI == Null) return;
+		if (_Full) {
+			UI.UILayers.clear();
+		} else {
+			declare Ident[] ToRemove;
+			foreach (Layer in UI.UILayers) {
+				if (G_LibLayer_Layers.exists(Layer.Id)) ToRemove.add(Layer.Id);
+			}
+			foreach (LayerId in ToRemove) {
+				declare Removed = UI.UILayers.removekey(LayerId);
+			}
+		}
+	} else {
+		if (_Full) {
+			UIManager.UIAll.UILayers.clear();
+		} else {
+			declare Ident[] ToRemove;
+			foreach (Layer in UIManager.UIAll.UILayers) {
+				if (G_LibLayer_Layers.exists(Layer.Id)) ToRemove.add(Layer.Id);
+			}
+			foreach (LayerId in ToRemove) {
+				declare Removed = UIManager.UIAll.UILayers.removekey(LayerId);
+			}
+		}
+	}
+}
+
+Void DetachAll(CPlayer _Player) {
+	DetachAll(_Player, False);
+}
+
+Void DetachAll() {
+	DetachAll(Null, False);
+}
+
+Void Update(Text _LayerName, Text _LayerManialink) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null) return;
+	
+	Layer.ManialinkPage = _LayerManialink;
+}
+
+Void SetType(Text _LayerName, CUILayer::EUILayerType _LayerType) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null) return;
+	
+	Layer.Type = _LayerType;
+}
+
+Void SetAnimationType(Text _LayerName, CUILayer::EUILayerAnimation _LayerAnimation) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null) return;
+	
+	Layer.InOutAnimation = _LayerAnimation;
+}
+
+Void SetAnimationTypeOut(Text _LayerName, CUILayer::EUILayerAnimation _LayerAnimation) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null) return;
+	
+	Layer.OutAnimation = _LayerAnimation;
+}
+
+Void SetAnimationTypeIn(Text _LayerName, CUILayer::EUILayerAnimation _LayerAnimation) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null) return;
+	
+	Layer.InAnimation = _LayerAnimation;
+}
+
+Void SetVisibility(Text _LayerName, Boolean _IsVisible) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null) return;
+	
+	Layer.IsVisible = _IsVisible;
+}
+
+Boolean IsVisible(Text _LayerName) {
+	declare Layer <=> Get(_LayerName);
+	if (Layer == Null) return False;
+	
+	return Layer.IsVisible;
+}
+
+Void Show(Text _LayerName) {
+	SetVisibility(_LayerName, True);
+}
+
+Void Hide(Text _LayerName) {
+	SetVisibility(_LayerName, False);
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+	DestroyAll();
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+}

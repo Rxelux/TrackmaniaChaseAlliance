@@ -1,0 +1,126 @@
+//#RequireContext CSmMlScriptIngame
+#Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
+#Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
+
+
+#Const C_LayerName "MainUI"
+
+Text ML(){
+	return
+"""<manialink version="3" name="{{{C_LayerName}}}">
+	<frame id="radar" pos="0 -70">
+		<quad z-index="0" size="20 20" halign="center" valign="center" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" modulatecolor="000000FF"/>
+		<label id="distance" size="20 5" text="myLabel" halign="center" valign="center2" textfont="OswaldMono" textsize="4"/>
+		<frame id="arrow">
+			<quad pos="0 10" z-index="0" size="10 10"  valign="bottom" halign="center" image="file://Media/Painter/Stencils/05-Triangle0/Brush.tga"/>
+		</frame>
+	</frame>
+	<script><!--
+	#Include "MathLib" as ML
+	#Include "TextLib" as TL
+	
+	
+	{{{ChaseTeams::C_K_ChaseTeams}}}
+
+	declare Ident RelayerId;
+	
+	Boolean RelayerExists(){
+		return Players.existskey(RelayerId);
+	}
+	
+	declare K_ChaseTeams[] ChaseTeams;	
+	Void SetRelayerId(){
+		if(InputPlayer != Null){
+			declare Integer Clan = InputPlayer.CurrentClan;
+			if(ChaseTeams.count != 2){
+				RelayerId = NullId;
+				return;
+			}
+			declare K_ChaseTeams Team = ChaseTeams[Clan-1];
+			if(Team.RelayerLogin == ""){
+				RelayerId = NullId;
+				return;
+			}
+			foreach (Player in Players) {
+				if(Player.User.Login == Team.RelayerLogin){
+					RelayerId = Player.Id;
+					return;
+				}
+			}
+		}
+		RelayerId = NullId;
+	}
+
+	CSmPlayer GetOwner() {
+		if (GUIPlayer != Null) return GUIPlayer;
+		return InputPlayer;
+	}
+
+	main(){
+		HideResumePlayingButton = True;
+		declare CMlFrame Arrow <=> (Page.GetFirstChild("arrow") as CMlFrame);
+		declare CMlFrame Radar <=> (Page.GetFirstChild("radar") as CMlFrame);
+		declare CMlLabel Distance <=> (Page.GetFirstChild("distance") as CMlLabel);
+		Radar.Visible = False;
+
+		declare netread Integer Net_ChaseTeamsChange for Teams[0];
+		declare netread K_ChaseTeams[] Net_ChaseTeams for Teams[0];
+
+		declare Integer PrevChaseTeamsChange;
+		declare CSmPlayer PrevPlayer;
+		while(True){
+			yield;
+			declare CSmPlayer Owner <=> GetOwner();
+			if(PrevChaseTeamsChange != Net_ChaseTeamsChange){
+				PrevChaseTeamsChange = Net_ChaseTeamsChange;
+				ChaseTeams = Net_ChaseTeams;
+				SetRelayerId();
+			}
+			if(Owner != Null){
+				if(PrevPlayer != Owner){
+					PrevPlayer <=> Owner;
+					SetRelayerId();
+				}
+					
+				if(RelayerExists() && Owner != Null && Owner.Id != RelayerId){
+					Radar.Visible = True;
+					declare CSmPlayer Relayer <=> Players[RelayerId];
+					if(Relayer.IsEntityStateAvailable){
+						declare Vec3 OwnerPos = Owner.Position;
+						declare Vec3 RelayerPos = Relayer.Position;
+						declare Vec3 OwnerForward = ML::CrossProduct(Owner.LeftDirection, Owner.UpDirection);
+						declare Vec3 OwnerRelayerRelativePos = RelayerPos-OwnerPos;
+						Distance.Value = ""^TL::FormatReal(ML::Distance(OwnerPos, RelayerPos),1,False,False)^"m";
+						Arrow.Visible = True;
+						Arrow.RelativeRotation = ML::RadToDeg(ML::OrientedAngle(OwnerRelayerRelativePos,OwnerForward));
+					}else{
+						Distance.Value = "Too Far";
+						Arrow.Visible = False;
+					}
+				}else{
+					Radar.Visible = False;
+				}
+			}else{
+				Radar.Visible = False;
+			}
+		}
+	}
+	--></script>
+</manialink>""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+	Layers::Destroy(C_LayerName);
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Layers::Load();
+	Layers::Create(C_LayerName,ML());
+	Layers::SetType(C_LayerName,CUILayer::EUILayerType::Normal);
+	Layers::AttachAll(C_LayerName);
+}

@@ -1,0 +1,130 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+
+declare Boolean G_RunServer; // Run the server section as long as this is true
+declare Boolean G_RunScript; // While this is true the script can't stop
+declare Boolean G_RunMatch; // Run the match section as long as this is true
+declare Boolean G_RunMap; // Run the map section as long as this is true
+declare Boolean G_RunRound; // Run the round section as long as this is true
+
+declare Integer G_MatchSectionCount; // Number of matches played since the beginning of the script
+declare Integer G_MapSectionCount; // Number of maps played since the beginning of the match
+declare Integer G_RoundSectionCount; // Number of rounds played since the beginning of the map
+
+
+Boolean ServerIsRunning() {
+	return (!ServerShutdownRequested && G_RunServer);
+}
+
+Boolean ScriptIsRunning() {
+	return (ServerIsRunning() && G_RunScript);
+}
+
+Boolean MatchIsRunning() {
+	return (ScriptIsRunning() && G_RunMatch );
+}
+
+Boolean MapIsRunning() {
+	return (MatchIsRunning() && G_RunMap);
+}
+
+Boolean RoundIsRunning() {
+	return (MapIsRunning() && G_RunRound);
+}
+
+Void StartScript(){
+	G_RunScript = True;
+}
+Void StartServer(){
+	G_RunServer = True;
+}
+Void StartMatch(){
+	G_RunMatch = True;
+}
+Void StartMap(){
+	G_RunMap = True;
+}
+Void StartRound(){
+	G_RunRound = True;
+}
+
+Void EndScript(){
+	G_RunScript = False;
+}
+Void EndServer(){
+	G_RunServer = False;
+}
+Void EndMatch(){
+	G_RunMatch = False;
+}
+Void EndMap(){
+	G_RunMap = False;
+}
+Void EndRound(){
+	G_RunRound = False;
+}
+
+Void ResetMatchSectionCount(){
+	G_MatchSectionCount = 0;
+}
+Void ResetMapSectionCount(){
+	G_MapSectionCount = 0;
+}
+Void ResetRoundSectionCount(){
+	G_RoundSectionCount = 0;
+}
+
+Void IncrementMatchSectionCount(){
+	G_MatchSectionCount += 1;
+}
+Void IncrementMapSectionCount(){
+	G_MapSectionCount += 1;
+}
+Void IncrementRoundSectionCount(){
+	G_RoundSectionCount += 1;
+}
+
+Integer MatchSectionCount(){
+	return G_MatchSectionCount;
+}
+Integer MapSectionCount(){
+	return G_MapSectionCount;
+}
+Integer RoundSectionCount(){
+	return G_RoundSectionCount;
+}
+
+Void PassLibEvent(Events::K_Event _Event){
+	switch (_Event.Name) {
+		case "EndRound": {
+			EndRound();
+		}
+		case "EndMatch": {
+			EndMatch();
+		}
+		case "EndMap": {
+			EndMap();
+		}
+	}
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+
+	G_RunScript = True;
+	G_RunServer = True;
+	G_RunMatch = True;
+	G_RunMap = True;
+	G_RunRound = True;
+	G_MatchSectionCount = 0;
+	G_MapSectionCount = 0;
+	G_RoundSectionCount = 0;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Events::Load();
+}

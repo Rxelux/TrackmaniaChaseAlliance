@@ -1,0 +1,134 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
+
+#Const C_ChatColor "$6f0"
+
+declare Integer G_LapCount;
+declare Integer G_RelayerCount;
+declare Integer G_RelayGap;
+declare Integer G_RelaySortDelay;
+
+Void SetLapCount(Integer _Value){
+	if(G_LapCount != _Value){
+		G_LapCount = _Value;
+		UIManager.UIAll.SendChat(C_ChatColor^"LapCount changed to "^_Value^" laps");
+		LapCountOverride = _Value;
+	}
+}
+
+Void SetRelayerCount(Integer _Value){
+	if(G_RelayerCount != _Value){
+		G_RelayerCount = _Value;
+		UIManager.UIAll.SendChat(C_ChatColor^"RelayerCount changed to "^_Value^" relayers");
+		ChaseTeams::SetRelayerCount(_Value);
+	}
+}
+
+Void SetRelayGap(Integer _Value){
+	if(G_RelayGap != _Value){
+		G_RelayGap = _Value;
+		UIManager.UIAll.SendChat(C_ChatColor^"RelayGap changed to "^_Value^" points");
+		ChaseTeams::SetRelayGap(_Value);
+	}
+}
+
+Void SetRelaySortDelay(Integer _Value){
+	if(G_RelaySortDelay != _Value){
+		G_RelaySortDelay = _Value;
+		UIManager.UIAll.SendChat(C_ChatColor^"RelaySortDelay changed to "^_Value^" ms");
+		ChaseTeams::SetRelaySortDelay(_Value);
+	}
+}
+
+Void ApplySettings(){
+	UIManager.UIAll.AlliesLabelsMaxCount = 20;
+
+	//force hide default markers
+	UIManager.UIAll.AlliesLabelsVisibility = CUIConfig::ELabelsVisibility::Never;
+	UIManager.UIAll.AlliesLabelsShowNames = CUIConfig::EVisibility::ForcedHidden;
+	UIManager.UIAll.AlliesLabelsShowGauges = CUIConfig::EVisibility::ForcedHidden;
+
+	UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::Never;
+	UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedHidden;
+	UIManager.UIAll.TeamLabelsShowGauges = CUIConfig::EVisibility::ForcedHidden;
+
+	UIManager.UIAll.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::Never;
+	UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedHidden;
+	UIManager.UIAll.OpposingTeamLabelsShowGauges = CUIConfig::EVisibility::ForcedHidden;
+
+	//force visible custom markers
+	UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
+
+	UIManager.UIAll.UISequence_CutSceneStyle = CUIConfig::ECutSceneStyle::TM;
+	
+	UIManager.UIAll.OverlayHideChat = False;
+	UIManager.UIAll.OverlayHideNotices = False;
+	
+	UIManager.UIAll.DisplayControl_UseEsportsProgrammation = True;
+	UIManager.UIAll.LabelsVisibility_SkipMarkersOnly = True;
+	UIManager.UIAll.OverlayHideMapInfo = True;
+	UIManager.UIAll.OverlayHideOpponentsInfo = True;
+	UIManager.UIAll.OverlayHideCheckPointList = True;
+	UIManager.UIAll.OverlayHideRoundScores = True;
+	UIManager.UIAll.OverlayHideCountdown = True;
+	UIManager.UIAll.OverlayHideCrosshair = True;
+	UIManager.UIAll.OverlayHideGauges = True;
+	UIManager.UIAll.OverlayHideConsumables = True;
+	UIManager.UIAll.OverlayHide321Go = True;
+	UIManager.UIAll.OverlayMute321Go = True;
+	UIManager.UIAll.OverlayHideBackground = True;
+	UIManager.UIAll.OverlayHideChrono = True;
+	UIManager.UIAll.OverlayHideSpeedAndDist = True;
+	UIManager.UIAll.OverlayHidePersonnalBestAndRank = True;
+	UIManager.UIAll.OverlayHidePosition = True;
+	UIManager.UIAll.OverlayHideCheckPointTime = True;
+	UIManager.UIAll.OverlayHideEndMapLadderRecap = True;
+	UIManager.UIAll.OverlayHideMultilapInfos = True;
+	UIManager.UIAll.OverlayHideSpectatorControllers = True;
+	UIManager.UIAll.OverlayHideSpectatorInfos = True;
+	UIManager.UIAll.OverlayChatHideAvatar = True;
+	UIManager.UIAll.DisableZoomTransitions = True;
+
+	SpawnInvulnerabilityDuration = 0;
+	UnspawnAnimDuration = 0;
+	SpawnDelayDuration = 0;
+	CheckpointBehaviour = CSmMode::ECheckpointBehaviour::Default;
+	RespawnBehaviour = CSmMode::ERespawnBehaviour::AlwaysRespawn;
+	GiveUpBehaviour = CSmMode::EGiveUpBehaviour::DoNothing;
+	UseMultiClans = False;
+	UseClans = True;
+	UseForcedClans = False;
+	UsePvPCollisions = False;
+	UsePvECollisions = True; //to force ghosts on
+	UseGuns = False;
+	UsePvPWeapons = False;
+	UseInterractiveScreensIn3d = False;
+	UseLaserVsBullets = False;
+	UseLaserSkewering = False;
+	UsePlayerTagging = False;
+	UseBeaconsWithRecipients = False;
+	UseAmmoBonusOnHit = False;
+	UseSameWallJump = False;
+	UseDefaultActionEvents = False;
+	UseLaunchedCheckpoints = True;
+	ReadonlyLaunchedCheckpoints = False;
+	UseProtectClanmates = False;
+	UseAllies = False;
+	CrudeExtrapolation_AllowDelay = False;
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	SetLapCount(5);
+	SetRelayerCount(3);
+	SetRelayGap(3);
+	SetRelaySortDelay(250);
+	ChaseTeams::Load();
+}

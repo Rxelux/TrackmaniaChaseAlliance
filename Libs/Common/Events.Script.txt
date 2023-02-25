@@ -1,0 +1,36 @@
+#Struct K_Event {
+	Text Name;
+	Text[] Params;
+	Text Source;
+}
+
+declare K_Event[] G_PendingEvents;
+declare K_Event[] G_NewEvents;
+
+Void Create(Text _Name,Text _Source, Text[] _Params) {
+	G_NewEvents.add(K_Event{
+		Name = _Name,
+		Source = _Source,
+		Params = _Params
+	});
+}
+
+K_Event[] GetPending() {
+	return G_PendingEvents;
+}
+
+Void Yield(){
+	G_PendingEvents = G_NewEvents;
+	G_NewEvents.clear();
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+}

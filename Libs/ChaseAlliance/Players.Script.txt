@@ -1,0 +1,91 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+#Include "ChaseAlliance/Libs/Common/Spawn.Script.txt" as Spawn
+#Include "TextLib" as TL
+#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
+
+Void _CheckClan(CSmPlayer _Player){
+	if(_Player.RequestedClan < 1 || _Player.RequestedClan > 2){
+		if(ClansNbPlayers[1] < ClansNbPlayers[2]){
+			SetPlayerClan(_Player,1);
+		}else{
+			SetPlayerClan(_Player,2);
+		}
+	}else{
+		SetPlayerClan(_Player,_Player.RequestedClan);
+	}
+}
+
+Void Spawn(CSmPlayer _Player,Integer _When){
+	if (_Player == Null) return;
+	UnspawnPlayer(_Player);
+	_CheckClan(_Player);
+	SpawnPlayer(
+		_Player,
+		_Player.CurrentClan,
+		1,
+		Spawn::Get(),
+		_When);
+	_Player.UseCrudeExtrapolation = False;
+	_Player.TrustClientSimu = True;
+	_Player.Dossard_Color = Teams[_Player.CurrentClan-1].ColorPrimary;
+	// declare UI = UIManager.GetUI(_Player);
+	// if(UI == Null) return;
+	// UI.AlliesLabelsVisibility = CUIConfig::ELabelsVisibility::Always;
+	// UI.AlliesLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
+	// UI.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::Always;
+	// UI.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
+	// UI.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::Always;
+	// UI.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedHidden;
+}
+
+Void SpawnAll(Integer _When){
+	foreach (Player in Players) {
+		Spawn(Player,_When);
+	}
+}
+
+//NOTE: I hate the fact that there is no events fired for player requests clan or requests spectate, 
+//fortunately it is only neccessary to do those checks on the non critical gamestate
+Void PlayLoop(){
+	foreach (Player in Players) {
+		if(Player.CurrentClan != Player.RequestedClan){
+			Spawn(Player,Now+1500);
+		}
+	}
+	foreach (Spectator in Spectators) {
+		if(Spectator.RequestsSpectate == False){
+			Spawn(Spectator,Now+1500);
+		}
+	}
+}
+
+Void PassModeEvent(CSmModeEvent _Event){
+	if(_Event.Player == Null) return;
+	if(GameState::IsWaitingOrPause()){
+		if((_Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn && _Event.GiveUp) || 
+			(_Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && _Event.IsFinish)){
+			Spawn(_Event.Player,Now + 1500);
+		}
+		// if(_Event.Type == CSmModeEvent::EType::OnPlayerAdded){
+		// 	Spawn(_Event.Player,Now + 1500);
+		// }
+	}else{
+		if(_Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && _Event.IsFinish){
+			UnspawnPlayer(_Event.Player);
+		}
+	}
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Spawn::Load();
+	GameState::Load();
+}

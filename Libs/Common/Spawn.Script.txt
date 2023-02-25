@@ -1,0 +1,29 @@
+//#RequireContext CSmMode
+
+declare CMapLandmark G_SpawnLandmark;
+
+Void Find(){
+	foreach (Landmark in MapLandmarks) {
+		if(Landmark.Tag == "StartFinish"){
+			G_SpawnLandmark = Landmark;
+		}else if(Landmark.Tag == "Spawn"){
+			G_SpawnLandmark = Landmark;
+			break;
+		}
+	}
+}
+
+CMapSpawn Get(){
+	return G_SpawnLandmark.PlayerSpawn;
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+}

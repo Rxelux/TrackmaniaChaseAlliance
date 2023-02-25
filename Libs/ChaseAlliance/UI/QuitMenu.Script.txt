@@ -1,0 +1,104 @@
+//#RequireContext CSmMlScriptIngame
+#Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
+
+#Const C_LayerName "QuitMenu"
+
+Text ML(){
+	return
+"""<manialink version="3" name="{{{C_LayerName}}}">
+	<stylesheet>
+		<style class="button" size="72 20" halign="center" valign="center2" textfont="Oswald" textsize="4" focusareacolor1="00000088" focusareacolor2="000000FF"/>
+	</stylesheet>
+	<label id="spectate" pos="0 36" text="{{{_("Spectate")}}}" class="button" scriptevents="1"/>
+	<label id="switch" pos="0 12" text="{{{_("Change team")}}}" class="button" scriptevents="1"/>
+	<label id="quit" pos="0 -12" text="{{{_("Quit")}}}" class="button" scriptevents="1"/>
+	<label id="close" pos="0 -36" text="{{{ _("Close")}}}" class="button" scriptevents="1"/>
+	<quad pos="0 0" size="80 100" bgcolor="00000088" halign="center" valign="center"/>
+	<script><!--
+	declare CMlLabel SwitchButton;
+
+	Void UpdateSwitchButtonColor(){
+		if(GUIPlayer != Null){
+			switch (GUIPlayer.RequestedClan) {
+				case 1: SwitchButton.TextColor = Teams[1].ColorPrimary;
+				case 2: SwitchButton.TextColor = Teams[0].ColorPrimary;
+				default: SwitchButton.TextColor = <1.,1.,1.>;
+			}
+		}
+	}
+	main(){
+		EnableMenuNavigation(True, True, False, Null, 1);
+		declare CMlLabel SpectateButton <=> (Page.GetFirstChild("spectate") as CMlLabel);
+		SwitchButton <=> (Page.GetFirstChild("switch") as CMlLabel);
+		declare CMlLabel QuitButton <=> (Page.GetFirstChild("quit") as CMlLabel);
+		declare CMlLabel ContinueButton <=> (Page.GetFirstChild("continue") as CMlLabel);
+		declare Boolean PageWasVisible;
+		// declare CSmPlayer PrevPlayer;
+		while (True) {
+			yield;
+			if(!PageIsVisible){
+				PageWasVisible = False;
+				continue;
+			}
+			if(!PageWasVisible){
+				// if(IsSpectator){
+				// 	SpectateButton.Value = _("Resume");
+				// 	SwitchButton.Hide();
+				// }else{
+				// 	SpectateButton.Value = _("Spectate");
+				// 	SwitchButton.Show();
+				// }
+				UpdateSwitchButtonColor();
+			}
+			
+			foreach (Event in PendingEvents) {
+				switch(Event.Type){
+					case CMlScriptEvent::Type::MouseClick: {
+						switch(Event.ControlId){
+							case "spectate": {
+								RequestSpectatorClient(!IsSpectator);
+							}
+							case "switch": {
+								if(InputPlayer == Null)continue;
+								if(InputPlayer.CurrentClan == 1){
+									log("JoinTeam2");
+									JoinTeam2();
+								}else{
+									log("JoinTeam1");
+									JoinTeam1();
+								}
+								CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+							}
+							case "quit": CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Quit);
+							case "close": CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+						}
+					}
+					case CMlScriptEvent::Type::KeyPress: {
+						if(PageWasVisible && Event.KeyName == "Escape"){
+							CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+						}
+					}
+				}
+			}
+			PageWasVisible = True;
+		}
+	}
+	--></script>
+</manialink>""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+	Layers::Destroy(C_LayerName);
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Layers::Load();
+	Layers::Create(C_LayerName,ML());
+	Layers::SetType(C_LayerName,CUILayer::EUILayerType::InGameMenu);
+	Layers::AttachAll(C_LayerName);
+}

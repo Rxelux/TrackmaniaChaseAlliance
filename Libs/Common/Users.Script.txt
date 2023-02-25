@@ -1,0 +1,142 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+#Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+#Include "TextLib" as TL
+
+declare Integer G_FakeUserNameId;
+
+Void GetLastUniqueId(){
+	declare MaxId = -1;
+	foreach (User in Users) {
+		if(User.IsFakeUser){
+			declare Split = TL::Split("#", User.Name);
+			declare FakeId = TL::ToInteger(Split[1]);
+			if(FakeId > MaxId){
+				MaxId = FakeId;
+			}
+		}
+	}
+	G_FakeUserNameId = MaxId + 1;
+}
+
+CUser GetUserByName(Text _Name) {
+	foreach (User in Users) {
+		if (User.Name == _Name) return User;
+	}
+	Log("""[UserManager] GetUser: No User found with name {{{_Name}}}!""");
+	return Null;
+}
+
+CUser GetRealUserByName(Text _Name) {
+	foreach (User in Users) {
+		if (!User.IsFakeUser && User.Name == _Name) return User;
+	}
+	Log("""[UserManager] GetRealUser: No RealUser found with name {{{_Name}}}!""");
+	return Null;
+}
+
+CUser GetFakeUserByName(Text _Name) {
+	foreach (User in Users) {
+		if (User.IsFakeUser && User.Name == _Name) return User;
+	}
+	Log("""[UserManager] GetFakeUser: No FakeUser found with name {{{_Name}}}!""");
+	return Null;
+}
+
+CUser GetFakeUserByNameId(Integer _Id) {
+	return GetFakeUserByName("FakeUser#"^_Id);
+}
+
+CUser GetUserByLogin(Text _Login) {
+	foreach (User in Users) {
+		if (User.Login == _Login) return User;
+	}
+	Log("""[UserManager] GetUser: No User found with Login {{{_Login}}}!""");
+	return Null;
+}
+
+CUser GetRealUserByLogin(Text _Login) {
+	foreach (User in Users) {
+		if (!User.IsFakeUser && User.Login == _Login) return User;
+	}
+	Log("""[UserManager] GetRealUser: No RealUser found with Login {{{_Login}}}!""");
+	return Null;
+}
+
+CUser GetFakeUserByLogin(Text _Login) {
+	foreach (User in Users) {
+		if (User.IsFakeUser && User.Login == _Login) return User;
+	}
+	Log("""[UserManager] GetFakeUser: No FakeUser found with Login {{{_Login}}}!""");
+	return Null;
+}
+
+Text AddFakeUserInClan(Integer _Clan){
+	if(_Clan < 0){
+		Log("""[UserManager] AddFakeUserInClan: _Clan is < 0""");return "";
+	}
+	declare Text Name = "FakeUser#"^G_FakeUserNameId;
+	declare CUser FakeUser = Users_CreateFake(Name,_Clan);
+	G_FakeUserNameId += 1;
+	return FakeUser.Login;
+}
+
+Void AddFakeUsersInClan(Integer _Clan,Integer _Ammount){
+	if(_Clan < 0)return;
+	if(_Ammount < 0)return;
+	for(I,0,_Ammount-1) AddFakeUserInClan(_Clan);
+}
+
+Void RemoveFakeUser(Text _Login){
+	ServerAdmin.DisconnectFakePlayer(_Login);
+}
+
+Void RemoveFakeUserByName(Text _Name){
+	RemoveFakeUser(GetFakeUserByName(_Name).Login);
+}
+
+Void RemoveFakeUserByNameId(Integer _Id){
+	RemoveFakeUser(GetFakeUserByNameId(_Id).Login);
+}
+
+Void RemoveFakeUsers(){
+	Users_DestroyAllFakes();
+}
+
+Void PassLibEvent(Events::K_Event _Event){
+	switch (_Event.Name) {
+		case "AddFake": {
+			if(_Event.Params.count == 1)
+				AddFakeUserInClan(TL::ToInteger(_Event.Params[0]));
+		}
+		case "AddFakes": {
+			if(_Event.Params.count == 2)
+				AddFakeUsersInClan(
+					TL::ToInteger(_Event.Params[0]),
+					TL::ToInteger(_Event.Params[1])
+				);
+		}
+		case "RemoveFake": {
+			if(_Event.Params.count == 1)
+			RemoveFakeUserByNameId(TL::ToInteger(_Event.Params[0]));
+		}
+		case "RemoveFakes": {
+			if(_Event.Params.count == 0)
+			RemoveFakeUsers();
+		}
+	}
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+	GetLastUniqueId();
+	// RemoveFakeUsers();
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Events::Load();
+}

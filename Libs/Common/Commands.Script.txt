@@ -1,0 +1,123 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+#Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
+#Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+#Include "TextLib" as TL
+
+#Const C_LayerName "Commands"
+#Const C_CommandPrefix "Commands_"
+
+declare Text[] G_PermittedUserLogins;
+
+Void CreateEventFromUIEvent(CUIConfigEvent Event) {
+	declare Text Source;
+	if(Event.UI != Null) {
+		Source = GetPlayer(Event.UI).User.Login;
+	}
+	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", Event.CustomEventType, "", "");
+
+	Events::Create(UnprefixedName,Source,Event.CustomEventData);
+}
+
+Text[] GetPermittedUserLogins() {
+	return G_PermittedUserLogins;
+}
+
+Boolean IsPermittedUser(Text _Login) {
+	return G_PermittedUserLogins.exists(_Login);
+}
+
+Void AddPermittedUser(Text _Login) {
+	if(!IsPermittedUser(_Login)) {
+		G_PermittedUserLogins.add(_Login);
+	}
+	foreach (User in Users) {
+		if (User.Login == _Login) 
+			Layers::Attach(C_LayerName, User);
+	}
+}
+
+Void RemovePermittedUser(Text _Login) {
+	G_PermittedUserLogins.remove(_Login);
+}
+
+Void ClearPermittedUsers() {
+	G_PermittedUserLogins.clear();
+}
+
+Text ML(){
+	return """<manialink version="3" name="{{{C_LayerName}}}">
+	<entry pos="-158 -86" valign="bottom" size="83 4" id="textedit-command" selecttext="1" textsize="1.5" focusareacolor1="00000000" focusareacolor2="44000088" scriptevents="1" textfont="GameFontSemiBold"/>
+<script><!--
+#Include "TextLib" as TL
+declare CMlEntry TextEditCustomCommand;
+Void OnSendCommand() {
+	declare Text[] CommandSplit = TL::Split(" ", TextEditCustomCommand.Value);
+	if(CommandSplit.count >= 1) {
+		declare Text CommandName = "{{{C_CommandPrefix}}}" ^ CommandSplit[0];
+		declare Text[] CommandParams = CommandSplit.slice(1, CommandSplit.count - 1);
+		if (CommandParams.count > 10) CommandParams = [TL::Join(" ", CommandParams)]; // Cannot send more than 10 params
+		SendCustomEvent(CommandName, CommandParams);
+	}
+}
+
+main() {
+	TextEditCustomCommand <=> (Page.GetFirstChild("textedit-command") as CMlEntry);
+	while(True) {
+		yield;
+		if(Page.FocusedControl != TextEditCustomCommand) TextEditCustomCommand.Hide();
+		foreach (Event in PendingEvents) {
+			switch (Event.Type) {
+				case CMlScriptEvent::Type::KeyPress: {
+					if(Event.KeyName == "AppMenu" ) {
+						TextEditCustomCommand.Show();
+						TextEditCustomCommand.Focus();
+						TextEditCustomCommand.Value = "";
+					}
+				}
+				case CMlScriptEvent::Type::EntrySubmit: {
+					OnSendCommand();
+				}
+			}
+		}
+	}
+}
+--></script>
+</manialink>""";
+}
+
+Void PassUIEvent(CUIConfigEvent _Event){
+	if(_Event.Type == CUIConfigEvent::EType::OnLayerCustomEvent){
+		if(TL::StartsWith(C_CommandPrefix, _Event.CustomEventType)) {
+			if(_Event.UI != Null) {
+				declare Login = GetPlayer(_Event.UI).User.Login;
+				if(IsPermittedUser(Login)) {
+					CreateEventFromUIEvent(_Event);
+				}
+			}
+		}
+	}
+}
+
+Void PassModeEvent(CSmModeEvent _Event){
+	if(_Event.Type == CSmModeEvent::EType::OnPlayerAdded){
+		if (_Event.Player != Null && IsPermittedUser(_Event.Player.User.Login)) {
+			Layers::Attach(C_LayerName, _Event.Player);
+		}
+	}
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Events::Load();
+	Layers::Load();
+	Layers::Create(C_LayerName,ML());
+	Layers::SetType(C_LayerName,CUILayer::EUILayerType::Normal);
+}
