@@ -269,15 +269,26 @@ Void PlayLoop(){
 			if(Team.CpCrossCount == G_RelayerCount-1){//current cp was crossed by all team but this player
 				Log("Current cp was crossed by all team");
 				if(Team.RelayerLogin == ""){
-					_SetTeamRelayerLogin(Player.CurrentClan,Player.User.Login);
+					_SetTeamRelayerLogin(Player.CurrentClan, Player.User.Login);
+
+					if(Team.PrevRelayWasSuccess){
+						Messages::SendBig(Player.CurrentClan,"$2E0"^Player.User.Name,3000,CUIConfig::EUISound::Warning);
+					}else{
+						Messages::SendBig(Player.CurrentClan,"$E02"^Player.User.Name,3000,CUIConfig::EUISound::Warning);
+					}
+					Messages::SendStatus(Player.CurrentClan,"Wait for "^Player.User.Name,3600000,CUIConfig::EUISound::Silence);
+					Messages::SendStatus(Player,"$2E0Go Go Go!!!",0,CUIConfig::EUISound::Silence);
 				}
-				if(Team.PrevRelayWasSuccess){
-					Messages::SendBig(Player.CurrentClan,"$2E0"^Player.User.Name,3000,CUIConfig::EUISound::Warning);
-				}else{
-					Messages::SendBig(Player.CurrentClan,"$E02"^Player.User.Name,3000,CUIConfig::EUISound::Warning);
+				else{
+					declare CSmPlayer RelayerPlayer = GetPlayer(Team.RelayerLogin);
+					if (RelayerPlayer != Null){
+						Messages::SendBig(Player.CurrentClan,"$E02"^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Warning);
+						Messages::SendStatus(Player.CurrentClan,"Wait for "^RelayerPlayer.User.Name,3600000,CUIConfig::EUISound::Silence);
+						Messages::SendStatus(RelayerPlayer,"$2E0Go Go Go!!!",0,CUIConfig::EUISound::Silence);
+					}else{
+						Error("RelayerPlayer not found for "^Team.RelayerLogin);
+					}
 				}
-				Messages::SendStatus(Player.CurrentClan,"Wait for "^Player.User.Name,3600000,CUIConfig::EUISound::Silence);
-				Messages::SendStatus(Player,"$2E0Go Go Go!!!",0,CUIConfig::EUISound::Silence);
 			}else{
 				Log("Current cp was Not crossed by all team");
 				Messages::SendStatus(Player,"Wait for players",3600000,CUIConfig::EUISound::Silence);
