@@ -9,46 +9,59 @@ Text ML(){
 	return
 """<manialink version="3" name="{{{C_LayerName}}}">
 	<frame id="radar" pos="0 -70">
-		<quad z-index="0" size="20 20" halign="center" valign="center" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" modulatecolor="000000FF"/>
-		<label id="distance" size="20 5" text="myLabel" halign="center" valign="center2" textfont="OswaldMono" textsize="4"/>
+		<quad z-index="0" size="20 20" halign="center" valign="center" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" modulatecolor="000000FF" opacity="0.8" />
+		<quad id="radar-circle-border" z-index="0" size="20 20" halign="center" valign="center" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" />
+		<frame id="radar-circle-gauge" rot="180" scale="1.22" halign="center" valign="center">
+        <frame size="10 20" pos="5 0" halign="center" valign="center">
+            <quad id="gauge-left" pos="-5 0"  z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" hidden="0" />
+        </frame>
+        <frame size="10 20" pos="-5 0" halign="center" valign="center">
+            <quad id="gauge-right" pos="5 0" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="180" hidden="0"/>
+        </frame>
+    	</frame>
+		<label id="distance" size="17 5" text="myLabel" halign="center" valign="center2" textfont="RajdhaniMono" textsize="4" />
 		<frame id="arrow">
-			<quad pos="0 10" z-index="0" size="10 10"  valign="bottom" halign="center" image="file://Media/Painter/Stencils/05-Triangle0/Brush.tga"/>
+			<quad id="arrow-img" pos="0 10" z-index="0" size="10 10"  valign="bottom" halign="center" image="file://Media/Painter/Stencils/05-Triangle0/Brush.tga" modulatecolor="000000FF" />
+			<!-- <quad id="arrow-img" rot="-90" pos="4 15" z-index="0" size="7 7"  valign="bottom" halign="center" image="file://Media/Painter/Stencils/23-Arrow1/Brush.tga" modulatecolor="000000FF" /> -->
 		</frame>
 	</frame>
 	<script><!--
 	#Include "MathLib" as ML
 	#Include "TextLib" as TL
+
+	#Struct K_CircularGauge {
+		CMlFrame Frame;
+		CMlQuad Left;
+		CMlQuad Right;
+	}
 	
 	
 	{{{ChaseTeams::C_K_ChaseTeams}}}
 
-	declare Ident RelayerId;
+	// declare Ident RelayerId;
 	
-	Boolean RelayerExists(){
-		return Players.existskey(RelayerId);
+	Boolean RelayerExists(Ident _RelayerId){
+		return Players.existskey(_RelayerId);
 	}
 	
 	declare K_ChaseTeams[] ChaseTeams;	
-	Void SetRelayerId(){
-		if(InputPlayer != Null){
-			declare Integer Clan = InputPlayer.CurrentClan;
+	Ident GetRelayerId(CSmPlayer _Owner){
+		if(_Owner != Null){
+			declare Integer Clan = _Owner.CurrentClan;
 			if(ChaseTeams.count != 2){
-				RelayerId = NullId;
-				return;
+				return NullId;
 			}
 			declare K_ChaseTeams Team = ChaseTeams[Clan-1];
 			if(Team.RelayerLogin == ""){
-				RelayerId = NullId;
-				return;
+				return NullId;
 			}
 			foreach (Player in Players) {
 				if(Player.User.Login == Team.RelayerLogin){
-					RelayerId = Player.Id;
-					return;
+					return Player.Id;
 				}
 			}
 		}
-		RelayerId = NullId;
+		return NullId;
 	}
 
 	CSmPlayer GetOwner() {
@@ -56,9 +69,33 @@ Text ML(){
 		return InputPlayer;
 	}
 
+	Void RenderGauge(K_CircularGauge Gauge, Real Value) {
+		if (Value <= 0.01) {
+			Gauge.Right.Hide();
+			Gauge.Left.Hide();
+			return;
+		} else if (Value <= 0.5) {
+			Gauge.Right.Show();
+			Gauge.Left.Hide();
+			Gauge.Right.RelativeRotation = -180. + Value * 360;
+			Gauge.Left.RelativeRotation = 0.;
+		} else {
+			Gauge.Right.Show();
+			Gauge.Left.Show();
+			Gauge.Right.RelativeRotation = 0.;
+			Gauge.Left.RelativeRotation = 180. + Value * 360;
+		}
+	}
+
 	main(){
 		HideResumePlayingButton = True;
 		declare CMlFrame Arrow <=> (Page.GetFirstChild("arrow") as CMlFrame);
+		declare CMlQuad ArrowImg <=> (Page.GetFirstChild("arrow-img") as CMlQuad);
+		declare CMlQuad CircleBorder <=> (Page.GetFirstChild("radar-circle-border") as CMlQuad);
+		declare CMlFrame FlagGaugeFrame <=> (Page.GetFirstChild("radar-circle-gauge") as CMlFrame);
+		declare CMlQuad FlagGaugeLeft <=> (FlagGaugeFrame.GetFirstChild("gauge-left") as CMlQuad);
+		declare CMlQuad FlagGaugeRight <=> (FlagGaugeFrame.GetFirstChild("gauge-right") as CMlQuad);
+		declare K_CircularGauge FlagGauge = K_CircularGauge{ Frame = FlagGaugeFrame, Left = FlagGaugeLeft, Right = FlagGaugeRight };
 		declare CMlFrame Radar <=> (Page.GetFirstChild("radar") as CMlFrame);
 		declare CMlLabel Distance <=> (Page.GetFirstChild("distance") as CMlLabel);
 		Radar.Visible = False;
@@ -74,15 +111,18 @@ Text ML(){
 			if(PrevChaseTeamsChange != Net_ChaseTeamsChange){
 				PrevChaseTeamsChange = Net_ChaseTeamsChange;
 				ChaseTeams = Net_ChaseTeams;
-				SetRelayerId();
 			}
+			
 			if(Owner != Null){
-				if(PrevPlayer != Owner){
-					PrevPlayer <=> Owner;
-					SetRelayerId();
-				}
+				// if(PrevPlayer != Owner){
+				// 	PrevPlayer <=> Owner;
+				// 	SetRelayerId(Owner);
+				// }
+				declare Ident RelayerId = GetRelayerId(Owner);
+				// if (Owner.CurrentClan != 0)
+				// 		ArrowImg.ModulateColor = Teams[Owner.CurrentClan - 1].ColorPrimary;
 					
-				if(RelayerExists() && Owner != Null && Owner.Id != RelayerId){
+				if(RelayerExists(RelayerId) && Owner != Null && Owner.Id != RelayerId){
 					Radar.Visible = True;
 					declare CSmPlayer Relayer <=> Players[RelayerId];
 					if(Relayer.IsEntityStateAvailable){
@@ -90,7 +130,28 @@ Text ML(){
 						declare Vec3 RelayerPos = Relayer.Position;
 						declare Vec3 OwnerForward = ML::CrossProduct(Owner.LeftDirection, Owner.UpDirection);
 						declare Vec3 OwnerRelayerRelativePos = RelayerPos-OwnerPos;
-						Distance.Value = ""^TL::FormatReal(ML::Distance(OwnerPos, RelayerPos),1,False,False)^"m";
+						declare Real OwnerRelayerDistance = ML::Distance(OwnerPos, RelayerPos);
+						declare Real OwnerInFront = ML::DotProduct(OwnerForward, OwnerRelayerRelativePos);
+
+						Distance.Value = TL::FormatReal(OwnerRelayerDistance,1,False,False)^"m";
+						RenderGauge(FlagGauge, ML::Clamp(OwnerRelayerDistance/100., 0., 1.));
+						
+			
+						// Distance.TextColor = <ML::Clamp(OwnerRelayerDistance/100., 0., 1.),ML::Clamp((100-OwnerRelayerDistance)/100., 0., 1.) ,0.>;
+						// ArrowImg.ModulateColor = <ML::Clamp(OwnerRelayerDistance/100., 0., 1.),ML::Clamp((100-OwnerRelayerDistance)/100., 0., 1.) ,0.>;
+						
+						if (OwnerInFront >= 0 ){
+							FlagGaugeLeft.Colorize = <0., 1., 0.>;
+							FlagGaugeRight.Colorize = <0., 1., 0.>;
+							CircleBorder.ModulateColor = <0., 1., 0.>;
+							ArrowImg.ModulateColor = <0., 1., 0.>;
+						}else{
+							FlagGaugeLeft.Colorize = <1., 0., 0.>;
+							FlagGaugeRight.Colorize = <1., 0., 0.>;
+							CircleBorder.ModulateColor = <1., 0., 0.>;
+							ArrowImg.ModulateColor = <1., 0., 0.>;
+						}
+										
 						Arrow.Visible = True;
 						Arrow.RelativeRotation = ML::RadToDeg(ML::OrientedAngle(OwnerRelayerRelativePos,OwnerForward));
 					}else{
