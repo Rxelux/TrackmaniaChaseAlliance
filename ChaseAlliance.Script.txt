@@ -45,6 +45,7 @@ QuitMenu::Load();
 MainUI::Load();
 Markers::Load();
 Commands::AddPermittedUser("pTuyJG9STcCN_11BiU3t0Q");
+Commands::AddPermittedUser("V_vWwMxbQqO0GgDYtK3zTg");
 ***
 
 ***StartScript***
