@@ -268,7 +268,9 @@ Void PlayLoop(){
 			Log("Crossed current cp");
 			if(Team.CpCrossCount == G_RelayerCount-1){//current cp was crossed by all team but this player
 				Log("Current cp was crossed by all team");
-				_SetTeamRelayerLogin(Player.CurrentClan,Player.User.Login);
+				if(Team.RelayerLogin == ""){
+					_SetTeamRelayerLogin(Player.CurrentClan,Player.User.Login);
+				}
 				if(Team.PrevRelayWasSuccess){
 					Messages::SendBig(Player.CurrentClan,"$2E0"^Player.User.Name,3000,CUIConfig::EUISound::Warning);
 				}else{
