@@ -44,7 +44,8 @@ Text ML(){
 
 Void AttachMarkers() {
 	declare Text[] MarkerLogins;
-	foreach (Marker in UIManager.UIAll.Markers) {
+	declare CUIConfigMarker[] CMarkers = UIManager.UIAll.Markers;
+	foreach (Marker in CMarkers) {
 		if(Marker.Type == CUIConfigMarker::EAnchorType::Player){
 			UIManager.UIAll.RemoveMarker(Marker);
 		}
