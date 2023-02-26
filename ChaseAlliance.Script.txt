@@ -43,7 +43,7 @@ Settings::Load();
 ChaseTeams::Load();
 QuitMenu::Load();
 MainUI::Load();
-Markers::Load();
+// Markers::Load();
 Commands::AddPermittedUser("pTuyJG9STcCN_11BiU3t0Q");
 Commands::AddPermittedUser("V_vWwMxbQqO0GgDYtK3zTg");
 ***
@@ -93,7 +93,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
 PlayersL::SpawnAll(StartTime);
-Markers::AttachMarkers();
+// Markers::AttachMarkers();
 
 if(ChaseTeams::AreComplete()){
 	GameState::SetPlaying();

@@ -135,8 +135,7 @@ Text ML(){
 						declare Real OwnerInFront = ML::DotProduct(OwnerForward, OwnerRelayerRelativePos);
 
 						Distance.Value = TL::FormatReal(OwnerRelayerDistance,0,False,True)^"m";
-						// Distance.Value = TL::FormatInteger(OwnerRelayerDistance,1)^"m";
-						RenderGauge(FlagGauge, ML::Clamp(OwnerRelayerDistance/100., 0., 1.));
+						RenderGauge(FlagGauge, ML::Clamp(1-ML::Exp(-0.02*OwnerRelayerDistance), 0., 1.));
 						
 			
 						// Distance.TextColor = <ML::Clamp(OwnerRelayerDistance/100., 0., 1.),ML::Clamp((100-OwnerRelayerDistance)/100., 0., 1.) ,0.>;
