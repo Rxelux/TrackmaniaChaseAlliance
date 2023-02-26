@@ -243,8 +243,8 @@ Void PlayLoop(){
 				_SetTeamRelayerLogin(Player.CurrentClan,"");//reset relayer
 				_SetTeamPrevRelayWasSuccess(Player.CurrentClan,True);
 				Messages::SendBig(Player.CurrentClan,"$2E0Relay Success",3000,CUIConfig::EUISound::ScoreProgress);
-				Messages::SendStatus(Player.CurrentClan,"",0,CUIConfig::EUISound::Silence);
-				Messages::SendStatus(Player,"Wait for players",3600000,CUIConfig::EUISound::Silence);
+				// Messages::SendStatus(Player.CurrentClan,"",0,CUIConfig::EUISound::Silence);
+				// Messages::SendStatus(Player,"Wait for players",3600000,CUIConfig::EUISound::Silence);
 
 			}else{
 				Log("Player was Not relayer");
@@ -253,11 +253,11 @@ Void PlayLoop(){
 					Log("Relay failed");
 					_SetTeamPrevRelayWasSuccess(Player.CurrentClan,False);
 					Messages::SendBig(Player.CurrentClan,"$E02Relay Failed",3000,CUIConfig::EUISound::FirstHit);
-					Messages::SendStatus(Player,"$E02Wait for players",3600000,CUIConfig::EUISound::Silence);
+					Messages::SendStatus(Player,"$E02Wait for players",3000,CUIConfig::EUISound::Silence);
 				}else{
 					//first cp crossed
 					Log("First cp crossed");
-					Messages::SendStatus(Player,"Wait for players",3600000,CUIConfig::EUISound::Silence);
+					// Messages::SendStatus(Player,"Wait for players",3600000,CUIConfig::EUISound::Silence);
 					_SetTeamRelayStarted(Player.CurrentClan, True);
 				}
 			}
@@ -276,15 +276,17 @@ Void PlayLoop(){
 					}else{
 						Messages::SendBig(Player.CurrentClan,"$E02"^Player.User.Name,3000,CUIConfig::EUISound::Warning);
 					}
-					Messages::SendStatus(Player.CurrentClan,"Wait for "^Player.User.Name,3600000,CUIConfig::EUISound::Silence);
-					Messages::SendStatus(Player,"$2E0Go Go Go!!!",0,CUIConfig::EUISound::Silence);
+					Messages::SendStatus(Player.CurrentClan,"Next Checkpoint",3000,CUIConfig::EUISound::Silence);
+					// Messages::SendStatus(Player.CurrentClan,"Wait for "^Player.User.Name,3600000,CUIConfig::EUISound::Silence);
+					// Messages::SendStatus(Player,"$2E0Go Go Go!!!",0,CUIConfig::EUISound::Silence);
 				}
 				else{
 					declare CSmPlayer RelayerPlayer = GetPlayer(Team.RelayerLogin);
 					if (RelayerPlayer != Null){
 						Messages::SendBig(Player.CurrentClan,"$E02"^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Warning);
-						Messages::SendStatus(Player.CurrentClan,"Wait for "^RelayerPlayer.User.Name,3600000,CUIConfig::EUISound::Silence);
-						Messages::SendStatus(RelayerPlayer,"$2E0Go Go Go!!!",0,CUIConfig::EUISound::Silence);
+						Messages::SendStatus(Player.CurrentClan,"Next Checkpoint",3000,CUIConfig::EUISound::Silence);
+						// Messages::SendStatus(Player.CurrentClan,"Wait for "^RelayerPlayer.User.Name,3600000,CUIConfig::EUISound::Silence);
+						// Messages::SendStatus(RelayerPlayer,"$2E0Go Go Go!!!",0,CUIConfig::EUISound::Silence);
 					}else{
 						Error("RelayerPlayer not found for "^Team.RelayerLogin);
 					}
