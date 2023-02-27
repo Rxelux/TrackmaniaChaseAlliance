@@ -12,16 +12,17 @@ Text ML(){
 		<quad z-index="0" size="20 20" halign="center" valign="center" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" modulatecolor="000000FF" opacity="0.8" />
 		<quad id="radar-circle-border" z-index="0" size="20 20" halign="center" valign="center" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" />
 		<frame id="radar-circle-gauge" rot="180" scale="1.22" halign="center" valign="center">
-        <frame size="10 20" pos="5 0" halign="center" valign="center">
-            <quad id="gauge-left" pos="-5 0"  z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" hidden="0" />
-        </frame>
-        <frame size="10 20" pos="-5 0" halign="center" valign="center">
-            <quad id="gauge-right" pos="5 0" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="180" hidden="0"/>
-        </frame>
+			<frame size="10 20" pos="5 0" halign="center" valign="center">
+				<quad id="gauge-left" pos="-5 0"  z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" hidden="0" />
+			</frame>
+			<frame size="10 20" pos="-5 0" halign="center" valign="center">
+				<quad id="gauge-right" pos="5 0" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="180" hidden="0"/>
+			</frame>
     	</frame>
 		<label id="distance" size="17 5" text="myLabel" halign="center" valign="center2" textfont="RajdhaniMono" textsize="4" />
 		<frame id="arrow">
-			<quad id="arrow-img" pos="0 10" z-index="0" size="10 10"  valign="bottom" halign="center" image="file://Media/Painter/Stencils/05-Triangle0/Brush.tga" modulatecolor="000000FF" />
+			<!-- <quad id="arrow-img" pos="0 10" z-index="0" size="10 10"  valign="bottom" halign="center" image="file://Media/Manialinks/Nadeo/TrackMania/Ingame/Arrow2.dds" colorize="FFF" /> -->
+			<quad id="arrow-img" pos="0 10" z-index="0" size="10 6"  valign="bottom" halign="center" image="file://Media/Painter/Stencils/05-Triangle0/Brush.tga" modulatecolor="000000FF" />
 			<!-- <quad id="arrow-img" rot="-90" pos="4 15" z-index="0" size="7 7"  valign="bottom" halign="center" image="file://Media/Painter/Stencils/23-Arrow1/Brush.tga" modulatecolor="000000FF" /> -->
 		</frame>
 	</frame>
@@ -210,7 +211,8 @@ Text ML(){
 						declare Real OwnerRelayerDistance = ML::Distance(OwnerPos, RelayerPos);
 						declare Real OwnerInFront = ML::DotProduct(OwnerForward, OwnerRelayerRelativePos);
 
-						Distance.Value = TL::FormatReal(OwnerRelayerDistance,1,False,False)^"m";
+						Distance.Value = TL::FormatReal(OwnerRelayerDistance,0,False,True)^"m";
+						// Distance.Value = TL::FormatInteger(OwnerRelayerDistance,1)^"m";
 						RenderGauge(FlagGauge, ML::Clamp(OwnerRelayerDistance/100., 0., 1.));
 						
 			
