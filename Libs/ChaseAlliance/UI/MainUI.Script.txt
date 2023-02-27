@@ -27,7 +27,7 @@ Text ML(){
 		</frame>
 	</frame>
 	<label id="status-message" pos="0 -70" size="50 5" text="myLabel" halign="center" valign="center" textsize="4" style="TextRaceMessageBig" />
-	<label id="debug" pos="0 20" size="500 5" text="myLabel" halign="center" valign="center2" textfont="RajdhaniMono" textsize="4" />
+	<!-- <label id="debug" pos="0 20" size="500 5" text="myLabel" halign="center" valign="center2" textfont="RajdhaniMono" textsize="4" /> -->
 	<script><!--
 	#Include "MathLib" as ML
 	#Include "TextLib" as TL
@@ -68,38 +68,29 @@ Text ML(){
 	}
 
 	Integer GetCurrentCp(CSmPlayer _Owner){
-		if(_Owner != Null){
-			declare Integer Clan = _Owner.CurrentClan;
-			if(ChaseTeams.count != 2){
-				return -1;
-			}
-			declare K_ChaseTeams Team = ChaseTeams[Clan-1];
-			return Team.CurrentCp;
+		declare Integer Clan = _Owner.CurrentClan;
+		if(ChaseTeams.count != 2){
+			return -1;
 		}
-		return -1;
+		declare K_ChaseTeams Team = ChaseTeams[Clan-1];
+		return Team.CurrentCp;
 	}
 
 	Integer GetRelayPoints(CSmPlayer _Owner){
-		if(_Owner != Null){
-			declare Integer Clan = _Owner.CurrentClan;
-			if(ChaseTeams.count != 2){
-				return -1;
-			}
-			declare K_ChaseTeams Team = ChaseTeams[Clan-1];
-			return Team.RelayPoints;
+		declare Integer Clan = _Owner.CurrentClan;
+		if(ChaseTeams.count != 2){
+			return -1;
 		}
-		return -1;
+		declare K_ChaseTeams Team = ChaseTeams[Clan-1];
+		return Team.RelayPoints;
 	}
 	Integer GetCpCrossCount(CSmPlayer _Owner){
-		if(_Owner != Null){
-			declare Integer Clan = _Owner.CurrentClan;
-			if(ChaseTeams.count != 2){
-				return -1;
-			}
-			declare K_ChaseTeams Team = ChaseTeams[Clan-1];
-			return Team.CpCrossCount;
+		declare Integer Clan = _Owner.CurrentClan;
+		if(ChaseTeams.count != 2){
+			return -1;
 		}
-		return -1;
+		declare K_ChaseTeams Team = ChaseTeams[Clan-1];
+		return Team.CpCrossCount;
 	}
 	
 
@@ -139,7 +130,7 @@ Text ML(){
 		declare CMlLabel StatusMessage <=> (Page.GetFirstChild("status-message") as CMlLabel);
 		declare CMlFrame Radar <=> (Page.GetFirstChild("radar") as CMlFrame);
 		declare CMlLabel Distance <=> (Page.GetFirstChild("distance") as CMlLabel);
-		declare CMlLabel Debug <=> (Page.GetFirstChild("debug") as CMlLabel);
+		// declare CMlLabel Debug <=> (Page.GetFirstChild("debug") as CMlLabel);
 		Radar.Visible = False;
 
 		declare netread Integer Net_ChaseTeamsChange for Teams[0];
@@ -165,14 +156,9 @@ Text ML(){
 					// }
 				declare Ident RelayerId = GetRelayerId(Owner);
 				
-				
-				// if (Owner.CurrentClan != 0)
-				// 		ArrowImg.ModulateColor = Teams[Owner.CurrentClan - 1].ColorPrimary;
 				StatusMessage.Value = "$2E0Go Go Go!!!"; // Message at start
-				// if (){
-				// }else{
-				// 	StatusMessage.Value = "$E02Wait for $FFF"^RelayerId;
-				// }
+				// StatusMessage.Value = "$2E0Go!"; // Message at start
+				// StatusMessage.Value = ""; // Message at start
 
 				declare Integer TeamCpCrossCount = GetCpCrossCount(Owner);
 				declare Integer TeamRelayPoints = GetRelayPoints(Owner);
@@ -180,23 +166,23 @@ Text ML(){
 				declare Integer OwnerCpCrossCount = Owner.RaceWaypointTimes.count;
 
 
-				Debug.Value = "$E02Debug : $FFF"^RelayerId^" "^OwnerCpCrossCount^" "^TeamCpCrossCount^" "^TeamRelayPoints^" "^TeamCurrentCp^" "^CpFailCompt^" "^PreviousRelayer;
+				// Debug.Value = "$E02Debug : $FFF"^RelayerId^" "^OwnerCpCrossCount^" "^TeamCpCrossCount^" "^TeamRelayPoints^" "^TeamCurrentCp^" "^CpFailCompt^" "^PreviousRelayer;
 				
-				if (OwnerCpCrossCount == 1 && TeamCpCrossCount == 0 && PreviousRelayer == NullId ){
-					PreviousRelayer = Owner.Id;
-				}
 				if (OwnerPreviousCpCrossCount != OwnerCpCrossCount && OwnerCpCrossCount > TeamCurrentCp){
 					CpFailCompt += 1;
-					PreviousRelayer = NullId;
 				}
 				if (CpFailCompt == 0 && !RelayerExists(RelayerId) && OwnerCpCrossCount >= TeamCurrentCp || OwnerCpCrossCount > TeamCurrentCp && CpFailCompt == 0){
 					StatusMessage.Value = "Wait for players";
+					CpFailCompt = 0;
 				}
 				else if (CpFailCompt >= 1 && !RelayerExists(RelayerId) && OwnerCpCrossCount >= TeamCurrentCp || OwnerCpCrossCount > TeamCurrentCp && CpFailCompt >= 1 ){
-					StatusMessage.Value = "$E02Wait for players";	
+					StatusMessage.Value = "$E02Wait for players";
+					// StatusMessage.TextSizeReal = 5.;
 				}
+				
 				if (RelayerExists(RelayerId))
 					PreviousRelayer = RelayerId;
+
 				if(RelayerExists(RelayerId) && Owner != Null && Owner.Id != RelayerId){
 					Radar.Visible = True;
 					declare CSmPlayer Relayer <=> Players[RelayerId];
@@ -239,11 +225,17 @@ Text ML(){
 					}
 				}else {
 					Radar.Visible = False;
-					if(OwnerCpCrossCount < TeamCurrentCp || RelayerExists(RelayerId) || TeamCpCrossCount == 1 && PreviousRelayer == NullId )
+					// If this is used, this adds a small delay before wait players message after hcrossing  cp as a Relayer
+					/*
+					if(OwnerCpCrossCount < TeamCurrentCp && CpFailCompt != -1 || RelayerExists(RelayerId))
 					{
 						StatusMessage.Value = "$2E0Go Go Go!!!";
-						CpFailCompt = 0;
+						if (OwnerCpCrossCount < TeamCurrentCp)
+							CpFailCompt = -1;
+						else
+							CpFailCompt = 0;
 					}
+					*/
 				}
 				OwnerPreviousCpCrossCount = OwnerCpCrossCount;
 			}else{
