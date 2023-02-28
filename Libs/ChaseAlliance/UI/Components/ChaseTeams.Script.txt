@@ -9,6 +9,7 @@ Text _Directives(){
 	Integer RoundPoints;
 	Integer RelayPoints;
 	Text RelayerLogin;
+	Text PrevRelayerLogin;
 	Integer CurrentCp;
 	Integer CpCrossCount;
 	Boolean RelayStarted;
@@ -25,23 +26,15 @@ declare K_{{{C}}}[] G_{{{C}}};
 
 Text _Functions(){
 	return """//!
-CSmPlayer {{{C}}}_GetRelayer(CSmPlayer _Player){
+K_{{{C}}} {{{C}}}_GetTeam(CSmPlayer _Player){
 	if(_Player != Null){
 		declare Integer Clan = _Player.CurrentClan;
-		if(G_{{{C}}}.count != 2){
-			return Null;
+		if(_Player.CurrentClan == 0 || _Player.CurrentClan > G_{{{C}}}.count){
+			return K_{{{C}}}{};
 		}
-		declare K_{{{C}}} Team = G_{{{C}}}[Clan-1];
-		if(Team.RelayerLogin == ""){
-			return Null;
-		}
-		foreach (Player in Players) {
-			if(Player.User.Login == Team.RelayerLogin){
-				return Player;
-			}
-		}
+		return G_{{{C}}}[Clan-1];
 	}
-	return Null;
+	return K_{{{C}}}{};
 }
 """;
 }
