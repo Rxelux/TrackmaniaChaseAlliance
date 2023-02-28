@@ -8,6 +8,7 @@
 #Include "ChaseAlliance/Libs/Common/UI/Components/RaceTimer.Script.txt" as RaceTimer
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/RelayStatus.Script.txt" as RelayStatus
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 
@@ -23,6 +24,7 @@ Text _Model(){
 		data-fill-color="{{{RadarFillColor}}}" data-front-color="{{{RadarFrontColor}}}" data-back-color="{{{RadarBackColor}}}"/>
 	<frameinstance modelid="{{{LapCounter::C}}}" id="lap-counter" pos="135 82"/>
 	<frameinstance modelid="{{{RaceTimer::C}}}" id="race-timer" pos="0 -82"/>
+	<frameinstance modelid="{{{RelayStatus::C}}}" id="relay-status" pos="0 -68"/>
 </framemodel>
 """;
 }
@@ -36,12 +38,17 @@ Text _Labels(){
 	Radar.Root.Visible = False;
 	declare K_{{{LapCounter::C}}} LapCounter = {{{LapCounter::C}}}_Get(Page.MainFrame,"lap-counter");
 	declare K_{{{RaceTimer::C}}} RaceTimer = {{{RaceTimer::C}}}_Get(Page.MainFrame,"race-timer");
+	declare K_{{{RelayStatus::C}}} RelayStatus = {{{RelayStatus::C}}}_Get(Page.MainFrame,"relay-status");
 ***
 
 ***Yield***
 ***
 	declare CSmPlayer Owner <=> GetOwner();
-	{{{Radar::C}}}_Update(Radar,Owner,{{{ChaseTeams::C}}}_GetRelayer(Owner));
+	declare K_{{{ChaseTeams::C}}} Team = {{{ChaseTeams::C}}}_GetTeam(Owner);
+	declare CSmPlayer Relayer <=> GetPlayer(Team.RelayerLogin);
+
+	{{{Radar::C}}}_Update(Radar,Owner,Relayer);
+	{{{RelayStatus::C}}}_Update(RelayStatus,Owner,Relayer,Team.RelayStarted,Team.PrevRelayWasSuccess,Team.CurrentCp,Team.PrevRelayerLogin);
 	{{{LapCounter::C}}}_Update(LapCounter,Owner,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer,Owner);
 ***
@@ -64,7 +71,8 @@ Void Load() {
 	RaceTimer::Load();
 	ChaseTeams::Load();
 	Settings::Load();
-	Manialink::CreateComponent(C,[Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C,"GetOwner"],_Model(),"","","",_Labels());
+	RelayStatus::Load();
+	Manialink::CreateComponent(C,[RelayStatus::C,Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C,"GetOwner","GetPlayer"],_Model(),"","","",_Labels());
 	Layers::Load();
 	Layers::Create(C,Manialink::CreateManialink(C));
 	Layers::SetType(C,CUILayer::EUILayerType::Normal);

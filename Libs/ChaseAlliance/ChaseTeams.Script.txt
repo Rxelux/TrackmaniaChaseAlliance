@@ -17,6 +17,7 @@
 	Integer RoundPoints;
 	Integer RelayPoints;
 	Text RelayerLogin;
+	Text PrevRelayerLogin;
 	Integer CurrentCp;
 	Integer CpCrossCount;
 	Boolean RelayStarted;
@@ -107,6 +108,11 @@ Void _SetTeamCpCrossCount(Integer _Clan,Integer _Value){
 
 Void _SetTeamRelayerLogin(Integer _Clan,Text _Value){
 	G_ChaseTeams[_Clan-1].RelayerLogin = _Value;
+	_ToNet();
+}
+
+Void _SetTeamPrevRelayerLogin(Integer _Clan,Text _Value){
+	G_ChaseTeams[_Clan-1].PrevRelayerLogin = _Value;
 	_ToNet();
 }
 
@@ -230,6 +236,7 @@ Void PlayLoop(){
 				_IncrementTeamRelayPoint(Player.CurrentClan);
 				_SetTeamRelayerLogin(Player.CurrentClan,"");//reset relayer
 				_SetTeamPrevRelayWasSuccess(Player.CurrentClan,True);
+				_SetTeamPrevRelayerLogin(Player.CurrentClan,Player.User.Login);
 				Messages::SendBig(Player.CurrentClan,"$2E0Relay Success",3000,CUIConfig::EUISound::ScoreProgress);
 				Messages::SendStatus(Player.CurrentClan,"",0,CUIConfig::EUISound::Silence);
 				Messages::SendStatus(Player,"Wait for players",3600000,CUIConfig::EUISound::Silence);

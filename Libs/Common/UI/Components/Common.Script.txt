@@ -9,6 +9,19 @@ CSmPlayer GetOwner() {
 """;
 }
 
+Text _GetPlayer(){
+	return """//!
+CSmPlayer GetPlayer(Text _Login){
+	foreach (Player in Players) {
+		if(Player.User.Login == _Login){
+			return Player;
+		}
+	}
+	return Null;
+}
+""";
+}
+
 Text _GetDataText(){
 	return """//!
 Text GetData(CMlControl _Control,Text _Name,Text _Def){
@@ -75,6 +88,7 @@ Void Load() {
 	G_Loaded = True;
 	Manialink::Load();
 	Manialink::CreateComponent("GetOwner",[],"","","",_GetOwner(),"");
+	Manialink::CreateComponent("GetPlayer",[],"","","",_GetPlayer(),"");
 	Manialink::CreateComponent("GetDataText",[],"","","",_GetDataText(),"");
 	Manialink::CreateComponent("GetDataInteger",[],"","","",_GetDataInteger(),"");
 	Manialink::CreateComponent("GetDataReal",[],"","","",_GetDataReal(),"");
