@@ -30,7 +30,7 @@
 ***StartServer***
 ***
 Log("StartServer");
-Env::ToDev();
+Env::ToTest();
 Commands::Load();
 UsersL::Load();
 Events::Load();
@@ -99,6 +99,7 @@ if(ChaseTeams::AreComplete()){
 	GameState::SetPlaying();
 }else{
 	GameState::SetWaiting();
+	GameState::SendWaitingNotice();
 }
 Warn(GameState::GetStateText());
 // UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, "test");
@@ -116,6 +117,7 @@ if(GameState::IsWaiting()){
 	PlayersL::PlayLoop();
 	if(ChaseTeams::AreComplete()){
 		GameLoop::EndRound();
+		GameState::SendPlayingNotice();
 	}
 }
 ***

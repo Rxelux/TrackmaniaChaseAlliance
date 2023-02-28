@@ -1,32 +1,9 @@
 //#RequireContext CSmMode
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
-#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/Common/Messages.Script.txt" as Messages
 #Include "ChaseAlliance/Libs/ModeBase/GameLoopState.Script.txt" as GameLoop
-
-#Const C_K_ChaseTeams """//!
-#Struct K_ChaseTeams {
-	Integer MapPoints;
-	Integer RoundPoints;
-	Integer RelayPoints;
-	Text RelayerLogin;
-	Integer CurrentCp;
-	Integer CpCrossCount;
-	Boolean RelayStarted;
-	Boolean PrevRelayWasSuccess;
-}
-"""
-
-#Struct K_ChaseTeams {
-	Integer MapPoints;
-	Integer RoundPoints;
-	Integer RelayPoints;
-	Text RelayerLogin;
-	Integer CurrentCp;
-	Integer CpCrossCount;
-	Boolean RelayStarted;
-	Boolean PrevRelayWasSuccess;
-}
+#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 
 #Struct K_SME {
 	Integer EventId;
@@ -35,11 +12,22 @@
 	Integer ReceivedAt;
 }
 
+#Struct K_ChaseTeams {
+	Integer MapPoints;
+	Integer RoundPoints;
+	Integer RelayPoints;
+	Text RelayerLogin;
+	Integer CurrentCp;
+	Integer CpCrossCount;
+	Boolean RelayStarted;
+	Boolean PrevRelayWasSuccess;
+}
+
+declare K_ChaseTeams[] G_ChaseTeams;
+
 declare Integer G_RelayerCount;
 declare Integer G_RelayGap;
 declare Integer G_RelaySortDelay;
-
-declare K_ChaseTeams[] G_ChaseTeams;
 
 //SME Sorted Mode Event
 declare Integer G_SMEId;
@@ -308,6 +296,8 @@ Void Unload() {
 	G_Loaded = False;
 	G_ChaseTeams.add(K_ChaseTeams{});
 	G_ChaseTeams.add(K_ChaseTeams{});
+	Teams[0].ColorPrimary = Colors::C_Team0Primary;
+	Teams[1].ColorPrimary = Colors::C_Team1Primary;
 	G_SMEId = 0;
 	G_RelayerCount = 3;
 	G_RelayGap = 3;

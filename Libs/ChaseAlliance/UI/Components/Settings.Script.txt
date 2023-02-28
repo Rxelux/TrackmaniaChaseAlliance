@@ -1,0 +1,52 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+
+#Const C "Settings"
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}} {
+	Integer LapCount;
+	Integer RelayerCount;
+	Integer RelayGap;
+	Integer RelaySortDelay;
+}
+""";
+}
+
+Text _Variables(){
+	return """//!
+declare K_{{{C}}} G_{{{C}}};
+""";
+}
+
+Text _Labels(){
+	return """//!
+***Init***
+***
+	declare netread Integer Net_{{{C}}}Change for Teams[0];
+	declare Integer Prev{{{C}}}Change;
+	declare netread K_{{{C}}} Net_{{{C}}} for Teams[0];
+***
+
+***Yield***
+***
+	if(Prev{{{C}}}Change != Net_{{{C}}}Change){
+		Prev{{{C}}}Change = Net_{{{C}}}Change;
+		G_{{{C}}} = Net_{{{C}}};
+	}
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],"",_Directives(),_Variables(),"",_Labels());
+}

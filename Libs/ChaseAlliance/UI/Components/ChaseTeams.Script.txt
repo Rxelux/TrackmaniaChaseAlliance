@@ -1,0 +1,79 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+
+#Const C "ChaseTeams"
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}} {
+	Integer MapPoints;
+	Integer RoundPoints;
+	Integer RelayPoints;
+	Text RelayerLogin;
+	Integer CurrentCp;
+	Integer CpCrossCount;
+	Boolean RelayStarted;
+	Boolean PrevRelayWasSuccess;
+}
+""";
+}
+
+Text _Variables(){
+	return """//!
+declare K_{{{C}}}[] G_{{{C}}};
+""";
+}
+
+Text _Functions(){
+	return """//!
+CSmPlayer {{{C}}}_GetRelayer(CSmPlayer _Player){
+	if(_Player != Null){
+		declare Integer Clan = _Player.CurrentClan;
+		if(G_{{{C}}}.count != 2){
+			return Null;
+		}
+		declare K_{{{C}}} Team = G_{{{C}}}[Clan-1];
+		if(Team.RelayerLogin == ""){
+			return Null;
+		}
+		foreach (Player in Players) {
+			if(Player.User.Login == Team.RelayerLogin){
+				return Player;
+			}
+		}
+	}
+	return Null;
+}
+""";
+}
+
+Text _Labels(){
+	return """//!
+***Init***
+***
+	declare netread Integer Net_{{{C}}}Change for Teams[0];
+	declare Integer Prev{{{C}}}Change;
+	declare netread K_{{{C}}}[] Net_{{{C}}} for Teams[0];
+***
+
+***Yield***
+***
+	if(Prev{{{C}}}Change != Net_{{{C}}}Change){
+		Prev{{{C}}}Change = Net_{{{C}}}Change;
+		G_{{{C}}} = Net_{{{C}}};
+	}
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],"",_Directives(),_Variables(),_Functions(),_Labels());
+}

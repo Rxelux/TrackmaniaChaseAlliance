@@ -1,0 +1,58 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "TextLib" as TL
+
+#Const C "LapCounter"
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" {{{Align::CC}}}>
+	<label id="lap-prefix-label" pos="-1 1.2" text="Lap" textfont="RajdhaniMono" textsize="6" {{{Align::RC}}}/>
+	<label id="lap-label" textfont="RajdhaniMono" textsize="12" {{{Align::LC}}}/>
+</framemodel>
+""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	CMlLabel LapLabel;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlLabel LapLabel <=> (Root.GetFirstChild("lap-label") as CMlLabel);
+	return K_{{{C}}}{
+		Root = Root,
+		LapLabel = LapLabel
+	};
+}
+
+Void {{{C}}}_Update(K_{{{C}}} _LapCounter,CSmPlayer _Player,Integer _Total){
+	if(_Player != Null){
+		_LapCounter.LapLabel.Value = ""^_Player.CurrentLapNumber+1^"/"^_Total;
+		_LapCounter.Root.Visible = True;
+	}else{
+		_LapCounter.Root.Visible = False;
+	}
+}
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],_Model(),_Directives(),"",_Functions(),"");
+}

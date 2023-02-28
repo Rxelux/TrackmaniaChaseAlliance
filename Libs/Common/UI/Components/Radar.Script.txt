@@ -1,0 +1,123 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/Common/UI/Components/Common.Script.txt" as Common
+#Include "ChaseAlliance/Libs/Common/UI/Components/CircularGauge.Script.txt" as CGauge
+
+#Const C "Radar"
+#Const C_Circle """image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" """
+#Const C_CircleBorder """image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" """
+#Const C_Arrow """image="file://Media/Painter/Stencils/05-Triangle0/Brush.tga" """
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" {{{Align::CC}}}>
+	<quad id="circular-bg" size="20 20" {{{Align::CC}}} {{{C_Circle}}} opacity="0.9" />
+	<quad id="circular-border" size="20 20" {{{Align::CC}}} {{{C_CircleBorder}}} />
+	<frameinstance modelid="{{{CGauge::C}}}" id="distance-gauge" rot="180" scale="0.98" />
+	<label id="distance-label" size="17 5" {{{Align::C2}}} textfont="RajdhaniMono" textsize="4" />
+	<frame id="arrow-pivot">
+		<quad id="arrow-head" pos="0 10" size="10 6" {{{Align::CB}}} {{{C_Arrow}}} />
+	</frame>
+</framemodel>""";
+}
+
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	CMlQuad CircularBorder;
+	K_{{{CGauge::C}}} DistanceGauge;
+	CMlLabel DistanceLabel;
+	CMlFrame ArrowPivot;
+	CMlQuad ArrowHead;
+	Vec3 FrontColor;
+	Vec3 BackColor;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlQuad CircularBorder <=> (Root.GetFirstChild("circular-border") as CMlQuad);
+	declare K_{{{CGauge::C}}} DistanceGauge = {{{CGauge::C}}}_Get(Root,"distance-gauge");
+	declare CMlLabel DistanceLabel <=> (Root.GetFirstChild("distance-label") as CMlLabel);
+	declare CMlFrame ArrowPivot <=> (Root.GetFirstChild("arrow-pivot") as CMlFrame);
+	declare CMlQuad ArrowHead <=> (ArrowPivot.GetFirstChild("arrow-head") as CMlQuad);
+	declare Vec3 FrontColor = GetData(Root,"front-color",<0., 1., 0.>);
+	declare Vec3 BackColor = GetData(Root,"back-color",<1., 0., 0.>);
+
+	//init only never changes after
+	declare CMlQuad CircularBG <=> (Root.GetFirstChild("circular-bg") as CMlQuad);
+	CircularBG.ModulateColor = GetData(Root,"fill-color",<0., 0., 0.>);
+
+	return K_{{{C}}}{
+		Root = Root,
+		CircularBorder = CircularBorder,
+		DistanceGauge = DistanceGauge,
+		DistanceLabel = DistanceLabel,
+		ArrowPivot = ArrowPivot,
+		ArrowHead = ArrowHead,
+		FrontColor = FrontColor,
+		BackColor = BackColor
+	};
+}
+
+Void {{{C}}}_Update(K_{{{C}}} _Radar,CSmPlayer _Player, CSmPlayer _Target) {
+
+	if(_Player != Null && _Target != Null && _Player != _Target){
+		_Radar.Root.Visible = True;
+
+		if(_Target.IsEntityStateAvailable){
+			declare Vec3 PlayerPos = _Player.Position;
+			declare Vec3 TargetPos = _Target.Position;
+			declare Vec3 PlayerForward = ML::CrossProduct(_Player.LeftDirection, _Player.UpDirection);
+			declare Vec3 TargetRelativePos = TargetPos-PlayerPos;
+			declare Real PlayerTargetDistance = ML::Distance(PlayerPos, TargetPos);
+			declare Real PlayerInFront = ML::DotProduct(PlayerForward, TargetRelativePos);
+
+			_Radar.DistanceLabel.Value = TL::FormatReal(PlayerTargetDistance,0,False,True)^"m";
+			{{{CGauge::C}}}_Update(_Radar.DistanceGauge,ML::Clamp(1-ML::Exp(-0.02*PlayerTargetDistance), 0., 1.));
+
+			if (PlayerInFront >= 0 ){
+				_Radar.DistanceGauge.Left.Colorize = _Radar.FrontColor;
+				_Radar.DistanceGauge.Right.Colorize = _Radar.FrontColor;
+				_Radar.CircularBorder.ModulateColor = _Radar.FrontColor;
+				_Radar.ArrowHead.ModulateColor = _Radar.FrontColor;
+			}else{
+				_Radar.DistanceGauge.Left.Colorize = _Radar.BackColor;
+				_Radar.DistanceGauge.Right.Colorize = _Radar.BackColor;
+				_Radar.CircularBorder.ModulateColor = _Radar.BackColor;
+				_Radar.ArrowHead.ModulateColor = _Radar.BackColor;
+			}
+							
+			_Radar.ArrowPivot.Visible = True;
+			_Radar.ArrowPivot.RelativeRotation = ML::RadToDeg(ML::OrientedAngle(TargetRelativePos,PlayerForward));
+		}else{
+			_Radar.DistanceLabel.Value = "Too Far";
+			_Radar.ArrowPivot.Visible = False;
+		}
+	}else{
+		_Radar.Root.Visible = False;
+	}
+}
+""";
+}
+
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	CGauge::Load();
+	Common::Load();
+	Manialink::CreateComponent(C,[CGauge::C,"GetDataVec3"],_Model(),_Directives(),"",_Functions(),"");
+}

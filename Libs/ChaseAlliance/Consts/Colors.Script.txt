@@ -1,0 +1,16 @@
+#Const C_AllianceGreenLight <0.15, 0.56, 0.27>
+#Const C_AllianceGreenDark <0.03, 0.47, 0.24>
+#Const C_AlliancePurple <0.2, 0.17, 0.22>
+#Const C_AllianceDark <0.05, 0.042, 0.055>
+#Const C_AllianceLight <0.87, 0.86, 0.87>
+
+#Const C_Team0Primary <0.0, 0.31, 1.0>
+#Const C_Team1Primary <1.0, 0.31, 0.0>
+
+#Const C_Success <0.5, 1.0, 0.0>
+#Const C_Error <1.0, 0.0, 0.15>
+#Const C_Warning <1.0, 0.65, 0.0>
+
+Text ToDataText (Vec3 _V){
+	return """{{{_V.X}}} {{{_V.Y}}} {{{_V.Z}}}""";
+}
