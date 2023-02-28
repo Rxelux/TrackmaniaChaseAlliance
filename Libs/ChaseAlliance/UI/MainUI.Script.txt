@@ -9,6 +9,7 @@
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Settings.Script.txt" as Settings
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/CheckpointQuality.Script.txt" as CheckpointQuality
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 
 #Const C "MainUI"
@@ -23,6 +24,7 @@ Text _Model(){
 		data-fill-color="{{{RadarFillColor}}}" data-front-color="{{{RadarFrontColor}}}" data-back-color="{{{RadarBackColor}}}"/>
 	<frameinstance modelid="{{{LapCounter::C}}}" id="lap-counter" pos="135 82"/>
 	<frameinstance modelid="{{{RaceTimer::C}}}" id="race-timer" pos="0 -82"/>
+	<frameinstance modelid="{{{CheckpointQuality::C}}}" id="checkpoint-quality" pos="0 20"/>
 </framemodel>
 """;
 }
@@ -36,6 +38,7 @@ Text _Labels(){
 	Radar.Root.Visible = False;
 	declare K_{{{LapCounter::C}}} LapCounter = {{{LapCounter::C}}}_Get(Page.MainFrame,"lap-counter");
 	declare K_{{{RaceTimer::C}}} RaceTimer = {{{RaceTimer::C}}}_Get(Page.MainFrame,"race-timer");
+	declare K_{{{CheckpointQuality::C}}} CheckpointQuality = {{{CheckpointQuality::C}}}_Get(Page.MainFrame,"checkpoint-quality");
 ***
 
 ***Yield***
@@ -44,6 +47,7 @@ Text _Labels(){
 	{{{Radar::C}}}_Update(Radar,Owner,{{{ChaseTeams::C}}}_GetRelayer(Owner));
 	{{{LapCounter::C}}}_Update(LapCounter,Owner,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer,Owner);
+	{{{CheckpointQuality::C}}}_Update(CheckpointQuality,Owner,{{{ChaseTeams::C}}}_GetRelayer(Owner));
 ***
 """;
 }
@@ -62,9 +66,10 @@ Void Load() {
 	Radar::Load();
 	LapCounter::Load();
 	RaceTimer::Load();
+	CheckpointQuality::Load();
 	ChaseTeams::Load();
 	Settings::Load();
-	Manialink::CreateComponent(C,[Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C,"GetOwner"],_Model(),"","","",_Labels());
+	Manialink::CreateComponent(C,[Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C, CheckpointQuality::C,"GetOwner"],_Model(),"","","",_Labels());
 	Layers::Load();
 	Layers::Create(C,Manialink::CreateManialink(C));
 	Layers::SetType(C,CUILayer::EUILayerType::Normal);

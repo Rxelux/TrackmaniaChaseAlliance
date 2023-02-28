@@ -1,0 +1,56 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+
+#Const C "CheckpointQuality"
+
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" {{{Align::CC}}}>
+    <label id="checkpoint-quality-label" textfont="RajdhaniMono" textsize="12" {{{Align::LC}}}/>
+</framemodel>""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+    CMlFrame Root;
+	CMlLabel CheckpointQualityLabel;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlLabel CheckpointQualityLabel <=> (Root.GetFirstChild("checkpoint-quality-label") as CMlLabel);
+	return K_{{{C}}}{
+		Root = Root,
+		CheckpointQualityLabel = CheckpointQualityLabel
+	};
+}
+
+Void {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlayer _Target){
+	if(_Player != Null){
+		_CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_Player.RaceWaypointTimes;
+		// _LapCounter.Root.Visible = True;
+	}else{
+		// _LapCounter.Root.Visible = False;
+	}
+}
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],_Model(),_Directives(),"",_Functions(),"");
+}
