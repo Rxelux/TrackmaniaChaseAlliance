@@ -30,7 +30,7 @@
 ***StartServer***
 ***
 Log("StartServer");
-Env::ToDev();
+Env::ToTest();
 Commands::Load();
 UsersL::Load();
 Events::Load();
@@ -43,7 +43,7 @@ Settings::Load();
 ChaseTeams::Load();
 QuitMenu::Load();
 MainUI::Load();
-Markers::Load();
+// Markers::Load();
 Commands::AddPermittedUser("pTuyJG9STcCN_11BiU3t0Q");
 Commands::AddPermittedUser("V_vWwMxbQqO0GgDYtK3zTg");
 ***
@@ -93,12 +93,13 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
 PlayersL::SpawnAll(StartTime);
-Markers::AttachMarkers();
+// Markers::AttachMarkers();
 
 if(ChaseTeams::AreComplete()){
 	GameState::SetPlaying();
 }else{
 	GameState::SetWaiting();
+	GameState::SendWaitingNotice();
 }
 Warn(GameState::GetStateText());
 // UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, "test");
@@ -116,6 +117,7 @@ if(GameState::IsWaiting()){
 	PlayersL::PlayLoop();
 	if(ChaseTeams::AreComplete()){
 		GameLoop::EndRound();
+		GameState::SendPlayingNotice();
 	}
 }
 ***

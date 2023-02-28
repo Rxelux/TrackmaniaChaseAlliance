@@ -1,0 +1,72 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+
+#Const C "CircularGauge"
+#Const C_HalfCircle """image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge3.dds" """
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" {{{Align::CC}}}>
+	<frame size="10 20" pos="5 0" {{{Align::CC}}}>
+		<quad id="left" pos="-5 0"  z-index="0" size="10 20" {{{C_HalfCircle}}} hidden="0" {{{Align::RC}}}  />
+	</frame>
+	<frame size="10 20" pos="-5 0" {{{Align::CC}}}>
+		<quad id="right" pos="5 0" z-index="0" size="10 20" {{{C_HalfCircle}}} rot="180" hidden="0" {{{Align::RC}}} />
+	</frame>
+</framemodel>""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	CMlQuad Left;
+	CMlQuad Right;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+	K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+		declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+		declare CMlQuad Left <=> (Root.GetFirstChild("left") as CMlQuad);
+		declare CMlQuad Right <=> (Root.GetFirstChild("right") as CMlQuad);
+		return K_{{{C}}}{
+			Root = Root,
+			Left = Left,
+			Right = Right
+		};
+	}
+
+	Void {{{C}}}_Update(K_{{{C}}} _Gauge, Real _Value) {
+		if (_Value <= 0.01) {
+			_Gauge.Right.Hide();
+			_Gauge.Left.Hide();
+			return;
+		} else if (_Value <= 0.5) {
+			_Gauge.Right.Show();
+			_Gauge.Left.Hide();
+			_Gauge.Right.RelativeRotation = -180. + _Value * 360;
+			_Gauge.Left.RelativeRotation = 0.;
+		} else {
+			_Gauge.Right.Show();
+			_Gauge.Left.Show();
+			_Gauge.Right.RelativeRotation = 0.;
+			_Gauge.Left.RelativeRotation = 180. + _Value * 360;
+		}
+	}
+""";
+}
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],_Model(),_Directives(),"",_Functions(),"");
+}

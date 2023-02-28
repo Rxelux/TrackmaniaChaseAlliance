@@ -1,5 +1,8 @@
 //#RequireContext CSmMode
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "TextLib" as TL
+
 #Const C_Playing 0
 #Const C_Waiting 1
 #Const C_Pause 2
@@ -32,6 +35,12 @@ Void SetPlaying(){
 	G_GameState = C_Playing;
 	PreventGiveUp();
 }
+Void SendPlayingNotice(){
+	UIManager.UIAll.SendNotice(
+		"$"^TL::ColorToText(Colors::C_Success)^"Starting round!", 
+		CUIConfig::ENoticeLevel::MatchWarning, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
+}
+
 
 Boolean IsWaiting(){
 	return G_GameState == C_Waiting;
@@ -42,6 +51,11 @@ Void SetWaiting(){
 	foreach (Player in Players) {
 		Player.Dossard_Color = <1.0,0.6,0.2>;
 	}
+}
+Void SendWaitingNotice(){
+	UIManager.UIAll.SendNotice(
+		"$"^TL::ColorToText(Colors::C_Warning)^"Waiting for players!", 
+		CUIConfig::ENoticeLevel::MatchWarning, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
 }
 
 Boolean IsPause(){

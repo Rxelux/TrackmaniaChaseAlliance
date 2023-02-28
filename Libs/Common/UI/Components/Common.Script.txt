@@ -1,0 +1,83 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+
+Text _GetOwner(){
+	return """//!
+CSmPlayer GetOwner() {
+	if (GUIPlayer != Null) return GUIPlayer;
+	return InputPlayer;
+}
+""";
+}
+
+Text _GetDataText(){
+	return """//!
+Text GetData(CMlControl _Control,Text _Name,Text _Def){
+	declare Text Res = _Control.DataAttributeGet(_Name);
+	if(Res == "") return _Def;
+	return Res;
+}
+""";
+}
+
+Text _GetDataInteger(){
+	return """//!
+Integer GetData(CMlControl Control,Text Name,Integer Def){
+	declare Text Res = Control.DataAttributeGet(Name);
+	if(Res == "") return Def;
+	return TL::ToInteger(Res);
+}
+""";
+}
+
+Text _GetDataReal(){
+	return """//!
+Real GetData(CMlControl Control,Text Name,Real Def){
+	declare Text Res = Control.DataAttributeGet(Name);
+	if(Res == "") return Def;
+	return TL::ToReal(Res);
+}
+""";
+}
+
+Text _GetDataVec2(){
+	return """//!
+Vec2 GetData(CMlControl Control,Text Name,Vec2 Def){
+	declare Text Res = Control.DataAttributeGet(Name);
+	if(Res == "") return Def;
+	declare Text[] Split = TL::Split(" ", Res);
+	if(Split.count < 2) return Def;
+	return <TL::ToReal(Split[0]),TL::ToReal(Split[1])>;
+}
+""";
+}
+
+Text _GetDataVec3(){
+	return """//!
+Vec3 GetData(CMlControl Control,Text Name,Vec3 Def){
+	declare Text Res = Control.DataAttributeGet(Name);
+	if(Res == "") return Def;
+	declare Text[] Split = TL::Split(" ", Res);
+	if(Split.count < 3) return Def;
+	return <TL::ToReal(Split[0]),TL::ToReal(Split[1]),TL::ToReal(Split[2])>;
+}
+""";
+}
+
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent("GetOwner",[],"","","",_GetOwner(),"");
+	Manialink::CreateComponent("GetDataText",[],"","","",_GetDataText(),"");
+	Manialink::CreateComponent("GetDataInteger",[],"","","",_GetDataInteger(),"");
+	Manialink::CreateComponent("GetDataReal",[],"","","",_GetDataReal(),"");
+	Manialink::CreateComponent("GetDataVec2",[],"","","",_GetDataVec2(),"");
+	Manialink::CreateComponent("GetDataVec3",[],"","","",_GetDataVec3(),"");
+}
