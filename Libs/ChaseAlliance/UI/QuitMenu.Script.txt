@@ -1,6 +1,6 @@
 //#RequireContext CSmMlScriptIngame
 #Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
-
+#Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
 #Const C_LayerName "QuitMenu"
 
 Text ML(){
@@ -33,21 +33,25 @@ Text ML(){
 		declare CMlLabel QuitButton <=> (Page.GetFirstChild("quit") as CMlLabel);
 		declare CMlLabel ContinueButton <=> (Page.GetFirstChild("continue") as CMlLabel);
 		declare Boolean PageWasVisible;
-		// declare CSmPlayer PrevPlayer;
+		declare Integer RequestRespawn;
 		while (True) {
 			yield;
+			if(RequestRespawn != 0 && RequestRespawn < Now){
+				RequestRespawn = 0;
+				SendCustomEvent("{{{PlayersL::C_NeedRespawn}}}", []);
+			}
 			if(!PageIsVisible){
 				PageWasVisible = False;
 				continue;
 			}
 			if(!PageWasVisible){
-				// if(IsSpectator){
-				// 	SpectateButton.Value = _("Resume");
-				// 	SwitchButton.Hide();
-				// }else{
-				// 	SpectateButton.Value = _("Spectate");
-				// 	SwitchButton.Show();
-				// }
+				if(IsSpectator){
+					SpectateButton.Value = _("Resume");
+					// SwitchButton.Hide();
+				}else{
+					SpectateButton.Value = _("Spectate");
+					// SwitchButton.Show();
+				}
 				UpdateSwitchButtonColor();
 			}
 			
@@ -57,14 +61,18 @@ Text ML(){
 						switch(Event.ControlId){
 							case "spectate": {
 								RequestSpectatorClient(!IsSpectator);
+								if(IsSpectator){
+									RequestRespawn = Now+500;
+								}
 							}
 							case "switch": {
 								if(InputPlayer == Null)continue;
+								RequestRespawn = Now+500;
 								if(InputPlayer.CurrentClan == 1){
-									log("JoinTeam2");
+									RequestSpectatorClient(False);
 									JoinTeam2();
 								}else{
-									log("JoinTeam1");
+									RequestSpectatorClient(False);
 									JoinTeam1();
 								}
 								CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
@@ -97,6 +105,7 @@ Void Load() {
 	if(G_Loaded)return;
 	Unload();
 	G_Loaded = True;
+	PlayersL::Load();
 	Layers::Load();
 	Layers::Create(C_LayerName,ML());
 	Layers::SetType(C_LayerName,CUILayer::EUILayerType::InGameMenu);

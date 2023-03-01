@@ -1,0 +1,95 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/Common/UI/Components/Common.Script.txt" as Common
+
+#Const C "Box"
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" {{{Align::CC}}} pos="0 0" size="0 0">
+	<quad id="bg" pos="0 0" {{{Align::CT}}} opacity="0.8"/>
+</framemodel>""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	CMlQuad Bg;
+	Vec2 Size;
+	Real Upscale;
+	Text Color;
+	Real Round;
+	Real Border;
+	Text BorderColor;
+	Real Shadow;
+	Text ShadowColor;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+
+	Void {{{C}}}_Update(K_{{{C}}} _Box) {
+		declare Real S = _Box.Upscale;
+		_Box.Root.Size.X = _Box.Size.X;
+		_Box.Root.Size.Y = _Box.Size.Y;
+		_Box.Bg.Size.X = _Box.Size.X;
+		_Box.Bg.Size.Y = _Box.Size.Y*(4.0/3.0);
+		_Box.Bg.RelativePosition_V3.Y = _Box.Root.Size.Y/2;
+		declare Text W = "&w="^_Box.Bg.Size.X*S^"0";
+		declare Text H = "&h="^_Box.Bg.Size.Y*S^"0";
+		declare Text AW = "&a.w="^(_Box.Size.X-_Box.Border-_Box.Shadow*2)*S^"0";
+		declare Text AH = "&a.h="^(_Box.Size.Y-_Box.Border-_Box.Shadow*2)*S^"0";
+		declare Text AX = "&a.x="^_Box.Size.X*S/2.0^"0";
+		declare Text AY = "&a.y="^_Box.Size.Y*S/2.0^"0";
+		declare Text AC = "&a.c=%23"^_Box.Color;
+		declare Text AB = "&a.rx="^_Box.Round*S^"0";
+		declare Text ASW = "&a.sw="^_Box.Border*S^"0";
+		declare Text ASC = "&a.sc=%23"^_Box.BorderColor;
+		declare Text ASDW = "&a.sdw=0px+0px+"^_Box.Shadow*S^"px+%23"^_Box.ShadowColor;
+		_Box.Bg.ImageUrl = "https://img.bruzu.com/?a.type=Rect"^W^H^AW^AH^AX^AY^AC^AB^ASW^ASC^ASDW^"&a.png";
+	}
+
+	K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+		declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+		declare CMlQuad Bg <=> (Root.GetFirstChild("bg") as CMlQuad);
+		declare Vec2 Size = GetData(Root,"size",<20.0,20.0>);
+		declare Real Upscale = GetData(Root,"upscale",6.0);
+		declare Text Color = GetData(Root,"color","000000");
+		declare Real Round = GetData(Root,"round",5.0);
+		declare Real Border = GetData(Root,"border",1.0);
+		declare Text BorderColor = GetData(Root,"border-color","ff0000");
+		declare Real Shadow = GetData(Root,"shadow",10.0);
+		declare Text ShadowColor = GetData(Root,"shadow-color","00ff00");
+		declare Return = K_{{{C}}}{
+			Root = Root,
+			Bg = Bg,
+			Size = Size,
+			Upscale = Upscale,
+			Round = Round,
+			Color = Color,
+			Border = Border,
+			BorderColor = BorderColor,
+			Shadow = Shadow,
+			ShadowColor = ShadowColor
+		};
+		{{{C}}}_Update(Return);
+		return Return;
+	}
+""";
+}
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Common::Load();
+	Manialink::CreateComponent(C,["GetDataText","GetDataReal","GetDataVec2"],_Model(),_Directives(),"",_Functions(),"");
+}
