@@ -55,7 +55,7 @@ Text _Labels(){
 	{{{RelayStatus::C}}}_Update(RelayStatus,Owner,Relayer,Team.RelayStarted,Team.PrevRelayWasSuccess,Team.CurrentCp,Team.PrevRelayerLogin);
 	{{{LapCounter::C}}}_Update(LapCounter,Owner,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer,Owner);
-	{{{CheckpointQuality::C}}}_Update(CheckpointQuality,Owner,{{{ChaseTeams::C}}}_GetRelayer(Owner), Team.CurrentCpTime);
+	{{{CheckpointQuality::C}}}_Update(CheckpointQuality,Owner,Relayer, Team.CurrentCpTime);
 ***
 """;
 }
