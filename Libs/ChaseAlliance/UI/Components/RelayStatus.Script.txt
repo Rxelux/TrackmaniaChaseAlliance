@@ -1,0 +1,84 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "TextLib" as TL
+
+#Const C "RelayStatus"
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" {{{Align::CC}}}>
+	<label id="relay-status" size="50 5" {{{Align::CC}}} textsize="4" style="TextRaceMessageBig" />
+</framemodel>
+""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	CMlLabel RelayStatus;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlLabel RelayStatus <=> (Root.GetFirstChild("relay-status") as CMlLabel);
+	return K_{{{C}}}{
+		Root = Root,
+		RelayStatus = RelayStatus
+	};
+}
+
+Void {{{C}}}_Update(K_{{{C}}} _RelayStatus,CSmPlayer _Player,CSmPlayer _Relayer,Boolean _RelayStarted,Boolean _PrevRelayWasSuccess,Integer _CurrentCp,Text _PrevRelayerLogin){
+	if(_Player != Null){
+		_RelayStatus.Root.Visible = True;
+
+		if(!_RelayStarted){
+			_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go!";
+		}else{
+			if(_Relayer != Null){
+				if(_Player == _Relayer){
+					_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go Go Go!!!";
+				}else{
+					if(_PrevRelayWasSuccess){
+						_RelayStatus.RelayStatus.Value = "Wait for "^_Relayer.User.Name^".";
+					}else{
+						_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Error)}}}Wait for "^_Relayer.User.Name^".";
+					}
+				}
+			}else{
+				if(_Player.RaceWaypointTimes.count < _CurrentCp || _Player.User.Login != _PrevRelayerLogin){
+					_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go!";
+				}else{
+					if(_PrevRelayWasSuccess){
+						_RelayStatus.RelayStatus.Value = "Wait for players.";
+					}else{
+						_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Error)}}}Wait for players.";
+					}
+				}
+			}
+		}
+	}else{
+		_RelayStatus.Root.Visible = False;
+	}
+}
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],_Model(),_Directives(),"",_Functions(),"");
+}
