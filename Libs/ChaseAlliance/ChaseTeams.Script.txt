@@ -21,7 +21,7 @@
 	Text PrevRelayerLogin;
 	Integer CurrentCp;
 	Integer CpLastSuccessRelay;
-	Integer CpTeamateCrossCount;
+	Integer CpCrossCount;
 	Boolean RelayStarted;
 	Boolean PrevRelayWasSuccess;
 }
@@ -257,7 +257,12 @@ Void PlayLoop(){
 					Log("Relay failed");
 					_SetTeamPrevRelayWasSuccess(Player.CurrentClan,False);
 					Messages::SendBig(Player.CurrentClan,"$"^TL::ColorToText(Colors::C_Error)^"Relay Failed",3000,CUIConfig::EUISound::FirstHit);
-					Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for players",3000,CUIConfig::EUISound::Silence);
+					if(Team.RelayerLogin == ""){
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for players",3000,CUIConfig::EUISound::Silence);
+					}else{
+						declare CSmPlayer RelayerPlayer = GetPlayer(Team.RelayerLogin);
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for "^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Silence);
+					}
 				}else{
 					//first cp crossed
 					Log("First cp crossed");
@@ -274,7 +279,12 @@ Void PlayLoop(){
 				if(Team.RelayStarted){
 					//relay failed
 					Log("Relay failed2");
-					Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for players",3000,CUIConfig::EUISound::Silence);
+					if(Team.RelayerLogin == ""){
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for players",3000,CUIConfig::EUISound::Silence);
+					}else{
+						declare CSmPlayer RelayerPlayer = GetPlayer(Team.RelayerLogin);
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for "^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Silence);
+					}
 				}
 			}
 		}
