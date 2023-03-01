@@ -12,7 +12,7 @@ Text _Directives(){
 	Text PrevRelayerLogin;
 	Integer CurrentCp;
 	Integer CpCrossCount;
-	Integer CurrentCpTime;
+	Integer LastSuccessRelayCpTime;
 	Boolean RelayStarted;
 	Boolean PrevRelayWasSuccess;
 }

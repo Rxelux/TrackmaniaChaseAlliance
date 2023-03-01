@@ -20,7 +20,7 @@
 	Text PrevRelayerLogin;
 	Integer CurrentCp;
 	Integer CpCrossCount;
-	Integer CurrentCpTime;
+	Integer LastSuccessRelayCpTime;
 	Boolean RelayStarted;
 	Boolean PrevRelayWasSuccess;
 }
@@ -104,6 +104,11 @@ Void _SetTeamCurrentCp(Integer _Clan,Integer _Value){
 
 Void _SetTeamCpCrossCount(Integer _Clan,Integer _Value){
 	G_ChaseTeams[_Clan-1].CpCrossCount = _Value;
+	_ToNet();
+}
+
+Void _SetTeamLastSuccessRelayCpTime(Integer _Clan,Integer _Value){
+	G_ChaseTeams[_Clan-1].LastSuccessRelayCpTime = _Value;
 	_ToNet();
 }
 
@@ -229,12 +234,12 @@ Void PlayLoop(){
 
 		if(Player.RaceWaypointTimes.count > Team.CurrentCp){ //crossed a new cp
 			Log("Crossed a new cp");
-			Team.CurrentCpTime = Player.RaceWaypointTimes[Player.RaceWaypointTimes.count - 1];
 			
 			if(Team.RelayerLogin == Player.User.Login){//check if player is relayer
 				Log("Player was relayer");
 				//relay passed
 				Log("Relay success");
+				_SetTeamLastSuccessRelayCpTime(Player.CurrentClan, Player.RaceWaypointTimes[Player.RaceWaypointTimes.count - 1]);
 				_IncrementTeamRelayPoint(Player.CurrentClan);
 				_SetTeamRelayerLogin(Player.CurrentClan,"");//reset relayer
 				_SetTeamPrevRelayWasSuccess(Player.CurrentClan,True);
