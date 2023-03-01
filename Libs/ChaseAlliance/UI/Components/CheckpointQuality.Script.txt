@@ -31,13 +31,17 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	};
 }
 
-Void {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlayer _Target){
-	if(_Player != Null){
-		_CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_Player.RaceWaypointTimes;
+Void {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlayer _Target, Integer _CurrentCpTime){
+    _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_CurrentCpTime;
+    // if (_Player.RaceWaypointTimes.count >= 1)
+    // _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1]-CurrentCpTime;
+	
+    // if(_Player != Null){
+        
 		// _LapCounter.Root.Visible = True;
-	}else{
+	// }else{
 		// _LapCounter.Root.Visible = False;
-	}
+	// }
 }
 """;
 }

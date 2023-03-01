@@ -19,6 +19,7 @@
 	Text RelayerLogin;
 	Integer CurrentCp;
 	Integer CpCrossCount;
+	Integer CurrentCpTime;
 	Boolean RelayStarted;
 	Boolean PrevRelayWasSuccess;
 }
@@ -222,6 +223,7 @@ Void PlayLoop(){
 
 		if(Player.RaceWaypointTimes.count > Team.CurrentCp){ //crossed a new cp
 			Log("Crossed a new cp");
+			Team.CurrentCpTime = Player.RaceWaypointTimes[Player.RaceWaypointTimes.count - 1];
 			
 			if(Team.RelayerLogin == Player.User.Login){//check if player is relayer
 				Log("Player was relayer");
