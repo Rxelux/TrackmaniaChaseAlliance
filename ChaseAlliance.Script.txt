@@ -30,7 +30,7 @@
 ***StartServer***
 ***
 Log("StartServer");
-Env::ToTest();
+Env::ToDev();
 Commands::Load();
 UsersL::Load();
 Events::Load();
@@ -114,7 +114,6 @@ if(GameState::IsPlaying()){
 	ChaseTeams::PlayLoop();
 }
 if(GameState::IsWaiting()){
-	PlayersL::PlayLoop();
 	if(ChaseTeams::AreComplete()){
 		GameLoop::EndRound();
 		GameState::SendPlayingNotice();
@@ -166,6 +165,8 @@ Log("EndScript");
 foreach (Event in UIManager.PendingEvents) {
 	Commands::PassUIEvent(Event);
 	Controller::PassUIEvent(Event);
+	PlayersL::PassUIEvent(Event);
+
 }
 foreach (Event in PendingEvents){
 	Commands::PassModeEvent(Event);
