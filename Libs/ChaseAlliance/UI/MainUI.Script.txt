@@ -40,7 +40,6 @@ Text _Labels(){
 	Radar.Root.Visible = False;
 	declare K_{{{LapCounter::C}}} LapCounter = {{{LapCounter::C}}}_Get(Page.MainFrame,"lap-counter");
 	declare K_{{{RaceTimer::C}}} RaceTimer = {{{RaceTimer::C}}}_Get(Page.MainFrame,"race-timer");
-	declare Real LastSuccessCpSpeed = 0.; 
 	declare K_{{{CheckpointQuality::C}}} CheckpointQuality = {{{CheckpointQuality::C}}}_Get(Page.MainFrame,"checkpoint-quality");
 	declare K_{{{RelayStatus::C}}} RelayStatus = {{{RelayStatus::C}}}_Get(Page.MainFrame,"relay-status");
 ***
@@ -57,7 +56,8 @@ Text _Labels(){
 	{{{RelayStatus::C}}}_Update(RelayStatus,Owner,Relayer,Team.RelayStarted,Team.PrevRelayWasSuccess,Team.CurrentCp,Team.PrevRelayerLogin);
 	{{{LapCounter::C}}}_Update(LapCounter,Owner,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer,Owner);
-	LastSuccessCpSpeed = {{{CheckpointQuality::C}}}_Update(CheckpointQuality,Owner,Relayer,PrevRelayer, Team.CurrentCp, Team.LastSuccessRelayCpTime, Team.PrevRelayWasSuccess, LastSuccessCpSpeed);
+	QualityMessageStartTime = {{{CheckpointQuality::C}}}_UpdateMessageTimout(CheckpointQuality,Owner,QualityMessageStartTime);
+	LastSuccessCpSpeed = {{{CheckpointQuality::C}}}_Update(CheckpointQuality,Owner,Relayer,PrevRelayer, Team.CurrentCp, Team.LastSuccessRelayCpTime, Team.PrevRelayWasSuccess, LastSuccessCpSpeed, QualityMessageStartTime);
 ***
 """;
 }

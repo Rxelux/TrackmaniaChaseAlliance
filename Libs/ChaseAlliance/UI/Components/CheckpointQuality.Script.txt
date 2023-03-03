@@ -1,6 +1,7 @@
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "MathLib" as ML
+#Include "TimeLib" as TIL
 
 #Const C "CheckpointQuality"
 
@@ -22,6 +23,16 @@ Text _Directives(){
 }
 
 
+Text _Labels(){
+	return """//!
+***Init***
+***
+declare Real LastSuccessCpSpeed = 0.; 
+declare Integer QualityMessageStartTime = TIL::GetMillisecondsSinceInit (); 
+***
+""";
+}
+
 Text _Functions(){
 	return """//!
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
@@ -32,26 +43,34 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 		CheckpointQualityLabel = CheckpointQualityLabel
 	};
 }
-Integer CalculateRelayQuality(Integer _PlayerCpTime, Integer _RelayerCpTime, Real _PlayerCpSeeed, Real _RelayerCpSpeed){
-	declare Integer TimeDelta = (_PlayerCpTime - _RelayerCpTime)/1000;
-	return TimeDelta;
-	// Integer RelativeSpeedDelta = _PlayerCpSeeed - _RelayerCpTime;
-	// return ML:Max(0, ML:Min(10000, 10000*ML:Exp(-2*TimeDelta));
+Real CalculateRelayQuality(Integer _PlayerCpTime, Integer _RelayerCpTime, Real _PlayerCpSeeed, Real _RelayerCpSpeed){
+	declare Real TimeDelta = (ML::ToReal(_PlayerCpTime) - ML::ToReal(_RelayerCpTime))/1000;
+	declare Real RelativeSpeedDelta = ML::Clamp((_PlayerCpSeeed - _RelayerCpSpeed)/_RelayerCpSpeed, -2., 2.);
+	declare Real RelayQuality = ML::Max(0., ML::Min(10000., 10000*ML::Exp(-2*TimeDelta)*(0.8 + RelativeSpeedDelta)));
+	return RelayQuality;
 }
 
-Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlayer _Relayer, CSmPlayer _PrevRelayer, Integer _CurrentCp, Integer _LastSuccessRelayCpTime, Boolean _PrevRelayWasSuccess, Real _LastSuccessCpSpeed){
+Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlayer _Relayer, CSmPlayer _PrevRelayer, Integer _CurrentCp, Integer _LastSuccessRelayCpTime, Boolean _PrevRelayWasSuccess, Real _LastSuccessCpSpeed, Integer _QualityMessageStartTime){
+	
+	declare Integer _ElapsedTimeSinceLastQualityMessage = TIL::GetMillisecondsSinceInit () - _QualityMessageStartTime;
+
 	declare Real _LastSuccessCpSpeedrReturn = _LastSuccessCpSpeed;
-	if (_LastSuccessCpSpeed == 0 && _Relayer != Null &&  _Relayer.RaceWaypointTimes.count > _CurrentCp){
+	if (_LastSuccessCpSpeed == 0 && _Relayer != Null && _Relayer.RaceWaypointTimes.count > _CurrentCp){
 		_LastSuccessCpSpeedrReturn = _Relayer.Speed;
 	}
 	
-	
-	if(_Player != Null && _Relayer != Null && _PrevRelayWasSuccess ){
+	_CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_ElapsedTimeSinceLastQualityMessage;
+
+	if(_Player != Null && _PrevRelayer != Null && _PrevRelayWasSuccess ){
 		
-		if (_Player.RaceWaypointTimes.count >= 1 && _PrevRelayer.RaceWaypointTimes.count >= 1)
-			_CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1]^" "^_LastSuccessRelayCpTime;
+		if (_Player.RaceWaypointTimes.count >= 1){
+			// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1]^" "^_LastSuccessRelayCpTime;
 	// 		// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _CurrentCpTime, 0., 0.);
-	// 		// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _LastSuccessRelayCpTime, 0., 0.);
+			if 	(_ElapsedTimeSinceLastQualityMessage < 2900){
+				_CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _LastSuccessRelayCpTime, _Player.Speed, _PrevRelayer.Speed);
+			}
+	
+		}
 	}
 	
 	if (_LastSuccessCpSpeed != 0 && _Relayer != Null && _Relayer.RaceWaypointTimes.count == _CurrentCp){
@@ -59,6 +78,16 @@ Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlay
 	}
 
 	return _LastSuccessCpSpeedrReturn;
+}
+
+
+Integer {{{C}}}_UpdateMessageTimout(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, Integer _QualityMessageStartTime){
+	
+	declare Integer _QualityMessageStartTimeReturn = _MessageStartTimeInMilliseconds;
+	if(_Player != Null && _Player.RaceWaypointTimes.count > _CurrentCp){
+		_QualityMessageStartTimeReturn = TIL::GetMillisecondsSinceInit ();
+	}
+	return _QualityMessageStartTimeReturn;	
 }
 """;
 }
@@ -73,5 +102,5 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Manialink::Load();
-	Manialink::CreateComponent(C,[],_Model(),_Directives(),"",_Functions(),"");
+	Manialink::CreateComponent(C,[],_Model(),_Directives(),"",_Functions(),_Labels());
 }

@@ -79,6 +79,7 @@ Text CreateManialink(Text _ComponentName){
 <script><!--
 #Include "TextLib" as TL
 #Include "MathLib" as ML
+#Include "TimeLib" as TIL
 
 {{{TL::Join("",UsedDirectives)}}}
 {{{TL::Join("",UsedVariables)}}}
