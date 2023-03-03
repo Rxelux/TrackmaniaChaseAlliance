@@ -55,7 +55,7 @@ Text _Labels(){
 	{{{RelayStatus::C}}}_Update(RelayStatus,GUIPlayer,Relayer,Team.RelayStarted,Team.PrevRelayWasSuccess,Team.CurrentCp,Team.PrevRelayerLogin);
 	{{{LapCounter::C}}}_Update(LapCounter,GUIPlayer,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer,GUIPlayer);
-	QualityMessageStartTime = {{{CheckpointQuality::C}}}_UpdateMessageTimout(CheckpointQuality,GUIPlayer,Team.CurrentCp,QualityMessageStartTime);
+	QualityMessageStartTime = {{{CheckpointQuality::C}}}_UpdateMessageTimout(CheckpointQuality,GUIPlayer,Team.CpCrossCount,QualityMessageStartTime);
 	LastSuccessCpSpeed = {{{CheckpointQuality::C}}}_Update(CheckpointQuality,GUIPlayer,Relayer,PrevRelayer, Team.CurrentCp, Team.LastSuccessRelayCpTime, Team.PrevRelayWasSuccess, LastSuccessCpSpeed, QualityMessageStartTime);
 ***
 
@@ -80,7 +80,7 @@ Void Load() {
 	ChaseTeams::Load();
 	Settings::Load();
 	RelayStatus::Load();
-	Manialink::CreateComponent(C,[CheckpointQuality::C, RelayStatus::C,Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C,"GetOwner","GetPlayer"],_Model(),"","","",_Labels());
+	Manialink::CreateComponent(C,[CheckpointQuality::C, RelayStatus::C,Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C,"GetOwner","GetPlayer"],_Model(),"","",_Labels());
 	Layers::Load();
 	Layers::Create(C,Manialink::CreateManialink(C));
 	Layers::SetType(C,CUILayer::EUILayerType::Normal);
