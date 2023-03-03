@@ -10,3 +10,13 @@
 #Const RC """ halign="right" valign="center" """
 #Const R2 """ halign="right" valign="center2" """
 #Const RB """ halign="right" valign="bottom" """
+
+#Const V "CMlControl::AlignVertical"
+#Const VT "CMlControl::AlignVertical::Top"
+#Const VC "CMlControl::AlignVertical::VCenter"
+#Const V2 "CMlControl::AlignVertical::VCenter2"
+#Const VB "CMlControl::AlignVertical::Bottom"
+#Const H "CMlControl::AlignHorizontal"
+#Const HL "CMlControl::AlignHorizontal::Left"
+#Const HC "CMlControl::AlignHorizontal::HCenter"
+#Const HR "CMlControl::AlignHorizontal::Right"

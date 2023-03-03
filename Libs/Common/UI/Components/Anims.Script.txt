@@ -1,0 +1,96 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+// #Include "ChaseAlliance/Libs/Common/UI/Components/Common.Script.txt" as Common
+
+#Const C "Anims"
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	Integer Priority;
+	Text Function;
+	Real StartValue;
+	Real ValueChange;
+	Integer StartTime;
+	Integer Duration;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+declare K_{{{C}}}[Text][CMlControl] _G_{{{C}}};
+Void {{{C}}}_Animate(CMlControl _Control,Text _Attribute,Integer _Priority,Text _Function, Real _StartValue, Real _EndValue,Integer _StartTime, Integer _Duration) {
+	declare K_{{{C}}} Anim = K_{{{C}}}{
+		Priority = _Priority,
+		Function = _Function,
+		StartValue = _StartValue,
+		ValueChange = _EndValue-_StartValue,
+		StartTime = _StartTime,
+		Duration = _Duration
+	};
+	
+	if(!_G_{{{C}}}.existskey(_Control)){
+		_G_{{{C}}}[_Control] = [_Attribute => Anim];
+	}else{
+		if(!_G_{{{C}}}[_Control].existskey(_Attribute)){
+			_G_{{{C}}}[_Control][_Attribute] = Anim;
+		}else{
+			if(_G_{{{C}}}[_Control][_Attribute].Priority <= _Priority){
+				_G_{{{C}}}[_Control][_Attribute] = Anim;
+			}
+		}
+	}
+}
+""";
+}
+
+Text _Labels(){
+	return """//!
+***Yield***
+***
+foreach (Control => AttrDic in _G_{{{C}}}) {
+	foreach (Attribute => Anim in AttrDic) {
+		if((Anim.StartTime+Anim.Duration) < Now){
+			_G_{{{C}}}[Control].removekey(Attribute);
+			if(_G_{{{C}}}[Control].count == 0) _G_{{{C}}}.removekey(Control);
+		}else{
+			declare Value = AL::Ease(Anim.Function,Now-Anim.StartTime+0.,Anim.StartValue,Anim.ValueChange,Anim.Duration+0.);
+			switch (Attribute) {
+				case "SizeX":Control.Size.X = Value;
+				case "SizeY":Control.Size.Y = Value;
+				case "PosX":Control.RelativePosition_V3.X = Value;
+				case "PosY":Control.RelativePosition_V3.Y = Value;
+				case "Scale":Control.RelativeScale = Value;
+				case "Rot":Control.RelativeRotation = Value;
+				case "TextOpacity":(Control as CMlLabel).Opacity = Value;
+				case "TextColorX":(Control as CMlLabel).TextColor.X = Value;
+				case "TextColorY":(Control as CMlLabel).TextColor.Y = Value;
+				case "TextColorZ":(Control as CMlLabel).TextColor.Z = Value;
+				case "TextSize":(Control as CMlLabel).TextSizeReal = Value;
+				case "BgColorX":(Control as CMlQuad).BgColor.X = Value;
+				case "BgColorY":(Control as CMlQuad).BgColor.Y = Value;
+				case "BgColorZ":(Control as CMlQuad).BgColor.Z = Value;
+				case "BgColorFocusX":(Control as CMlQuad).BgColorFocus.X = Value;
+				case "BgColorFocusY":(Control as CMlQuad).BgColorFocus.Y = Value;
+				case "BgColorFocusZ":(Control as CMlQuad).BgColorFocus.Z = Value;
+				case "BgOpacity":(Control as CMlQuad).Opacity = Value;
+			}
+		}
+	}
+}
+***
+""";
+}
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	// Common::Load();
+	Manialink::CreateComponent(C,[],"",_Directives(),_Functions(),_Labels());
+}

@@ -20,7 +20,7 @@
 	Text RelayerLogin;
 	Text PrevRelayerLogin;
 	Integer CurrentCp;
-	Integer CpLastSuccessRelay;
+	Integer LastRelaySuccessCp;
 	Integer CpCrossCount;
 	Boolean RelayStarted;
 	Boolean PrevRelayWasSuccess;
@@ -103,8 +103,8 @@ Void _SetTeamCurrentCp(Integer _Clan,Integer _Value){
 	_ToNet();
 }
 
-Void _SetTeamCpLastSuccessRelay(Integer _Clan,Integer _Value){
-	G_ChaseTeams[_Clan-1].CpLastSuccessRelay= _Value;
+Void _SetTeamLastRelaySuccessCp(Integer _Clan,Integer _Value){
+	G_ChaseTeams[_Clan-1].LastRelaySuccessCp= _Value;
 	_ToNet();
 }
 
@@ -140,7 +140,7 @@ Void _IncrementTeamRelayPoint(Integer _Clan){
 Void _ResetTeamRelay(Integer _Clan){
 	_SetTeamRelayPoint(_Clan,0);
 	_SetTeamCurrentCp(_Clan,0);
-	_SetTeamCpLastSuccessRelay(_Clan,0);
+	_SetTeamLastRelaySuccessCp(_Clan,0);
 	_SetTeamCpCrossCount(_Clan,0);
 	_SetTeamRelayerLogin(_Clan,"");
 	_SetTeamRelayStarted(_Clan,False);
@@ -245,7 +245,7 @@ Void PlayLoop(){
 				_SetTeamRelayerLogin(Player.CurrentClan,"");//reset relayer
 				_SetTeamPrevRelayWasSuccess(Player.CurrentClan,True);
 				_SetTeamPrevRelayerLogin(Player.CurrentClan,Player.User.Login);
-				_SetTeamCpLastSuccessRelay(Player.CurrentClan,Player.RaceWaypointTimes.count);
+				_SetTeamLastRelaySuccessCp(Player.CurrentClan,Player.RaceWaypointTimes.count);
 				Messages::SendBig(Player.CurrentClan,"$"^TL::ColorToText(Colors::C_Success)^"Relay Success",3000,CUIConfig::EUISound::ScoreProgress);
 				Messages::SendStatus(Player.CurrentClan,"",0,CUIConfig::EUISound::Silence);
 				Messages::SendStatus(Player,"Wait for players",3000,CUIConfig::EUISound::Silence);
@@ -272,8 +272,8 @@ Void PlayLoop(){
 			}
 			_SetTeamCurrentCp(Player.CurrentClan,Player.RaceWaypointTimes.count);
 			_SetTeamCpCrossCount(Player.CurrentClan,1);
-		}
-		else if (Player.RaceWaypointTimes.count > Team.CpLastSuccessRelay){
+		} 
+		else if (Player.RaceWaypointTimes.count > Team.LastRelaySuccessCp){
 			if(Team.RelayerLogin != Player.User.Login){//check if player is not relayer
 				Log("Player was Not relayer2");
 				if(Team.RelayStarted){
@@ -302,27 +302,14 @@ Void PlayLoop(){
 					}
 					Messages::SendStatus(Player.CurrentClan,"Next Checkpoint",3000,CUIConfig::EUISound::Silence);
 				}
-				else{
-					declare CSmPlayer RelayerPlayer = GetPlayer(Team.RelayerLogin);
-					if (RelayerPlayer != Null){
-						// Messages::SendBig(Player.CurrentClan,"$"^TL::ColorToText(Colors::C_Error)^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Warning);
-						// Messages::SendStatus(Player.CurrentClan,"Next Checkpoint",3000,CUIConfig::EUISound::Silence);
-						// Messages::SendStatus(Player.CurrentClan,"Wait for "^RelayerPlayer.User.Name,3600000,CUIConfig::EUISound::Silence);
-						// Messages::SendStatus(RelayerPlayer,"$2E0Go Go Go!!!",0,CUIConfig::EUISound::Silence);
-					}else{
-						Error("RelayerPlayer not found for "^Team.RelayerLogin);
-					}
-				}
 			}else{
 				Log("Current cp was Not crossed by all team");
-				// Messages::SendStatus(Player,"Wait for players",3000,CUIConfig::EUISound::Silence);
 			}
 			_SetTeamCpCrossCount(Player.CurrentClan, Team.CpCrossCount + 1);
 		}
 		if(Player.RaceWaypointTimes.count < Team.CurrentCp){
 			Log("Crossed a previous cp");
 		}
-		Log(""^G_ChaseTeams);
 		_RemoveSortedEvent(Event);
 	}
 }

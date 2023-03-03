@@ -68,5 +68,5 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Manialink::Load();
-	Manialink::CreateComponent(C,[],_Model(),_Directives(),"",_Functions(),"");
+	Manialink::CreateComponent(C,[],_Model(),_Directives(),_Functions(),"");
 }

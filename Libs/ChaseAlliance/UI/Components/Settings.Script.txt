@@ -13,7 +13,7 @@ Text _Directives(){
 """;
 }
 
-Text _Variables(){
+Text _Functions(){
 	return """//!
 declare K_{{{C}}} G_{{{C}}};
 """;
@@ -48,5 +48,5 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Manialink::Load();
-	Manialink::CreateComponent(C,[],"",_Directives(),_Variables(),"",_Labels());
+	Manialink::CreateComponent(C,[],"",_Directives(),_Functions(),_Labels());
 }

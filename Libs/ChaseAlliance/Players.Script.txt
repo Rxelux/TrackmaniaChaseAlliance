@@ -5,6 +5,8 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
 
 #Const C_NeedRespawn "NeedRespawn"
+#Const C_ForcePlayer "ForcePlayer"
+#Const C_ForceSpectator "ForceSpectator"
 
 
 Void _SetClan(CSmPlayer _Player){
@@ -52,6 +54,12 @@ Void PassUIEvent(CUIConfigEvent _Event){
 			declare Player = GetPlayer(_Event.UI);
 			if(_Event.CustomEventType == C_NeedRespawn){
 				Spawn(Player);
+			}
+			if(_Event.CustomEventType == C_ForcePlayer){
+				ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::PlayerSelectable);
+			}
+			if(_Event.CustomEventType == C_ForceSpectator){
+				ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::SpectatorSelectable);
 			}
 		}
 	}
