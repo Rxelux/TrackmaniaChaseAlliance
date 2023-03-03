@@ -1,5 +1,17 @@
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 
+
+Text _GetKey(){
+	return """//!
+declare Integer _G_Common_Key;
+Integer GetKey() {
+	declare Integer key = _G_Common_Key;
+	_G_Common_Key += 1;
+	return key;
+}
+""";
+}
+
 Text _GetOwner(){
 	return """//!
 CSmPlayer GetOwner() {
@@ -87,11 +99,12 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Manialink::Load();
-	Manialink::CreateComponent("GetOwner",[],"","","",_GetOwner(),"");
-	Manialink::CreateComponent("GetPlayer",[],"","","",_GetPlayer(),"");
-	Manialink::CreateComponent("GetDataText",[],"","","",_GetDataText(),"");
-	Manialink::CreateComponent("GetDataInteger",[],"","","",_GetDataInteger(),"");
-	Manialink::CreateComponent("GetDataReal",[],"","","",_GetDataReal(),"");
-	Manialink::CreateComponent("GetDataVec2",[],"","","",_GetDataVec2(),"");
-	Manialink::CreateComponent("GetDataVec3",[],"","","",_GetDataVec3(),"");
+	Manialink::CreateComponent("GetKey",[],"","",_GetKey(),"");
+	Manialink::CreateComponent("GetOwner",[],"","",_GetOwner(),"");
+	Manialink::CreateComponent("GetPlayer",[],"","",_GetPlayer(),"");
+	Manialink::CreateComponent("GetDataText",[],"","",_GetDataText(),"");
+	Manialink::CreateComponent("GetDataInteger",[],"","",_GetDataInteger(),"");
+	Manialink::CreateComponent("GetDataReal",[],"","",_GetDataReal(),"");
+	Manialink::CreateComponent("GetDataVec2",[],"","",_GetDataVec2(),"");
+	Manialink::CreateComponent("GetDataVec3",[],"","",_GetDataVec3(),"");
 }

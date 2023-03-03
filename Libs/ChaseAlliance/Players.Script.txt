@@ -4,7 +4,15 @@
 #Include "TextLib" as TL
 #Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
 
-Void _CheckClan(CSmPlayer _Player){
+#Const C_NeedRespawn "NeedRespawn"
+#Const C_ForcePlayer "ForcePlayer"
+#Const C_ForceSpectator "ForceSpectator"
+
+
+Void _SetClan(CSmPlayer _Player){
+	if(_Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned){
+		UnspawnPlayer(_Player);
+	}
 	if(_Player.RequestedClan < 1 || _Player.RequestedClan > 2){
 		if(ClansNbPlayers[1] < ClansNbPlayers[2]){
 			SetPlayerClan(_Player,1);
@@ -18,8 +26,7 @@ Void _CheckClan(CSmPlayer _Player){
 
 Void Spawn(CSmPlayer _Player,Integer _When){
 	if (_Player == Null) return;
-	UnspawnPlayer(_Player);
-	_CheckClan(_Player);
+	_SetClan(_Player);
 	SpawnPlayer(
 		_Player,
 		_Player.CurrentClan,
@@ -29,14 +36,10 @@ Void Spawn(CSmPlayer _Player,Integer _When){
 	_Player.UseCrudeExtrapolation = False;
 	_Player.TrustClientSimu = True;
 	_Player.Dossard_Color = Teams[_Player.CurrentClan-1].ColorPrimary;
-	// declare UI = UIManager.GetUI(_Player);
-	// if(UI == Null) return;
-	// UI.AlliesLabelsVisibility = CUIConfig::ELabelsVisibility::Always;
-	// UI.AlliesLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
-	// UI.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::Always;
-	// UI.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
-	// UI.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::Always;
-	// UI.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedHidden;
+}
+
+Void Spawn(CSmPlayer _Player){
+	Spawn(_Player,Now + 1500);
 }
 
 Void SpawnAll(Integer _When){
@@ -45,17 +48,19 @@ Void SpawnAll(Integer _When){
 	}
 }
 
-//NOTE: I hate the fact that there is no events fired for player requests clan or requests spectate, 
-//fortunately it is only neccessary to do those checks on the non critical gamestate
-Void PlayLoop(){
-	foreach (Player in Players) {
-		if(Player.CurrentClan != Player.RequestedClan){
-			Spawn(Player,Now+1500);
-		}
-	}
-	foreach (Spectator in Spectators) {
-		if(Spectator.RequestsSpectate == False){
-			Spawn(Spectator,Now+1500);
+Void PassUIEvent(CUIConfigEvent _Event){
+	if(_Event.Type == CUIConfigEvent::EType::OnLayerCustomEvent){
+		if(_Event.UI != Null){
+			declare Player = GetPlayer(_Event.UI);
+			if(_Event.CustomEventType == C_NeedRespawn){
+				Spawn(Player);
+			}
+			if(_Event.CustomEventType == C_ForcePlayer){
+				ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::PlayerSelectable);
+			}
+			if(_Event.CustomEventType == C_ForceSpectator){
+				ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::SpectatorSelectable);
+			}
 		}
 	}
 }
@@ -65,11 +70,8 @@ Void PassModeEvent(CSmModeEvent _Event){
 	if(GameState::IsWaitingOrPause()){
 		if((_Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn && _Event.GiveUp) || 
 			(_Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && _Event.IsFinish)){
-			Spawn(_Event.Player,Now + 1500);
+			Spawn(_Event.Player);
 		}
-		// if(_Event.Type == CSmModeEvent::EType::OnPlayerAdded){
-		// 	Spawn(_Event.Player,Now + 1500);
-		// }
 	}else{
 		if(_Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && _Event.IsFinish){
 			UnspawnPlayer(_Event.Player);

@@ -6,7 +6,6 @@
 	Text Name;
 	Text Model;
 	Text Directives;
-	Text Variables;
 	Text Functions;
 	Text Labels;
 	Text[] Dependencies;
@@ -14,7 +13,7 @@
 
 declare K_Component[Text] G_Components;
 
-Void CreateComponent(Text _Name,Text[] _Dependencies,Text _Model,Text _Directives,Text _Variables,Text _Functions, Text _Labels){
+Void CreateComponent(Text _Name,Text[] _Dependencies,Text _Model,Text _Directives,Text _Functions, Text _Labels){
 	assert(!G_Components.existskey(_Name),"""[CreateComponent] A Component with name {{{_Name}}} Already exists""");
 
 	foreach (Dep in _Dependencies) {
@@ -25,7 +24,6 @@ Void CreateComponent(Text _Name,Text[] _Dependencies,Text _Model,Text _Directive
 		Name = _Name,
 		Model = _Model,
 		Directives = _Directives,
-		Variables = _Variables,
 		Functions = _Functions,
 		Labels = _Labels,
 		Dependencies = _Dependencies
@@ -35,7 +33,6 @@ Void CreateComponent(Text _Name,Text[] _Dependencies,Text _Model,Text _Directive
 Text CreateManialink(Text _ComponentName){
 	assert(G_Components.existskey(_ComponentName),"""[CreateManialink] Component {{{_ComponentName}}} has not been created""");
 	
-
 	declare Text[] CompNames;
 	CompNames.add(_ComponentName);
 	declare Integer[Text] CompMaxDepth;
@@ -55,11 +52,9 @@ Text CreateManialink(Text _ComponentName){
 		Depth += 1;
 	}
 	CompMaxDepth = CompMaxDepth.sortreverse();
-	log(CompMaxDepth);
 
 	declare Text[] UsedModels;
 	declare Text[] UsedDirectives;
-	declare Text[] UsedVariables;
 	declare Text[] UsedFunctions;
 	declare Text[] UsedLabels;
 
@@ -67,7 +62,6 @@ Text CreateManialink(Text _ComponentName){
 		declare K_Component Comp = G_Components[CompName];
 		UsedModels.add(Comp.Model);
 		UsedDirectives.add(Comp.Directives);
-		UsedVariables.add(Comp.Variables);
 		UsedFunctions.add(Comp.Functions);
 		UsedLabels.add(Comp.Labels);
 	}
@@ -80,9 +74,9 @@ Text CreateManialink(Text _ComponentName){
 #Include "TextLib" as TL
 #Include "MathLib" as ML
 #Include "TimeLib" as TIL
+#Include "AnimLib" as AL
 
 {{{TL::Join("",UsedDirectives)}}}
-{{{TL::Join("",UsedVariables)}}}
 {{{TL::Join("",UsedFunctions)}}}
 {{{TL::Join("",UsedLabels)}}}
 
@@ -92,6 +86,10 @@ main(){
 	while(True){
 		yield;
 		+++Yield+++
+		foreach (Event in PendingEvents) {
+			+++Event+++
+		}
+		+++End+++
 	}
 }
 --></script>

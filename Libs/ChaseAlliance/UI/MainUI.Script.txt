@@ -20,7 +20,7 @@ Text _Model(){
 	declare Text RadarBackColor = Colors::ToDataText(Colors::C_Error);
 	declare Text RadarFillColor = Colors::ToDataText(Colors::C_AllianceDark);
 	return """
-<framemodel id="{{{C}}}" {{{Align::CC}}}>
+<framemodel id="{{{C}}}">
 	<frameinstance modelid="{{{Radar::C}}}" id="radar" pos="0 -50" 
 		data-fill-color="{{{RadarFillColor}}}" data-front-color="{{{RadarFrontColor}}}" data-back-color="{{{RadarBackColor}}}"/>
 	<frameinstance modelid="{{{LapCounter::C}}}" id="lap-counter" pos="135 82"/>
@@ -47,18 +47,18 @@ Text _Labels(){
 ***Yield***
 ***
 
-	declare CSmPlayer Owner <=> GetOwner();
-	declare K_{{{ChaseTeams::C}}} Team = {{{ChaseTeams::C}}}_GetTeam(Owner);
+	declare K_{{{ChaseTeams::C}}} Team = {{{ChaseTeams::C}}}_GetTeam(GUIPlayer);
 	declare CSmPlayer Relayer <=> GetPlayer(Team.RelayerLogin);
 	declare CSmPlayer PrevRelayer <=> GetPlayer(Team.PrevRelayerLogin);
 
-	{{{Radar::C}}}_Update(Radar,Owner,Relayer);
-	{{{RelayStatus::C}}}_Update(RelayStatus,Owner,Relayer,Team.RelayStarted,Team.PrevRelayWasSuccess,Team.CurrentCp,Team.PrevRelayerLogin);
-	{{{LapCounter::C}}}_Update(LapCounter,Owner,G_{{{Settings::C}}}.LapCount);
-	{{{RaceTimer::C}}}_Update(RaceTimer,Owner);
-	QualityMessageStartTime = {{{CheckpointQuality::C}}}_UpdateMessageTimout(CheckpointQuality,Owner,Team.CurrentCp,QualityMessageStartTime);
-	LastSuccessCpSpeed = {{{CheckpointQuality::C}}}_Update(CheckpointQuality,Owner,Relayer,PrevRelayer, Team.CurrentCp, Team.LastSuccessRelayCpTime, Team.PrevRelayWasSuccess, LastSuccessCpSpeed, QualityMessageStartTime);
+	{{{Radar::C}}}_Update(Radar,GUIPlayer,Relayer);
+	{{{RelayStatus::C}}}_Update(RelayStatus,GUIPlayer,Relayer,Team.RelayStarted,Team.PrevRelayWasSuccess,Team.CurrentCp,Team.PrevRelayerLogin);
+	{{{LapCounter::C}}}_Update(LapCounter,GUIPlayer,G_{{{Settings::C}}}.LapCount);
+	{{{RaceTimer::C}}}_Update(RaceTimer,GUIPlayer);
+	QualityMessageStartTime = {{{CheckpointQuality::C}}}_UpdateMessageTimout(CheckpointQuality,GUIPlayer,Team.CurrentCp,QualityMessageStartTime);
+	LastSuccessCpSpeed = {{{CheckpointQuality::C}}}_Update(CheckpointQuality,GUIPlayer,Relayer,PrevRelayer, Team.CurrentCp, Team.LastSuccessRelayCpTime, Team.PrevRelayWasSuccess, LastSuccessCpSpeed, QualityMessageStartTime);
 ***
+
 """;
 }
 
