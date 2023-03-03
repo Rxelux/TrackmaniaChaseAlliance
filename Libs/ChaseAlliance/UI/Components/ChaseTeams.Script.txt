@@ -11,7 +11,7 @@ Text _Directives(){
 	Text RelayerLogin;
 	Text PrevRelayerLogin;
 	Integer CurrentCp;
-	Integer CpLastSuccessRelay;
+	Integer LastRelaySuccessCp;
 	Integer CpCrossCount;
 	Boolean RelayStarted;
 	Boolean PrevRelayWasSuccess;
@@ -19,14 +19,9 @@ Text _Directives(){
 """;
 }
 
-Text _Variables(){
-	return """//!
-declare K_{{{C}}}[] G_{{{C}}};
-""";
-}
-
 Text _Functions(){
 	return """//!
+declare K_{{{C}}}[] G_{{{C}}};
 K_{{{C}}} {{{C}}}_GetTeam(CSmPlayer _Player){
 	if(_Player != Null){
 		declare Integer Clan = _Player.CurrentClan;
@@ -69,5 +64,5 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Manialink::Load();
-	Manialink::CreateComponent(C,[],"",_Directives(),_Variables(),_Functions(),_Labels());
+	Manialink::CreateComponent(C,[],"",_Directives(),_Functions(),_Labels());
 }

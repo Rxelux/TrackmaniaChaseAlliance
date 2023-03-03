@@ -1,5 +1,8 @@
-#Const C_AllianceGreenLight <0.15, 0.56, 0.27>
-#Const C_AllianceGreenDark <0.03, 0.47, 0.24>
+#Include "ColorLib" as CL
+
+
+#Const C_AllianceLightGreen <0.15, 0.56, 0.27>
+#Const C_AllianceDarkGreen <0.03, 0.47, 0.24>
 #Const C_AlliancePurple <0.2, 0.17, 0.22>
 #Const C_AllianceGrey <0.87, 0.86, 0.87>
 
@@ -13,6 +16,10 @@
 #Const C_Error <1.0, 0.0, 0.15>
 #Const C_Warning <1.0, 0.65, 0.0>
 
-Text ToDataText (Vec3 _V){
+Text ToDataText(Vec3 _V){
 	return """{{{_V.X}}} {{{_V.Y}}} {{{_V.Z}}}""";
+}
+
+Text ToHex6(Vec3 _V){
+	return CL::RgbToHex6(_V);
 }

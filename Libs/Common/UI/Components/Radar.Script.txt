@@ -119,5 +119,5 @@ Void Load() {
 	Manialink::Load();
 	CGauge::Load();
 	Common::Load();
-	Manialink::CreateComponent(C,[CGauge::C,"GetDataVec3"],_Model(),_Directives(),"",_Functions(),"");
+	Manialink::CreateComponent(C,[CGauge::C,"GetDataVec3"],_Model(),_Directives(),_Functions(),"");
 }
