@@ -57,21 +57,22 @@ Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlay
 	declare Real _LastSuccessCpSpeedrReturn = _LastSuccessCpSpeed;
 	if (_LastSuccessCpSpeed == 0 && _Relayer != Null && _Relayer.RaceWaypointTimes.count > _CurrentCp){
 		_LastSuccessCpSpeedrReturn = _Relayer.Speed;
+		
 	}
 	
 	_CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_ElapsedTimeSinceLastQualityMessage;
 
-	if(_Player != Null && _PrevRelayer != Null && _PrevRelayWasSuccess ){
+	// if(_Player != Null && _PrevRelayer != Null && _PrevRelayWasSuccess ){
 		
-		if (_Player.RaceWaypointTimes.count >= 1){
-			// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1]^" "^_LastSuccessRelayCpTime;
-	// 		// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _CurrentCpTime, 0., 0.);
-			if 	(_ElapsedTimeSinceLastQualityMessage < 2900){
-				_CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _LastSuccessRelayCpTime, _Player.Speed, _PrevRelayer.Speed);
-			}
+	// 	if (_Player.RaceWaypointTimes.count >= 1){
+	// 		// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1]^" "^_LastSuccessRelayCpTime;
+	// // 		// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _CurrentCpTime, 0., 0.);
+	// 		if 	(_ElapsedTimeSinceLastQualityMessage < 2900){
+	// 			_CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _LastSuccessRelayCpTime, _Player.Speed, _PrevRelayer.Speed);
+	// 		}
 	
-		}
-	}
+	// 	}
+	// }
 	
 	if (_LastSuccessCpSpeed != 0 && _Relayer != Null && _Relayer.RaceWaypointTimes.count == _CurrentCp){
 		_LastSuccessCpSpeedrReturn = _Relayer.Speed;
@@ -81,9 +82,9 @@ Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlay
 }
 
 
-Integer {{{C}}}_UpdateMessageTimout(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, Integer _QualityMessageStartTime){
+Integer {{{C}}}_UpdateMessageTimout(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, Integer _CurrentCp,Integer _QualityMessageStartTime){
 	
-	declare Integer _QualityMessageStartTimeReturn = _MessageStartTimeInMilliseconds;
+	declare Integer _QualityMessageStartTimeReturn = _QualityMessageStartTime;
 	if(_Player != Null && _Player.RaceWaypointTimes.count > _CurrentCp){
 		_QualityMessageStartTimeReturn = TIL::GetMillisecondsSinceInit ();
 	}

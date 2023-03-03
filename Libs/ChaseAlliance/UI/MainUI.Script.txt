@@ -56,7 +56,7 @@ Text _Labels(){
 	{{{RelayStatus::C}}}_Update(RelayStatus,Owner,Relayer,Team.RelayStarted,Team.PrevRelayWasSuccess,Team.CurrentCp,Team.PrevRelayerLogin);
 	{{{LapCounter::C}}}_Update(LapCounter,Owner,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer,Owner);
-	QualityMessageStartTime = {{{CheckpointQuality::C}}}_UpdateMessageTimout(CheckpointQuality,Owner,QualityMessageStartTime);
+	QualityMessageStartTime = {{{CheckpointQuality::C}}}_UpdateMessageTimout(CheckpointQuality,Owner,Team.CurrentCp,QualityMessageStartTime);
 	LastSuccessCpSpeed = {{{CheckpointQuality::C}}}_Update(CheckpointQuality,Owner,Relayer,PrevRelayer, Team.CurrentCp, Team.LastSuccessRelayCpTime, Team.PrevRelayWasSuccess, LastSuccessCpSpeed, QualityMessageStartTime);
 ***
 """;
