@@ -47,13 +47,20 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 Real CalculateRelayQuality(Integer _PlayerCpTime, Integer _RelayerCpTime, Real _PlayerCpSeeed, Real _RelayerCpSpeed){
 	declare Real TimeDelta = (ML::ToReal(_PlayerCpTime) - ML::ToReal(_RelayerCpTime))/1000;
 	declare Real RelativeSpeedDelta = ML::Clamp((_PlayerCpSeeed - _RelayerCpSpeed)/_RelayerCpSpeed, -2., 2.);
-	declare Real RelayQuality = ML::Max(0., ML::Min(10000., 10000*ML::Exp(-2*TimeDelta)*(0.8 + RelativeSpeedDelta)));
+	declare Real RelayQuality = ML::Max(0., ML::Min(10000., 10000*ML::Exp(-2*TimeDelta)*(0.85 + RelativeSpeedDelta)));
 	return RelayQuality;
 }
 
 Text RelayQualityToString(Real _RelayQuality){
-	// if (_RelayQuality < 2000)
+	if (_RelayQuality < 2000)
 		return "Ok";
+	if (_RelayQuality < 7000)
+		return "Good";
+	if (_RelayQuality < 9000)
+		return "Very Good";
+	if (_RelayQuality < 1000)
+		return "Excelent";
+	return "Legendary";
 }
 Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlayer _Relayer, CSmPlayer _PrevRelayer, Integer _CurrentCp, Integer _LastSuccessRelayCpTime, Boolean _PrevRelayWasSuccess, Real _LastSuccessCpSpeed, Integer _QualityMessageStartTime){
 	

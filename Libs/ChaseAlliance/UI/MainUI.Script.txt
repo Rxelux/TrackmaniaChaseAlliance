@@ -25,7 +25,7 @@ Text _Model(){
 		data-fill-color="{{{RadarFillColor}}}" data-front-color="{{{RadarFrontColor}}}" data-back-color="{{{RadarBackColor}}}"/>
 	<frameinstance modelid="{{{LapCounter::C}}}" id="lap-counter" pos="135 82"/>
 	<frameinstance modelid="{{{RaceTimer::C}}}" id="race-timer" pos="0 -82"/>
-	<frameinstance modelid="{{{CheckpointQuality::C}}}" id="checkpoint-quality" pos="0 20"/>
+	<frameinstance modelid="{{{CheckpointQuality::C}}}" id="checkpoint-quality" pos="0 40"/>
 	<frameinstance modelid="{{{RelayStatus::C}}}" id="relay-status" pos="0 -68"/>
 </framemodel>
 """;
