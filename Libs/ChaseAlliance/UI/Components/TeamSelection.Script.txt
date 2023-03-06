@@ -1,0 +1,89 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Button.Script.txt" as Button
+#Include "TextLib" as TL
+
+#Const C "TeamSelection"
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
+	<frameinstance modelid="{{{Button::C}}}" id="team-1" data-pos="38.6 18" data-move="30 0" data-text="{{{TL::Compose(_("Join %1"), Teams[0].Name)}}}" {{{Align::CC}}}/>
+	<frameinstance modelid="{{{Button::C}}}" id="team-2" data-pos="-26.4 18" data-move="-30 0" data-text="{{{TL::Compose(_("Join %1"), Teams[1].Name)}}}" {{{Align::CC}}}/>
+</framemodel>
+""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	K_{{{Button::C}}} Team1Button;
+	K_{{{Button::C}}} Team2Button;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare K_{{{Button::C}}} Team1Button = {{{Button::C}}}_Get(Root,"team-1");
+	declare K_{{{Button::C}}} Team2Button = {{{Button::C}}}_Get(Root,"team-2");
+	Team1Button.Quad.BgColorFocus = Teams[0].ColorUI;
+	Team2Button.Quad.BgColorFocus = Teams[1].ColorUI;
+	return K_{{{C}}}{
+		Root = Root,
+		Team1Button = Team1Button,
+		Team2Button = Team2Button
+	};
+}
+
+Void {{{C}}}_Enter(K_{{{C}}} _TeamSelection,Integer _StartTime){
+	{{{Button::C}}}_Enter(_TeamSelection.Team2Button,_StartTime);
+	{{{Button::C}}}_Enter(_TeamSelection.Team1Button,_StartTime+20);
+}
+
+Void {{{C}}}_Exit(K_{{{C}}} _TeamSelection,Integer _StartTime){
+	{{{Button::C}}}_Exit(_TeamSelection.Team2Button,_StartTime);
+	{{{Button::C}}}_Exit(_TeamSelection.Team1Button,_StartTime+20);
+}
+""";
+}
+
+Text _Labels(){
+	return """//!
+***{{{Button::C}}}_Event***
+***
+if(Event.Type == CMlScriptEvent::Type::MouseClick){
+	//check if the button event is from one of this component
+	if(Button.Root.Parent.HasClass("{{{C}}}")){
+		switch(Button.Root.ControlId){
+			case "team-1": {
+				+++{{{C}}}_JoinTeam1+++
+			}
+			case "team-2": {
+				+++{{{C}}}_JoinTeam2+++
+			}
+		}
+	}
+}
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Button::Load();
+	Manialink::CreateComponent(C,[Button::C],_Model(),_Directives(),_Functions(),_Labels());
+}

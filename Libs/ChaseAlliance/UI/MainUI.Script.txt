@@ -19,7 +19,7 @@ Text _Model(){
 	declare Text RadarBackColor = Colors::ToDataText(Colors::C_Error);
 	declare Text RadarFillColor = Colors::ToDataText(Colors::C_AllianceDark);
 	return """
-<framemodel id="{{{C}}}">
+<framemodel id="{{{C}}}" class="{{{C}}}">
 	<frameinstance modelid="{{{Radar::C}}}" id="radar" pos="0 -50" 
 		data-fill-color="{{{RadarFillColor}}}" data-front-color="{{{RadarFrontColor}}}" data-back-color="{{{RadarBackColor}}}"/>
 	<frameinstance modelid="{{{LapCounter::C}}}" id="lap-counter" pos="135 82"/>

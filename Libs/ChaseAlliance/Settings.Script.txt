@@ -3,6 +3,8 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 #Include "TextLib" as TL
 
+#Const C_MaxPlayerPerTeam 5
+
 #Struct K_Settings {
 	Integer LapCount;
 	Integer RelayerCount;
@@ -12,7 +14,7 @@
 
 declare K_Settings G_Settings;
 
-Void _ToNet(){
+Void ToNet(){
 	declare netwrite K_Settings Net_Settings for Teams[0] = G_Settings;
 	declare netwrite Integer Net_SettingsChange for Teams[0] = Now;
 	Net_Settings = G_Settings;
@@ -27,7 +29,6 @@ Void SetLapCount(Integer _Value){
 			CUIConfig::ENoticeLevel::MatchInfo, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
 		LapCountOverride = _Value;
 	}
-	_ToNet();
 }
 
 Void SetRelayerCount(Integer _Value){
@@ -38,7 +39,6 @@ Void SetRelayerCount(Integer _Value){
 			CUIConfig::ENoticeLevel::MatchInfo, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
 		ChaseTeams::SetRelayerCount(_Value);
 	}
-	_ToNet();
 }
 
 Void SetRelayGap(Integer _Value){
@@ -49,7 +49,6 @@ Void SetRelayGap(Integer _Value){
 			CUIConfig::ENoticeLevel::MatchInfo, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
 		ChaseTeams::SetRelayGap(_Value);
 	}
-	_ToNet();
 }
 
 Void SetRelaySortDelay(Integer _Value){
@@ -60,7 +59,6 @@ Void SetRelaySortDelay(Integer _Value){
 			CUIConfig::ENoticeLevel::MatchInfo, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
 		ChaseTeams::SetRelaySortDelay(_Value);
 	}
-	_ToNet();
 }
 
 Void ApplySettings(){
@@ -150,9 +148,11 @@ Void Load() {
 	if(G_Loaded)return;
 	Unload();
 	G_Loaded = True;
+	ApplySettings();
 	SetLapCount(5);
 	SetRelayerCount(3);
 	SetRelayGap(3);
 	SetRelaySortDelay(250);
+	ToNet();
 	ChaseTeams::Load();
 }

@@ -6,7 +6,7 @@
 
 Text _Model (){
 	return """
-<framemodel id="{{{C}}}" {{{Align::CC}}}>
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
 	<label id="lap-prefix-label" pos="-1 1.2" text="Lap" textfont="RajdhaniMono" textsize="6" {{{Align::RC}}}/>
 	<label id="lap-label" textfont="RajdhaniMono" textsize="12" {{{Align::LC}}}/>
 </framemodel>
