@@ -6,7 +6,7 @@
 
 Text _Model (){
 	return """
-<framemodel id="{{{C}}}" {{{Align::CC}}}>
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
 	<frame size="10 20" pos="5 0" {{{Align::CC}}}>
 		<quad id="left" pos="-5 0"  z-index="0" size="10 20" {{{C_HalfCircle}}} hidden="0" {{{Align::RC}}}  />
 	</frame>

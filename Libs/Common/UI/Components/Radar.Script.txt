@@ -10,7 +10,7 @@
 
 Text _Model (){
 	return """
-<framemodel id="{{{C}}}" {{{Align::CC}}}>
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
 	<quad id="circular-bg" size="20 20" {{{Align::CC}}} {{{C_Circle}}} opacity="0.9" />
 	<quad id="circular-border" size="20 20" {{{Align::CC}}} {{{C_CircleBorder}}} />
 	<frameinstance modelid="{{{CGauge::C}}}" id="distance-gauge" rot="180" scale="0.98" />

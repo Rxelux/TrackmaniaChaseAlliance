@@ -7,7 +7,7 @@
 
 Text _Model (){
 	return """
-<framemodel id="{{{C}}}" {{{Align::CC}}}>
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
 	<label id="relay-status" size="50 5" {{{Align::CC}}} textsize="4" style="TextRaceMessageBig" />
 </framemodel>
 """;

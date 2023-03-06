@@ -15,9 +15,9 @@ Text _Model(){
 	declare Text FocusColor = Colors::ToHex6(Colors::C_AllianceLightGreen);
 
 	return """
-<framemodel id="{{{C}}}" {{{Align::CC}}}>
-	<quad id="{{{C}}}-button" bgcolor="{{{IdleColor}}}" bgcolorfocus="{{{FocusColor}}}" scriptevents="1" {{{Align::CC}}} opacity="0"/>
-	<label id="text" textfont="RajdhaniMono" {{{Align::C2}}} opacity="0" textsize="3"/>
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
+	<quad id="{{{C}}}_button" bgcolor="{{{IdleColor}}}" bgcolorfocus="{{{FocusColor}}}" scriptevents="1" {{{Align::CC}}}/>
+	<label id="text" textfont="RajdhaniMono" textsize="3" {{{Align::C2}}}/>
 </framemodel>
 """;
 }
@@ -38,31 +38,30 @@ Text _Directives(){
 
 Text _Functions(){
 	return """//!
-K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
-	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
-	declare CMlLabel Label <=> (Root.GetFirstChild("text") as CMlLabel);
-	declare CMlQuad Quad <=> (Root.GetFirstChild("{{{C}}}-button") as CMlQuad);
 
-	declare Size = GetData(Root,"size",{{{C_DefaultSize}}});
-	declare Pos = GetData(Root,"pos",{{{C_DefaultPos}}});
-	declare Grow = GetData(Root,"grow",{{{C_DefaultGrow}}});
-	declare Move = GetData(Root,"move",{{{C_DefaultMove}}});
-
-	Root.RelativePosition_V3 = Pos;
-	Quad.Size = Size;
-	Label.Size = Size;
-	Label.Value = GetData(Root,"text","Button");
-
-	declare Return =  K_{{{C}}}{
-		Root = Root,
+K_{{{C}}} {{{C}}}_GetFromRoot(CMlFrame _Root) {
+	declare CMlLabel Label <=> (_Root.GetFirstChild("text") as CMlLabel);
+	declare CMlQuad Quad <=> (_Root.GetFirstChild("{{{C}}}_button") as CMlQuad);
+	return K_{{{C}}}{
+		Root = _Root,
 		Label = Label,
 		Quad = Quad,
-		Size = Size,
-		Pos = Pos,
-		Grow = Grow,
-		Move = Move
+		Size = GetData(_Root,"size",{{{C_DefaultSize}}}),
+		Pos = GetData(_Root,"pos",{{{C_DefaultPos}}}),
+		Grow = GetData(_Root,"grow",{{{C_DefaultGrow}}}),
+		Move = GetData(_Root,"move",{{{C_DefaultMove}}})
 	};
-	return Return;
+}
+
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare Button = {{{C}}}_GetFromRoot(Root);
+
+	Root.RelativePosition_V3 = Button.Pos;
+	Button.Quad.Size = Button.Size;
+	Button.Label.Size = Button.Size;
+	Button.Label.Value = GetData(Root,"text","Button");
+	return Button;
 }
 
 Void {{{C}}}_In(K_{{{C}}} _Button){
@@ -70,9 +69,9 @@ Void {{{C}}}_In(K_{{{C}}} _Button){
 	declare Size = _Button.Size;
 	declare Grow = _Button.Grow;
 
-	{{{Anims::C}}}_Animate(_Button.Label,"TextSize",0,"QuadOut",_Button.Label.TextSizeReal,6.,Now,200);
-	{{{Anims::C}}}_Animate(_Button.Quad,"SizeX",0,"QuadOut",_Button.Quad.Size.X,Size.X+Grow.X,Now,200);
-	{{{Anims::C}}}_Animate(_Button.Quad,"SizeY",0,"QuadOut",_Button.Quad.Size.Y,Size.Y+Grow.Y,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Label,"TextSize",0,"BackOut",_Button.Label.TextSizeReal,6.,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Quad,"SizeX",0,"BackOut",_Button.Quad.Size.X,Size.X+Grow.X,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Quad,"SizeY",0,"BackOut",_Button.Quad.Size.Y,Size.Y+Grow.Y,Now,200);
 	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",0,"QuadOut",_Button.Quad.Opacity,1.,Now,200);
 
 }
@@ -81,10 +80,10 @@ Void {{{C}}}_Out(K_{{{C}}} _Button){
 
 	declare Size = _Button.Size;
 
-	{{{Anims::C}}}_Animate(_Button.Label,"TextSize",0,"QuadOut",_Button.Label.TextSizeReal,3.,Now,200);
-	{{{Anims::C}}}_Animate(_Button.Quad,"SizeX",0,"QuadOut",_Button.Quad.Size.X,Size.X,Now,200);
-	{{{Anims::C}}}_Animate(_Button.Quad,"SizeY",0,"QuadOut",_Button.Quad.Size.Y,Size.Y,Now,200);
-	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",0,"QuadOut",_Button.Quad.Opacity,0.95,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Label,"TextSize",0,"BackOut",_Button.Label.TextSizeReal,3.,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Quad,"SizeX",0,"BackOut",_Button.Quad.Size.X,Size.X,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Quad,"SizeY",0,"BackOut",_Button.Quad.Size.Y,Size.Y,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",0,"QuadIn",_Button.Quad.Opacity,0.95,Now,200);
 
 }
 
@@ -96,22 +95,33 @@ Void {{{C}}}_Enter(K_{{{C}}} _Button,Integer _StartTime){
 	_Button.Root.RelativePosition_V3 = Pos-Move;
 	_Button.Quad.Opacity = 0.0;
 	_Button.Label.Opacity = 0.0;
+	_Button.Quad.ScriptEvents_Restore();
 
-	{{{Anims::C}}}_Animate(_Button.Root,"PosX",1,"ElasticOut",_Button.Root.RelativePosition_V3.X,Pos.X,_StartTime,1000);
-	{{{Anims::C}}}_Animate(_Button.Root,"PosY",1,"ElasticOut",_Button.Root.RelativePosition_V3.Y,Pos.Y,_StartTime,1000);
-	{{{Anims::C}}}_Animate(_Button.Label,"TextOpacity",1,"QuadOut",_Button.Label.Opacity,0.95,_StartTime,400);
-	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",1,"QuadOut",_Button.Quad.Opacity,0.95,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Root,"PosX",0,"BackOut",_Button.Root.RelativePosition_V3.X,Pos.X,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Root,"PosY",0,"BackOut",_Button.Root.RelativePosition_V3.Y,Pos.Y,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Label,"TextOpacity",0,"QuadOut",_Button.Label.Opacity,0.95,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",0,"QuadOut",_Button.Quad.Opacity,0.95,_StartTime,400);
 }
 
 Void {{{C}}}_Exit(K_{{{C}}} _Button,Integer _StartTime){
 
 	declare Pos = _Button.Pos;
 	declare Move = _Button.Move;
+	_Button.Quad.ScriptEvents_Disable();
 
-	{{{Anims::C}}}_Animate(_Button.Root,"PosX",1,"ElasticOut",_Button.Root.RelativePosition_V3.X,Pos.X+Move.X,_StartTime,1000);
-	{{{Anims::C}}}_Animate(_Button.Root,"PosY",1,"ElasticOut",_Button.Root.RelativePosition_V3.Y,Pos.Y+Move.Y,_StartTime,1000);
-	{{{Anims::C}}}_Animate(_Button.Label,"TextOpacity",1,"QuadOut",_Button.Label.Opacity,0.,_StartTime,400);
-	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",1,"QuadOut",_Button.Quad.Opacity,0.,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Root,"PosX",2,"BackOut",_Button.Root.RelativePosition_V3.X,Pos.X+Move.X,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Root,"PosY",2,"BackOut",_Button.Root.RelativePosition_V3.Y,Pos.Y+Move.Y,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Label,"TextOpacity",2,"QuadOut",_Button.Label.Opacity,0.,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",2,"QuadOut",_Button.Quad.Opacity,0.,_StartTime,400);
+}
+
+Void {{{C}}}_Handle(K_{{{C}}} _Button,CMlScriptEvent::Type _Type){
+	if(_Type == CMlScriptEvent::Type::MouseOver){
+		{{{C}}}_In(_Button);
+	}
+	if(_Type == CMlScriptEvent::Type::MouseOut){
+		{{{C}}}_Out(_Button);
+	}
 }
 """;
 }
@@ -120,11 +130,10 @@ Text _Labels(){
 	return """//!
 ***Event***
 ***
-if (Event.ControlId == "{{{C}}}-button") {
-	declare ControlId = Event.Control.Parent.ControlId;
-	if(ControlId != ""){
-		+++{{{C}}}_Event+++
-	}
+if (Event.ControlId == "{{{C}}}_button") {
+	declare K_{{{C}}} Button = {{{C}}}_GetFromRoot(Event.Control.Parent);
+	{{{C}}}_Handle(Button,Event.Type);
+	+++{{{C}}}_Event+++
 }
 ***
 """;

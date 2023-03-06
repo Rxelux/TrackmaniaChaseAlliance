@@ -6,7 +6,7 @@
 
 Text _Model (){
 	return """
-<framemodel id="{{{C}}}" {{{Align::CC}}}>
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
 	<label id="race-timer" textfont="RajdhaniMono" textsize="8" {{{Align::CC}}}/>
 </framemodel>
 """;

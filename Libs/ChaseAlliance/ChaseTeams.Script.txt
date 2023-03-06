@@ -76,7 +76,7 @@ Void SetRelaySortDelay(Integer _Delay){
 	G_RelaySortDelay = _Delay;
 }
 
-Void _ToNet(){
+Void ToNet(){
 	declare netwrite K_ChaseTeams[] Net_ChaseTeams for Teams[0] = G_ChaseTeams;
 	declare netwrite Integer Net_ChaseTeamsChange for Teams[0] = Now;
 	Net_ChaseTeams = G_ChaseTeams;
@@ -85,52 +85,42 @@ Void _ToNet(){
 
 Void _SetTeamMapPoint(Integer _Clan,Integer _Value){
 	G_ChaseTeams[_Clan-1].MapPoints = _Value;
-	_ToNet();
 }
 
 Void _SetTeamRoundPoint(Integer _Clan,Integer _Value){
 	G_ChaseTeams[_Clan-1].RoundPoints = _Value;
-	_ToNet();
 }
 
 Void _SetTeamRelayPoint(Integer _Clan,Integer _Value){
 	G_ChaseTeams[_Clan-1].RelayPoints = _Value;
-	_ToNet();
 }
 
 Void _SetTeamCurrentCp(Integer _Clan,Integer _Value){
 	G_ChaseTeams[_Clan-1].CurrentCp = _Value;
-	_ToNet();
 }
 
 Void _SetTeamLastRelaySuccessCp(Integer _Clan,Integer _Value){
 	G_ChaseTeams[_Clan-1].LastRelaySuccessCp= _Value;
-	_ToNet();
 }
 
 Void _SetTeamCpCrossCount(Integer _Clan,Integer _Value){
 	G_ChaseTeams[_Clan-1].CpCrossCount = _Value;
-	_ToNet();
 }
 
 Void _SetTeamRelayerLogin(Integer _Clan,Text _Value){
 	G_ChaseTeams[_Clan-1].RelayerLogin = _Value;
-	_ToNet();
 }
 
 Void _SetTeamPrevRelayerLogin(Integer _Clan,Text _Value){
 	G_ChaseTeams[_Clan-1].PrevRelayerLogin = _Value;
-	_ToNet();
 }
 
 Void _SetTeamRelayStarted(Integer _Clan,Boolean _Value){
 	G_ChaseTeams[_Clan-1].RelayStarted = _Value;
-	_ToNet();
 }
 
 Void _SetTeamPrevRelayWasSuccess(Integer _Clan,Boolean _Value){
 	G_ChaseTeams[_Clan-1].PrevRelayWasSuccess = _Value;
-	_ToNet();
 }
 
 Void _IncrementTeamRelayPoint(Integer _Clan){
@@ -147,30 +137,30 @@ Void _ResetTeamRelay(Integer _Clan){
 	_SetTeamPrevRelayWasSuccess(_Clan,True);
 }
 
-Void IncrementTeamRoundPoint(Integer _Clan){
+Void _IncrementTeamRoundPoint(Integer _Clan){
 	_SetTeamRoundPoint(_Clan,G_ChaseTeams[_Clan-1].RoundPoints + 1);
 }
 
-Void ResetTeamRoundPoint(Integer _Clan){
+Void _ResetTeamRoundPoint(Integer _Clan){
 	_SetTeamRoundPoint(_Clan,0);
 }
 
 Void ResetTeamsRoundPoint(){
-	ResetTeamRoundPoint(1);
-	ResetTeamRoundPoint(2);
+	_ResetTeamRoundPoint(1);
+	_ResetTeamRoundPoint(2);
 }
 
 Void IncrementTeamMapPoint(Integer _Clan){
 	_SetTeamMapPoint(_Clan,G_ChaseTeams[_Clan-1].MapPoints + 1);
 }
 
-Void ResetTeamMapPoint(Integer _Clan){
+Void _ResetTeamMapPoint(Integer _Clan){
 	_SetTeamMapPoint(_Clan,0);
 }
 
 Void ResetTeamsMapPoint(){
-	ResetTeamMapPoint(1);
-	ResetTeamMapPoint(2);
+	_ResetTeamMapPoint(1);
+	_ResetTeamMapPoint(2);
 }
 
 Void ResetTeamsRelay(){
@@ -204,11 +194,11 @@ Void PassModeEvent(CSmModeEvent _Event){
 
 Void PlayLoop(){
 	if(!IsComplete(1)){
-		IncrementTeamRoundPoint(2);
+		_IncrementTeamRoundPoint(2);
 		GameLoop::EndRound();
 	}
 	if(!IsComplete(2)){
-		IncrementTeamRoundPoint(1);
+		_IncrementTeamRoundPoint(1);
 		GameLoop::EndRound();
 	}
 
@@ -320,7 +310,11 @@ Void Unload() {
 	G_ChaseTeams.add(K_ChaseTeams{});
 	G_ChaseTeams.add(K_ChaseTeams{});
 	Teams[0].ColorPrimary = Colors::C_Team0Primary;
+	Teams[0].ColorUI = Colors::C_Team0Primary;
+	Teams[0].Name = "Team Azure";
 	Teams[1].ColorPrimary = Colors::C_Team1Primary;
+	Teams[1].ColorUI = Colors::C_Team1Primary;
+	Teams[1].Name = "Team Orange";
 	G_SMEId = 0;
 	G_RelayerCount = 3;
 	G_RelayGap = 3;

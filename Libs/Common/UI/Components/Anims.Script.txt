@@ -53,28 +53,27 @@ foreach (Control => AttrDic in _G_{{{C}}}) {
 		if((Anim.StartTime+Anim.Duration) < Now){
 			_G_{{{C}}}[Control].removekey(Attribute);
 			if(_G_{{{C}}}[Control].count == 0) _G_{{{C}}}.removekey(Control);
-		}else{
-			declare Value = AL::Ease(Anim.Function,Now-Anim.StartTime+0.,Anim.StartValue,Anim.ValueChange,Anim.Duration+0.);
-			switch (Attribute) {
-				case "SizeX":Control.Size.X = Value;
-				case "SizeY":Control.Size.Y = Value;
-				case "PosX":Control.RelativePosition_V3.X = Value;
-				case "PosY":Control.RelativePosition_V3.Y = Value;
-				case "Scale":Control.RelativeScale = Value;
-				case "Rot":Control.RelativeRotation = Value;
-				case "TextOpacity":(Control as CMlLabel).Opacity = Value;
-				case "TextColorX":(Control as CMlLabel).TextColor.X = Value;
-				case "TextColorY":(Control as CMlLabel).TextColor.Y = Value;
-				case "TextColorZ":(Control as CMlLabel).TextColor.Z = Value;
-				case "TextSize":(Control as CMlLabel).TextSizeReal = Value;
-				case "BgColorX":(Control as CMlQuad).BgColor.X = Value;
-				case "BgColorY":(Control as CMlQuad).BgColor.Y = Value;
-				case "BgColorZ":(Control as CMlQuad).BgColor.Z = Value;
-				case "BgColorFocusX":(Control as CMlQuad).BgColorFocus.X = Value;
-				case "BgColorFocusY":(Control as CMlQuad).BgColorFocus.Y = Value;
-				case "BgColorFocusZ":(Control as CMlQuad).BgColorFocus.Z = Value;
-				case "BgOpacity":(Control as CMlQuad).Opacity = Value;
-			}
+		}
+		declare Value = AL::Ease(Anim.Function,Now-Anim.StartTime+0.,Anim.StartValue,Anim.ValueChange,Anim.Duration+0.);
+		switch (Attribute) {
+			case "SizeX":Control.Size.X = Value;
+			case "SizeY":Control.Size.Y = Value;
+			case "PosX":Control.RelativePosition_V3.X = Value;
+			case "PosY":Control.RelativePosition_V3.Y = Value;
+			case "Scale":Control.RelativeScale = Value;
+			case "Rot":Control.RelativeRotation = Value;
+			case "TextOpacity":(Control as CMlLabel).Opacity = Value;
+			case "TextColorX":(Control as CMlLabel).TextColor.X = Value;
+			case "TextColorY":(Control as CMlLabel).TextColor.Y = Value;
+			case "TextColorZ":(Control as CMlLabel).TextColor.Z = Value;
+			case "TextSize":(Control as CMlLabel).TextSizeReal = Value;
+			case "BgColorX":(Control as CMlQuad).BgColor.X = Value;
+			case "BgColorY":(Control as CMlQuad).BgColor.Y = Value;
+			case "BgColorZ":(Control as CMlQuad).BgColor.Z = Value;
+			case "BgColorFocusX":(Control as CMlQuad).BgColorFocus.X = Value;
+			case "BgColorFocusY":(Control as CMlQuad).BgColorFocus.Y = Value;
+			case "BgColorFocusZ":(Control as CMlQuad).BgColorFocus.Z = Value;
+			case "BgOpacity":(Control as CMlQuad).Opacity = Value;
 		}
 	}
 }
