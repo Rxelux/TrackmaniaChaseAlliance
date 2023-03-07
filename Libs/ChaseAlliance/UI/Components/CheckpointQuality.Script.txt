@@ -10,7 +10,8 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" {{{Align::CC}}}>
-    <label id="checkpoint-quality-label" textfont="RajdhaniMono" textsize="12" {{{Align::LC}}}/>
+    <label size="60 10" id="checkpoint-quality-label" textfont="RajdhaniMono" textsize="5" {{{Align::LC}}}/>
+	<quad size="60 10" bluramount="500" bgcolor="333333" opacity="0.6" {{{Align::LC}}} />
 </framemodel>""";
 }
 
@@ -58,12 +59,12 @@ Text RelayQualityToString(Real _RelayQuality){
 		return "$888Good";
 	if (_RelayQuality < ML::NearestInteger(0.8*maxPoint))
 		return "$dd5Nice";
-	if (_RelayQuality < ML::NearestInteger(maxPoint))
+	if (_RelayQuality < ML::NearestInteger(1.0*maxPoint))
 		return "$fe0$sExcelent";
 	return "$91eLegendary";
 }
 Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlayer _Relayer, CSmPlayer _PrevRelayer, Integer _CurrentCp, Integer _LastSuccessRelayCpTime, Boolean _PrevRelayWasSuccess, Real _LastSuccessCpSpeed, Integer _QualityMessageStartTime){
-	
+	_CheckpointQualityLabel.Root.Visible = False;
 	declare Integer ElapsedTimeSinceLastQualityMessage = TIL::GetMillisecondsSinceInit () - _QualityMessageStartTime;
 
 	declare Real LastSuccessCpSpeedReturn = _LastSuccessCpSpeed;
@@ -80,10 +81,11 @@ Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlay
 			// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1]^" "^_LastSuccessRelayCpTime;
 	// 		// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _CurrentCpTime, 0., 0.);
 			if 	(ElapsedTimeSinceLastQualityMessage > 0 && ElapsedTimeSinceLastQualityMessage < 2900){
+				_CheckpointQualityLabel.Root.Visible = True;
 				if (_CheckpointQualityLabel.CheckpointQualityLabel.Value == ""){
 					declare Real RelayQuality = CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _LastSuccessRelayCpTime, _Player.Speed, _PrevRelayer.Speed);
 					declare Text RelayQualityText = RelayQualityToString(RelayQuality);
-					_CheckpointQualityLabel.CheckpointQualityLabel.Value = "$s"^RelayQuality^"PTS | "^RelayQualityText^""^;
+					_CheckpointQualityLabel.CheckpointQualityLabel.Value = "$s"^RelayQuality^"PTS | "^RelayQualityText;
 				}
 			}else{
 				_CheckpointQualityLabel.CheckpointQualityLabel.Value = "";
