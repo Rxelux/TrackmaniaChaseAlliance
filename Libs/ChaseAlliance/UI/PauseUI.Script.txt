@@ -68,7 +68,6 @@ Text _Labels(){
 
 ***Yield***
 ***
-
 if(G_ClosePageTimer != 0 && G_ClosePageTimer < Now){
 	G_ClosePageTimer = 0;
 	if(RequestSpectatorChange){
