@@ -54,7 +54,7 @@ Real CalculateRelayQuality(Integer _PlayerCpTime, Integer _RelayerCpTime, Real _
 }
 
 Text RelayQualityToString(Real _RelayQuality){
-	declare Integer maxPoint = 10069;
+	declare Integer maxPoint = 1000;
 	if (_RelayQuality < ML::NearestInteger(0.15*maxPoint))
 		return "$888Good";
 	if (_RelayQuality < ML::NearestInteger(0.8*maxPoint))
