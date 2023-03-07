@@ -10,8 +10,8 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" {{{Align::CC}}}>
-    <label size="60 10" id="checkpoint-quality-label" textfont="RajdhaniMono" textsize="5" {{{Align::LC}}}/>
-	<quad size="60 10" bluramount="500" bgcolor="333333" opacity="0.6" {{{Align::LC}}} />
+	<quad size="40 4" bluramount="500" bgcolor="333333" opacity="0.6" {{{Align::CC}}} />
+    <label size="40 4" id="checkpoint-quality-label" textfont="RajdhaniMono" textsize="2.5" {{{Align::CC}}}/>
 </framemodel>""";
 }
 
