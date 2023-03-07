@@ -61,8 +61,6 @@ Text _Labels(){
 ***
 	TeamSelection = {{{TeamSelection::C}}}_Get(Page.MainFrame,"team-select");
 	PauseMenu = {{{PauseMenu::C}}}_Get(Page.MainFrame,"pause-menu");
-
-	declare Boolean RequestSpectatorChange = False;
 	declare Boolean PageWasVisible;
 ***
 
@@ -70,16 +68,6 @@ Text _Labels(){
 ***
 if(G_ClosePageTimer != 0 && G_ClosePageTimer < Now){
 	G_ClosePageTimer = 0;
-	if(RequestSpectatorChange){
-		RequestSpectatorClient(!IsSpectator);
-		yield; //TODO do this properly, yield should not be called here but it's neccessary for RequestSpec to work
-		RequestSpectatorChange = False;
-		if(IsSpectator){
-			OpenOnTeamSelection = True;
-			yield; //Idem
-			ShowInGameMenu();
-		}
-	}
 	CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
 }
 ***
@@ -106,8 +94,15 @@ if(Event.Type == CMlScriptEvent::Type::KeyPress) {
 
 ***{{{PauseMenu::C}}}_SpectateClick***
 ***
-	RequestSpectatorChange = True;
-	ClosePage();
+	if(IsSpectator){
+		SendCustomEvent("{{{PlayersL::C_ChangeToPlayer}}}", []);
+		{{{PauseMenu::C}}}_Exit(PauseMenu,Now);
+		{{{TeamSelection::C}}}_Enter(TeamSelection,Now+200);
+		TeamSelection.Root.Show();
+	}else{
+		SendCustomEvent("{{{PlayersL::C_ChangeToSpec}}}", []);
+		ClosePage();
+	}
 ***
 
 ***{{{PauseMenu::C}}}_SwitchClick***

@@ -18,7 +18,6 @@
 	Integer RoundPoints;
 	Integer RelayPoints;
 	Text RelayerLogin;
-	Text PrevRelayerLogin;
 	Integer CurrentCp;
 	Integer LastRelaySuccessCp;
 	Integer CpCrossCount;
@@ -111,10 +110,6 @@ Void _SetTeamRelayerLogin(Integer _Clan,Text _Value){
 	G_ChaseTeams[_Clan-1].RelayerLogin = _Value;
 }
 
-Void _SetTeamPrevRelayerLogin(Integer _Clan,Text _Value){
-	G_ChaseTeams[_Clan-1].PrevRelayerLogin = _Value;
-}
-
 Void _SetTeamRelayStarted(Integer _Clan,Boolean _Value){
 	G_ChaseTeams[_Clan-1].RelayStarted = _Value;
 }
@@ -197,11 +192,15 @@ Void PlayLoop(){
 		_IncrementTeamRoundPoint(2);
 		GameLoop::EndRound();
 		ToNet();
+		Log("Playing -> Team 1 is Not complete");
+
 	}
 	if(!IsComplete(2)){
 		_IncrementTeamRoundPoint(1);
 		GameLoop::EndRound();
 		ToNet();
+		Log("Waiting -> Team2 is Not complete");
+
 	}
 
 	declare K_SME[] SMEToRemove = [];
@@ -236,7 +235,6 @@ Void PlayLoop(){
 				_IncrementTeamRelayPoint(Player.CurrentClan);
 				_SetTeamRelayerLogin(Player.CurrentClan,"");//reset relayer
 				_SetTeamPrevRelayWasSuccess(Player.CurrentClan,True);
-				_SetTeamPrevRelayerLogin(Player.CurrentClan,Player.User.Login);
 				_SetTeamLastRelaySuccessCp(Player.CurrentClan,Player.RaceWaypointTimes.count);
 				Messages::SendBig(Player.CurrentClan,"$"^TL::ColorToText(Colors::C_Success)^"Relay Success",3000,CUIConfig::EUISound::ScoreProgress);
 				Messages::SendStatus(Player.CurrentClan,"",0,CUIConfig::EUISound::Silence);
