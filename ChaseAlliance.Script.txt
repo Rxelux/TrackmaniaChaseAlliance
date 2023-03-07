@@ -94,18 +94,20 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
 // Markers::AttachMarkers();
-Warn(""^GameState::GetStateText());
 if(GameState::IsWaiting()){
 	if(ChaseTeams::AreComplete()){
 		GameState::SetPlaying();
 		PlayersL::ForceSpecClan0();
 	}
-	PlayersL::SpawnAll(StartTime);
 }
-if(GameState::IsPlaying() && !ChaseTeams::AreComplete()){
-	GameState::SetWaiting();
-	PlayersL::SpawnAll(StartTime);
+if(GameState::IsPlaying()){
+	if(!ChaseTeams::AreComplete()){
+		GameState::SetWaiting();
+	}else{
+		PlayersL::ForceSpecClan0();
+	}
 }
+PlayersL::SpawnAll(StartTime);
 ***
 
 ***PlayLoop***

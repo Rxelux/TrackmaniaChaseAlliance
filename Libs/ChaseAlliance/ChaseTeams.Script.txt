@@ -201,15 +201,11 @@ Void PlayLoop(){
 	if(!IsComplete(1)){
 		_IncrementTeamRoundPoint(2);
 		GameLoop::EndRound();
-		Log("Is playing , ChaseTeams are Not complete");
-
 		ToNet();
 	}
 	if(!IsComplete(2)){
 		_IncrementTeamRoundPoint(1);
 		GameLoop::EndRound();
-		Log("Is playing , ChaseTeams are Not complete");
-
 		ToNet();
 	}
 
