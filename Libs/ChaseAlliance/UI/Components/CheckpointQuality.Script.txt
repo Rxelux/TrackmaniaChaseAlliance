@@ -10,8 +10,8 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" {{{Align::CC}}}>
-	<quad size="40 4" bluramount="500" bgcolor="333333" opacity="0.6" {{{Align::CC}}} />
-    <label size="40 4" id="checkpoint-quality-label" textfont="RajdhaniMono" textsize="2.5" {{{Align::CC}}}/>
+	<quad size="30 6" bluramount="500" bgcolor="333333" opacity="0.6" {{{Align::CC}}} />
+    <label size="30 6" id="checkpoint-quality-label" textfont="RajdhaniMono" textsize="2.5" {{{Align::CC}}}/>
 </framemodel>""";
 }
 
@@ -85,7 +85,7 @@ Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlay
 				if (_CheckpointQualityLabel.CheckpointQualityLabel.Value == ""){
 					declare Real RelayQuality = CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _LastSuccessRelayCpTime, _Player.Speed, _PrevRelayer.Speed);
 					declare Text RelayQualityText = RelayQualityToString(RelayQuality);
-					_CheckpointQualityLabel.CheckpointQualityLabel.Value = "$s"^RelayQuality^"PTS | "^RelayQualityText;
+					_CheckpointQualityLabel.CheckpointQualityLabel.Value = "$s"^ML::NearestInteger(RelayQuality)^" PTS | "^RelayQualityText;
 				}
 			}else{
 				_CheckpointQualityLabel.CheckpointQualityLabel.Value = "";
