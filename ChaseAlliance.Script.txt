@@ -94,7 +94,6 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
 // Markers::AttachMarkers();
-Warn(""^GameState::GetStateText());
 if(GameState::IsWaiting()){
 	if(ChaseTeams::AreComplete()){
 		GameState::SetPlaying();

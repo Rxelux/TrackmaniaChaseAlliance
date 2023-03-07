@@ -28,7 +28,6 @@ Boolean _SetClan(CSmPlayer _Player,Integer _Clan){
 
 Void Spawn(CSmPlayer _Player,Integer _When){
 	if (_Player == Null) return;
-	Warn(""^_Player.User.Name);
 	if(_Player.User.IsFakeUser){
 		_SetClan(_Player,_Player.RequestedClan);
 		SpawnPlayer(
