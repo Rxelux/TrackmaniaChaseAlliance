@@ -1,0 +1,46 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+
+#Const C "GameState"
+
+Text _Directives(){
+	return """//!
+	#Const C_{{{C}}}_Playing 0
+	#Const C_{{{C}}}_Waiting 1
+	#Const C_{{{C}}}_Pause 2
+""";
+}
+
+Text _Functions(){
+	return """//!
+declare Integer G_{{{C}}};
+""";
+}
+
+Text _Labels(){
+	return """//!
+***Init***
+***
+	declare netread Integer Net_{{{C}}} for Teams[0];
+***
+
+***Yield***
+***
+	if(G_{{{C}}} != Net_{{{C}}}){
+		G_{{{C}}} = Net_{{{C}}};
+	}
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],"",_Directives(),_Functions(),_Labels());
+}

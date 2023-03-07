@@ -1,6 +1,8 @@
 //#RequireContext CSmMode
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/Common/Messages.Script.txt" as Messages
+
 #Include "TextLib" as TL
 
 #Const C_Playing 0
@@ -28,19 +30,16 @@ Text GetStateText(){
 	return "?";
 }
 
+
+
 Boolean IsPlaying(){
 	return G_GameState == C_Playing;
 }
 Void SetPlaying(){
 	G_GameState = C_Playing;
 	PreventGiveUp();
+	Messages::SendStatus(UIManager.UIAll,_("Starting in..."),3000,CUIConfig::EUISound::Warning);
 }
-Void SendPlayingNotice(){
-	UIManager.UIAll.SendNotice(
-		"$"^TL::ColorToText(Colors::C_Success)^"Starting round!", 
-		CUIConfig::ENoticeLevel::MatchWarning, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
-}
-
 
 Boolean IsWaiting(){
 	return G_GameState == C_Waiting;
@@ -48,14 +47,7 @@ Boolean IsWaiting(){
 Void SetWaiting(){
 	G_GameState = C_Waiting;
 	AllowGiveUp();
-	foreach (Player in Players) {
-		Player.Dossard_Color = <1.0,0.6,0.2>;
-	}
-}
-Void SendWaitingNotice(){
-	UIManager.UIAll.SendNotice(
-		"$"^TL::ColorToText(Colors::C_Warning)^"Waiting for players!", 
-		CUIConfig::ENoticeLevel::MatchWarning, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
+	Messages::SendStatus(UIManager.UIAll,_("Waiting for players"),0, CUIConfig::EUISound::Warning);
 }
 
 Boolean IsPause(){
@@ -83,7 +75,7 @@ Void PassLibEvent(Events::K_Event _Event){
 declare Boolean G_Loaded;
 Void Unload() {
 	G_Loaded = False;
-	G_GameState = 1;//"Waiting";
+	SetWaiting();
 }
 
 Void Load() {

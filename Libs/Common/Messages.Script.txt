@@ -13,7 +13,11 @@ Void _AddMessage(Ident _Id,Boolean _IsBig,Integer _Duration){
 }
 
 Void _AddMessage(CUIConfig _UIConfig,Boolean _IsBig,Integer _Duration){
-	_AddMessage(GetPlayer(_UIConfig).Id,_IsBig,_Duration);
+	if(_UIConfig == UIManager.UIAll){
+		_AddMessage(NullId,_IsBig,_Duration);
+	}else{
+		_AddMessage(GetPlayer(_UIConfig).Id,_IsBig,_Duration);
+	}
 }
 
 Void _RemoveMessage(Ident _Id,Boolean _IsBig){
@@ -24,7 +28,11 @@ Void _RemoveMessage(Ident _Id,Boolean _IsBig){
 	}
 }
 Void _RemoveMessage(CUIConfig _UIConfig,Boolean _IsBig){
-	_RemoveMessage(GetPlayer(_UIConfig).Id,_IsBig);
+	if(_UIConfig == UIManager.UIAll){
+		_RemoveMessage(NullId,_IsBig);
+	}else{
+		_RemoveMessage(GetPlayer(_UIConfig).Id,_IsBig);
+	}
 }
 
 Void _Send(CUIConfig _UIConfig,Text _Message,Integer _Duration,CUIConfig::EUISound _Sound,Boolean _IsBig){
@@ -148,31 +156,38 @@ Void ClearAll(){
 
 Void Yield(){
 	foreach (Idnt => ExpireAt in G_BigMessages) {
-
-		if(!Players.existskey(Idnt)) {
-			_RemoveMessage(Idnt,True);
-			continue;
+		if(Now < ExpireAt) continue;
+		if(Idnt == NullId){
+			ClearBig(UIManager.UIAll);
+		}else{
+			if(!Players.existskey(Idnt)) {
+				_RemoveMessage(Idnt,True);
+				continue;
+			}
+			declare CUIConfig UI = UIManager.GetUI(Players[Idnt]);
+			if(UI == Null) {
+				_RemoveMessage(Idnt,True);
+				continue;
+			}
+			ClearBig(UI);
 		}
-		declare CSmPlayer Player = Players[Idnt];
-		declare CUIConfig UI = UIManager.GetUI(Player);
-		if(UI == Null) {
-			_RemoveMessage(Idnt,True);
-			continue;
-		}
-		if(Now > ExpireAt) ClearBig(UI);
 	}
 	foreach (Idnt => ExpireAt in G_StatusMessages) {
-		if(!Players.existskey(Idnt)) {
-			_RemoveMessage(Idnt,False);
-			continue;
+		if(Now < ExpireAt) continue;
+		if(Idnt == NullId){
+			ClearStatus(UIManager.UIAll);
+		}else{
+			if(!Players.existskey(Idnt)) {
+				_RemoveMessage(Idnt,False);
+				continue;
+			}
+			declare CUIConfig UI = UIManager.GetUI(Players[Idnt]);
+			if(UI == Null) {
+				_RemoveMessage(Idnt,False);
+				continue;
+			}
+			ClearStatus(UI);
 		}
-		declare CSmPlayer Player = Players[Idnt];
-		declare CUIConfig UI = UIManager.GetUI(Player);
-		if(UI == Null) {
-			_RemoveMessage(Idnt,False);
-			continue;
-		}
-		if(Now > ExpireAt) ClearStatus(UI);
 	}
 }
 
