@@ -1,0 +1,105 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Button.Script.txt" as Button
+#Include "TextLib" as TL
+
+#Const C "PauseMenu"
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
+	<frameinstance modelid="{{{Button::C}}}" id="switch" data-size="50 10" data-pos="6.6 18" data-text="{{{_("Change team")}}}"/>
+	<frameinstance modelid="{{{Button::C}}}" id="spectate" data-size="50 10" data-pos="2.2 6" data-text="{{{_("Spectate")}}}"/>
+	<frameinstance modelid="{{{Button::C}}}" id="quit"  data-size="50 10" data-pos="-2.2 -6" data-text="{{{_("Quit")}}}"/>
+	<frameinstance modelid="{{{Button::C}}}" id="close" data-size="50 10" data-pos="-6.6 -18" data-text="{{{ _("Close")}}}"/>
+</framemodel>
+""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	K_{{{Button::C}}} SpectateButton;
+	K_{{{Button::C}}} SwitchButton;
+	K_{{{Button::C}}} QuitButton;
+	K_{{{Button::C}}} CloseButton;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare K_{{{Button::C}}} SpectateButton = {{{Button::C}}}_Get(Root,"spectate");
+	declare K_{{{Button::C}}} SwitchButton = {{{Button::C}}}_Get(Root,"switch");
+	declare K_{{{Button::C}}} QuitButton = {{{Button::C}}}_Get(Root,"quit");
+	declare K_{{{Button::C}}} CloseButton = {{{Button::C}}}_Get(Root,"close");
+	return K_{{{C}}}{
+		Root = Root,
+		SpectateButton = SpectateButton,
+		SwitchButton = SwitchButton,
+		QuitButton = QuitButton,
+		CloseButton = CloseButton
+	};
+}
+
+Void {{{C}}}_Enter(K_{{{C}}} _PauseMenu,Integer _StartTime){
+	{{{Button::C}}}_Enter(_PauseMenu.SwitchButton,_StartTime);
+	{{{Button::C}}}_Enter(_PauseMenu.SpectateButton,_StartTime+20);
+	{{{Button::C}}}_Enter(_PauseMenu.QuitButton,_StartTime+40);
+	{{{Button::C}}}_Enter(_PauseMenu.CloseButton,_StartTime+60);
+}
+
+Void {{{C}}}_Exit(K_{{{C}}} _PauseMenu,Integer _StartTime){
+	{{{Button::C}}}_Exit(_PauseMenu.SwitchButton,_StartTime);
+	{{{Button::C}}}_Exit(_PauseMenu.SpectateButton,_StartTime+20);
+	{{{Button::C}}}_Exit(_PauseMenu.QuitButton,_StartTime+40);
+	{{{Button::C}}}_Exit(_PauseMenu.CloseButton,_StartTime+60);
+}
+""";
+}
+
+Text _Labels(){
+	return """//!
+***{{{Button::C}}}_Event***
+***
+if(Event.Type == CMlScriptEvent::Type::MouseClick){
+	//check if the button event is from one of this component
+	if(Button.Root.Parent.HasClass("{{{C}}}")){
+		switch(Button.Root.ControlId){
+			case "spectate": {
+				+++{{{C}}}_SpectateClick+++
+			}
+			case "switch": {
+				+++{{{C}}}_SwitchClick+++
+			}
+			case "quit": {
+				+++{{{C}}}_QuitClick+++
+			}
+			case "close": {
+				+++{{{C}}}_CloseClick+++
+			}
+		}
+	}
+}
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Button::Load();
+	Manialink::CreateComponent(C,[Button::C],_Model(),_Directives(),_Functions(),_Labels());
+}

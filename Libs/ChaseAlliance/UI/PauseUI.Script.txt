@@ -1,0 +1,165 @@
+//#RequireContext CSmMlScriptIngame
+#Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/TeamSelection.Script.txt" as TeamSelection
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/PauseMenu.Script.txt" as PauseMenu
+#Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
+
+#Const C "PauseUI"
+
+Text _Model(){
+	return """
+<framemodel id="{{{C}}}" class="{{{C}}}">
+	<frameinstance modelid="{{{TeamSelection::C}}}" id="team-select"/>
+	<frameinstance modelid="{{{PauseMenu::C}}}" id="pause-menu"/>
+</framemodel>
+""";
+}
+
+Text _Functions(){
+	return """//!
+
+declare K_{{{TeamSelection::C}}} TeamSelection;
+declare K_{{{PauseMenu::C}}} PauseMenu;
+declare Boolean OpenOnTeamSelection;
+
+Void OpenPage(){
+	if(OpenOnTeamSelection){
+		OpenOnTeamSelection = False;
+		TeamSelection.Root.Show();
+		PauseMenu.Root.Hide();
+		{{{TeamSelection::C}}}_Enter(TeamSelection,Now+200);
+	}else{
+		TeamSelection.Root.Hide();
+		PauseMenu.Root.Show();
+		{{{PauseMenu::C}}}_Enter(PauseMenu,Now);
+	}
+	if(IsSpectator){
+		PauseMenu.SpectateButton.Label.Value = _("Resume");
+		PauseMenu.SwitchButton.Root.Hide();
+	}else{
+		PauseMenu.SpectateButton.Label.Value = _("Spectate");
+		PauseMenu.SwitchButton.Root.Show();
+	}
+}
+
+declare Integer G_ClosePageTimer;
+
+Void ClosePage(){
+	if(G_ClosePageTimer == 0){
+		G_ClosePageTimer = Now+500;
+		{{{PauseMenu::C}}}_Exit(PauseMenu,Now);
+		{{{TeamSelection::C}}}_Exit(TeamSelection,Now);
+	}
+}
+""";
+}
+
+Text _Labels(){
+	return """//!
+***Init***
+***
+	TeamSelection = {{{TeamSelection::C}}}_Get(Page.MainFrame,"team-select");
+	PauseMenu = {{{PauseMenu::C}}}_Get(Page.MainFrame,"pause-menu");
+
+	declare Boolean RequestSpectatorChange = False;
+	declare Boolean PageWasVisible;
+***
+
+***Yield***
+***
+
+if(G_ClosePageTimer != 0 && G_ClosePageTimer < Now){
+	G_ClosePageTimer = 0;
+	if(RequestSpectatorChange){
+		RequestSpectatorClient(!IsSpectator);
+		yield; //TODO do this properly, yield should not be called here but it's neccessary for RequestSpec to work
+		RequestSpectatorChange = False;
+		if(IsSpectator){
+			OpenOnTeamSelection = True;
+			yield; //Idem
+			ShowInGameMenu();
+		}
+	}
+	CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+}
+***
+
+***End***
+***
+if(!PageIsVisible && PageWasVisible){
+	PageWasVisible = False;
+}
+if(PageIsVisible && !PageWasVisible){
+	OpenPage();
+	PageWasVisible = True;
+}
+***
+
+***Event***
+***
+if(Event.Type == CMlScriptEvent::Type::KeyPress) {
+	if(PageWasVisible && Event.KeyName == "Escape" && G_ClosePageTimer == 0){
+		ClosePage();
+	}
+}
+***
+
+***{{{PauseMenu::C}}}_SpectateClick***
+***
+	RequestSpectatorChange = True;
+	ClosePage();
+***
+
+***{{{PauseMenu::C}}}_SwitchClick***
+***
+SendCustomEvent("{{{PlayersL::C_ChangeClan}}}", ["0"]);
+{{{PauseMenu::C}}}_Exit(PauseMenu,Now);
+{{{TeamSelection::C}}}_Enter(TeamSelection,Now+200);
+TeamSelection.Root.Show();
+***
+
+***{{{PauseMenu::C}}}_QuitClick***
+***
+	CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Quit);
+***
+
+***{{{PauseMenu::C}}}_CloseClick***
+***
+	ClosePage();
+***
+
+***{{{TeamSelection::C}}}_JoinTeam1***
+***
+	SendCustomEvent("{{{PlayersL::C_ChangeClan}}}", ["1"]);
+	ClosePage();
+***
+
+***{{{TeamSelection::C}}}_JoinTeam2***
+***
+	SendCustomEvent("{{{PlayersL::C_ChangeClan}}}", ["2"]);
+	ClosePage();
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+	Layers::Destroy(C);
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	PlayersL::Load();
+	TeamSelection::Load();
+	PauseMenu::Load();
+	Manialink::CreateComponent(C,[TeamSelection::C,PauseMenu::C],_Model(),"",_Functions(),_Labels());
+	Layers::Load();
+	Layers::Create(C,Manialink::CreateManialink(C));
+	Layers::SetType(C,CUILayer::EUILayerType::InGameMenu);
+	Layers::AttachAll(C);
+}

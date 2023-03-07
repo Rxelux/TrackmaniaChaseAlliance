@@ -14,7 +14,7 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
-#Include "ChaseAlliance/Libs/ChaseAlliance/UI/QuitMenu.Script.txt" as QuitMenu
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/PauseUI.Script.txt" as PauseUI
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/MainUI.Script.txt" as MainUI
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Markers.Script.txt" as Markers
 
@@ -41,7 +41,7 @@ GameState::Load();
 PlayersL::Load();
 Settings::Load();
 ChaseTeams::Load();
-QuitMenu::Load();
+PauseUI::Load();
 MainUI::Load();
 // Markers::Load();
 Commands::AddPermittedUser("pTuyJG9STcCN_11BiU3t0Q");
@@ -51,13 +51,12 @@ Commands::AddPermittedUser("V_vWwMxbQqO0GgDYtK3zTg");
 ***StartScript***
 ***
 Log("StartScript");
-Settings::ApplySettings();
 ***
 
 ***StartMatch***
 ***
 Log("StartMatch");
-ChaseTeams::ResetChaseTeams();
+ChaseTeams::ResetTeamsMapPoint();
 ***
 
 ***BeforeLoadMap***
@@ -88,6 +87,7 @@ Settings::SetLapCount(S_LapCount);
 Settings::SetRelayerCount(S_RelayerCount);
 Settings::SetRelayGap(S_RelayGap);
 Settings::SetRelaySortDelay(S_RelaySortDelay);
+Settings::ToNet();
 ChaseTeams::ResetTeamsRelay();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
