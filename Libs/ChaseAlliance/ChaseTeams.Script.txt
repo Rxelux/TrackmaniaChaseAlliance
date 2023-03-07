@@ -110,7 +110,6 @@ Void _SetTeamCpCrossCount(Integer _Clan,Integer _Value){
 
 Void _SetTeamLastSuccessRelayCpTime(Integer _Clan,Integer _Value){
 	G_ChaseTeams[_Clan-1].LastSuccessRelayCpTime = _Value;
-	_ToNet();
 }
 
 Void _SetTeamRelayerLogin(Integer _Clan,Text _Value){
