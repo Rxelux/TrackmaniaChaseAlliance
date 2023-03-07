@@ -92,20 +92,19 @@ ChaseTeams::ResetTeamsRelay();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
-PlayersL::SpawnAll(StartTime);
 // Markers::AttachMarkers();
-
-if(ChaseTeams::AreComplete()){
-	GameState::SetPlaying();
-}else{
-	GameState::SetWaiting();
-	GameState::SendWaitingNotice();
+Warn(""^GameState::GetStateText());
+if(GameState::IsWaiting()){
+	if(ChaseTeams::AreComplete()){
+		GameState::SetPlaying();
+		PlayersL::ForceSpecClan0();
+	}
+	PlayersL::SpawnAll(StartTime);
 }
-Warn(GameState::GetStateText());
-// UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, "test");
-// EndTime = Now + 3000;
-
-
+if(GameState::IsPlaying() && !ChaseTeams::AreComplete()){
+	GameState::SetWaiting();
+	PlayersL::SpawnAll(StartTime);
+}
 ***
 
 ***PlayLoop***
@@ -116,7 +115,7 @@ if(GameState::IsPlaying()){
 if(GameState::IsWaiting()){
 	if(ChaseTeams::AreComplete()){
 		GameLoop::EndRound();
-		GameState::SendPlayingNotice();
+		GameState::SetPlaying();
 	}
 }
 ***
@@ -166,7 +165,6 @@ foreach (Event in UIManager.PendingEvents) {
 	Commands::PassUIEvent(Event);
 	Controller::PassUIEvent(Event);
 	PlayersL::PassUIEvent(Event);
-
 }
 foreach (Event in PendingEvents){
 	Commands::PassModeEvent(Event);

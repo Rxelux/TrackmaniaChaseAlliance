@@ -201,10 +201,16 @@ Void PlayLoop(){
 	if(!IsComplete(1)){
 		_IncrementTeamRoundPoint(2);
 		GameLoop::EndRound();
+		Log("Is playing , ChaseTeams are Not complete");
+
+		ToNet();
 	}
 	if(!IsComplete(2)){
 		_IncrementTeamRoundPoint(1);
 		GameLoop::EndRound();
+		Log("Is playing , ChaseTeams are Not complete");
+
+		ToNet();
 	}
 
 	declare K_SME[] SMEToRemove = [];
@@ -307,6 +313,9 @@ Void PlayLoop(){
 			Log("Crossed a previous cp");
 		}
 		_RemoveSortedEvent(Event);
+	}
+	if(SMEToRemove.count > 0){
+		ToNet();
 	}
 }
 

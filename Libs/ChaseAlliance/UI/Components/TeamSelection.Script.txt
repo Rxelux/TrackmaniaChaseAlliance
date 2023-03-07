@@ -9,8 +9,8 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
-	<frameinstance modelid="{{{Button::C}}}" id="team-1" data-pos="38.6 18" data-move="30 0" data-text="{{{TL::Compose(_("Join %1"), Teams[0].Name)}}}" {{{Align::CC}}}/>
-	<frameinstance modelid="{{{Button::C}}}" id="team-2" data-pos="-26.4 18" data-move="-30 0" data-text="{{{TL::Compose(_("Join %1"), Teams[1].Name)}}}" {{{Align::CC}}}/>
+	<frameinstance modelid="{{{Button::C}}}" id="team-1" data-pos="-26.4 18" data-move="-30 0" data-text="{{{TL::Compose(_("Join %1"), Teams[0].Name)}}}" {{{Align::CC}}}/>
+	<frameinstance modelid="{{{Button::C}}}" id="team-2" data-pos="38.6 18" data-move="30 0" data-text="{{{TL::Compose(_("Join %1"), Teams[1].Name)}}}" {{{Align::CC}}}/>
 </framemodel>
 """;
 }
