@@ -3,6 +3,7 @@
 #Include "MathLib" as ML
 #Include "TimeLib" as TIL
 
+
 #Const C "CheckpointQuality"
 
 
@@ -52,15 +53,14 @@ Real CalculateRelayQuality(Integer _PlayerCpTime, Integer _RelayerCpTime, Real _
 }
 
 Text RelayQualityToString(Real _RelayQuality){
-	if (_RelayQuality < 2000)
-		return "Ok";
-	if (_RelayQuality < 7000)
-		return "Good";
-	if (_RelayQuality < 9000)
-		return "Very Good";
-	if (_RelayQuality < 1000)
-		return "Excelent";
-	return "Legendary";
+	declare Integer maxPoint = 10069;
+	if (_RelayQuality < ML::NearestInteger(0.15*maxPoint))
+		return "$888Good";
+	if (_RelayQuality < ML::NearestInteger(0.8*maxPoint))
+		return "$dd5Nice";
+	if (_RelayQuality < ML::NearestInteger(maxPoint))
+		return "$fe0$sExcelent";
+	return "$91eLegendary";
 }
 Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlayer _Relayer, CSmPlayer _PrevRelayer, Integer _CurrentCp, Integer _LastSuccessRelayCpTime, Boolean _PrevRelayWasSuccess, Real _LastSuccessCpSpeed, Integer _QualityMessageStartTime){
 	
@@ -83,7 +83,7 @@ Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlay
 				if (_CheckpointQualityLabel.CheckpointQualityLabel.Value == ""){
 					declare Real RelayQuality = CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _LastSuccessRelayCpTime, _Player.Speed, _PrevRelayer.Speed);
 					declare Text RelayQualityText = RelayQualityToString(RelayQuality);
-					_CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^RelayQualityText^" "^RelayQuality;
+					_CheckpointQualityLabel.CheckpointQualityLabel.Value = "$s"^RelayQuality^"PTS | "^RelayQualityText^""^;
 				}
 			}else{
 				_CheckpointQualityLabel.CheckpointQualityLabel.Value = "";
