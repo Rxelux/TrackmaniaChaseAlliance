@@ -99,14 +99,15 @@ if(GameState::IsWaiting()){
 		GameState::SetPlaying();
 		PlayersL::ForceSpecClan0();
 	}
-	PlayersL::SpawnAll(StartTime);
 }
 if(GameState::IsPlaying()){
 	if(!ChaseTeams::AreComplete()){
 		GameState::SetWaiting();
+	}else{
+		PlayersL::ForceSpecClan0();
 	}
-	PlayersL::SpawnAll(StartTime);
 }
+PlayersL::SpawnAll(StartTime);
 ***
 
 ***PlayLoop***
