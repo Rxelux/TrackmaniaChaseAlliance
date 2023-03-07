@@ -89,6 +89,7 @@ Settings::SetRelayGap(S_RelayGap);
 Settings::SetRelaySortDelay(S_RelaySortDelay);
 Settings::ToNet();
 ChaseTeams::ResetTeamsRelay();
+ChaseTeams::ToNet();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
