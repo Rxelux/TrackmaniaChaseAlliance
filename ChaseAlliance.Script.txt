@@ -101,8 +101,10 @@ if(GameState::IsWaiting()){
 	}
 	PlayersL::SpawnAll(StartTime);
 }
-if(GameState::IsPlaying() && !ChaseTeams::AreComplete()){
-	GameState::SetWaiting();
+if(GameState::IsPlaying()){
+	if(!ChaseTeams::AreComplete()){
+		GameState::SetWaiting();
+	}
 	PlayersL::SpawnAll(StartTime);
 }
 ***
