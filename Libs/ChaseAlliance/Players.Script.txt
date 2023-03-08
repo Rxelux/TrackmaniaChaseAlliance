@@ -34,6 +34,29 @@ Boolean _SetClan(CSmPlayer _Player,Integer _Clan){
 	return False;
 }
 
+Void AttachMarkers(CSmPlayer _Player) {
+	declare CUIConfigMarker[] CMarkers = UIManager.UIAll.Markers;
+	declare Text[] UsedFrameIds;
+	foreach (Marker in CMarkers) {
+		if(Marker.Type != CUIConfigMarker::EAnchorType::Player) continue;
+		//player already has marker
+		if(Marker.ImageUrl == _Player.User.Login) return;
+		UsedFrameIds.add(Marker.ManialinkFrameId);
+	}
+	for(I,0,20){
+		if(!UsedFrameIds.exists("player-"^I)){
+			declare Marker = UIManager.UIAll.AddMarker(_Player);
+			Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+			Marker.Box = <0.,1.,0.>;
+			Marker.ImageUrl = _Player.User.Login; //NOTE - shameless hijacking of the ImageUrl Text value to pass the attached player login to the client
+			Marker.ManialinkFrameId = "player-"^I;
+			Marker.HideOnSelf = True;
+			return;
+		}
+	}
+	Warn("[Players] AttachMarkers: No Makers were available for player "^_Player.User.Name);
+}
+
 Void Spawn(CSmPlayer _Player,Integer _When){
 	if (_Player == Null) return;
 	declare Integer ForcedClan for _Player.User = 0;
@@ -49,6 +72,7 @@ Void Spawn(CSmPlayer _Player,Integer _When){
 		UnspawnPlayer(_Player);
 	}
 	SpawnPlayer(_Player,ForcedClan,1,Spawn::Get(),_When);
+	AttachMarkers(_Player);
 	_Player.UseCrudeExtrapolation = False;
 	_Player.TrustClientSimu = True;
 	_Player.Dossard_Color = Teams[_Player.CurrentClan-1].ColorPrimary;

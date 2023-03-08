@@ -16,7 +16,7 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/PauseUI.Script.txt" as PauseUI
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/MainUI.Script.txt" as MainUI
-#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Markers.Script.txt" as Markers
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/MarkersUI.Script.txt" as MarkersUI
 
 #Setting S_MapIntroPause 3000 as "Pause in ms for the map intro"
 #Setting S_EndRoundPause 3000 as "Pause in ms after a round"
@@ -43,7 +43,7 @@ Settings::Load();
 ChaseTeams::Load();
 PauseUI::Load();
 MainUI::Load();
-// Markers::Load();
+MarkersUI::Load();
 Commands::AddPermittedUser("pTuyJG9STcCN_11BiU3t0Q");
 Commands::AddPermittedUser("V_vWwMxbQqO0GgDYtK3zTg");
 ***
@@ -93,7 +93,7 @@ ChaseTeams::ToNet();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
-// Markers::AttachMarkers();
+Warn(""^UIManager.UIAll.Markers.count);
 PlayersL::SpawnAll(StartTime);
 if(GameState::IsWaiting() && ChaseTeams::AreComplete()){
 	GameState::SetPlaying();

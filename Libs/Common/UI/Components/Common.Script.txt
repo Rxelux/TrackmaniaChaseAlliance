@@ -1,16 +1,16 @@
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 
 
-Text _GetKey(){
-	return """//!
-declare Integer _G_Common_Key;
-Integer GetKey() {
-	declare Integer key = _G_Common_Key;
-	_G_Common_Key += 1;
-	return key;
-}
-""";
-}
+// Text _GetKey(){
+// 	return """//!
+// declare Integer _G_Common_Key;
+// Integer GetKey() {
+// 	declare Integer key = _G_Common_Key;
+// 	_G_Common_Key += 1;
+// 	return key;
+// }
+// """;
+// }
 
 Text _GetOwner(){
 	return """//!
@@ -88,6 +88,29 @@ Vec3 GetData(CMlControl Control,Text Name,Vec3 Def){
 """;
 }
 
+Text _GUIPlayerObserver(){
+	return """//!
+***Init***
+***
+	declare Ident PrevGUIPlayerId;
+***
+
+***Yield***
+***
+	if(GUIPlayer == Null){
+		if(PrevGUIPlayerId != NullId){
+			PrevGUIPlayerId = NullId;
+			+++GUIPlayer_Change+++
+		}
+	}else{
+		if(PrevGUIPlayerId != GUIPlayer.Id){
+			PrevGUIPlayerId = GUIPlayer.Id;
+			+++GUIPlayer_Change+++
+		}
+	}
+***
+""";
+}
 
 declare Boolean G_Loaded;
 Void Unload() {
@@ -99,7 +122,7 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Manialink::Load();
-	Manialink::CreateComponent("GetKey",[],"","",_GetKey(),"");
+	// Manialink::CreateComponent("GetKey",[],"","",_GetKey(),"");
 	Manialink::CreateComponent("GetOwner",[],"","",_GetOwner(),"");
 	Manialink::CreateComponent("GetPlayer",[],"","",_GetPlayer(),"");
 	Manialink::CreateComponent("GetDataText",[],"","",_GetDataText(),"");
@@ -107,4 +130,5 @@ Void Load() {
 	Manialink::CreateComponent("GetDataReal",[],"","",_GetDataReal(),"");
 	Manialink::CreateComponent("GetDataVec2",[],"","",_GetDataVec2(),"");
 	Manialink::CreateComponent("GetDataVec3",[],"","",_GetDataVec3(),"");
+	Manialink::CreateComponent("GUIPlayerObserver",[],"","","",_GUIPlayerObserver());
 }

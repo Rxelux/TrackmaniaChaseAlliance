@@ -33,6 +33,7 @@ Text _Labels(){
 	if(Prev{{{C}}}Change != Net_{{{C}}}Change){
 		Prev{{{C}}}Change = Net_{{{C}}}Change;
 		G_{{{C}}} = Net_{{{C}}};
+		+++{{{C}}}_Change+++
 	}
 ***
 """;
