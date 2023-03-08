@@ -9,7 +9,7 @@
 
 Text _Model (){
 	return """
-<framemodel id="{{{C}}}" {{{Align::CC}}}>
+<framemodel id="{{{C}}}" {{{Align::CC}}} hidden="1">
 	<quad size="30 6" bluramount="500" bgcolor="333333" opacity="0.6" {{{Align::CC}}} />
     <label size="30 6" id="checkpoint-quality-label" textfont="RajdhaniMono" textsize="2.5" {{{Align::CC}}}/>
 </framemodel>""";
@@ -51,7 +51,9 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 Real CalculateRelayQuality(Integer _PlayerCpTime, Integer _RelayerCpTime, Real _PlayerCpSeeed, Real _RelayerCpSpeed){
 	declare Real TimeDelta = (ML::ToReal(_PlayerCpTime) - ML::ToReal(_RelayerCpTime))/1000;
 	declare Real RelativeSpeedDelta = ML::Clamp((_PlayerCpSeeed - _RelayerCpSpeed)/_RelayerCpSpeed, -2., 2.);
-	declare Real RelayQuality = ML::Max(0., ML::Min(1000., 1000*ML::Exp(-2*TimeDelta)*(0.85 + RelativeSpeedDelta)));
+	if (TimeDelta < 0.)
+		return 0.;
+	declare Real RelayQuality = ML::Max(1., 1. + ML::Min(1000., 1000*ML::Exp(-20*TimeDelta)*(0.85 + RelativeSpeedDelta)));
 	return RelayQuality;
 }
 
@@ -134,28 +136,27 @@ Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlay
 	// _CheckpointQualityLabel.Root.Visible = False;
 	declare Integer ElapsedTimeSinceLastQualityMessage = TIL::GetMillisecondsSinceInit () - _QualityMessageStartTime;
 	
-	declare Integer CurrentCp = GetCurrentCp(_Player);
+	
 	declare Real LastSuccessCpSpeedReturn = _LastSuccessCpSpeed;
-if (_Relayer != Null && _Relayer.RaceWaypointTimes.count > _CurrentCp && _CpCrossCount == _TeamPlayerCount){
+	if (_Relayer != Null && _Relayer.RaceWaypointTimes.count > _CurrentCp && _CpCrossCount == _TeamPlayerCount){
 		LastSuccessCpSpeedReturn = _Relayer.Speed;
 	}
 
-	// _CheckpointQualityLabel.CheckpointQualityLabel.Value = ""^_CpCrossCount^" "^_LastSuccessRelayCpTime^" "^LastSuccessCpSpeedReturn;
-	
+	declare Integer CurrentCp = GetCurrentCp(_Player);
 	if(_Player != Null && _Player != _Relayer) {// && _PrevRelayWasSuccess ){
 		declare Boolean WasFistAtCp = WasFistAtCp(_Player);
-		if (!WasFistAtCp && _CpCrossCount >= 2 && CurrentCp != 1){
-				if 	(ElapsedTimeSinceLastQualityMessage > 0 && ElapsedTimeSinceLastQualityMessage < 2950){
+		if (!WasFistAtCp && _CpCrossCount >= 2 && CurrentCp != 1 && _Player.RaceWaypointTimes.count > 1){
+				// if 	(ElapsedTimeSinceLastQualityMessage > 0 && ElapsedTimeSinceLastQualityMessage < 2950){
 					_CheckpointQualityLabel.Root.Visible = True;
 					if (_CheckpointQualityLabel.CheckpointQualityLabel.Value == ""){
 						declare Real RelayQuality = CalculateRelayQuality(_Player.RaceWaypointTimes[_Player.RaceWaypointTimes.count - 1], _LastSuccessRelayCpTime, _Player.Speed, LastSuccessCpSpeedReturn);
 						declare Text RelayQualityText = RelayQualityToString(RelayQuality);
 						_CheckpointQualityLabel.CheckpointQualityLabel.Value = "$s"^ML::NearestInteger(RelayQuality)^" PTS | "^RelayQualityText;
 					}
-				}
+				// }
 		}
 	}
-	if ( ElapsedTimeSinceLastQualityMessage > 2950){
+	if (ElapsedTimeSinceLastQualityMessage > 2950){
 		_CheckpointQualityLabel.Root.Visible = False;
 		_CheckpointQualityLabel.CheckpointQualityLabel.Value = "";
 	}
