@@ -1,0 +1,83 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
+#Include "ChaseAlliance/Libs/Common/UI/Components/Common.Script.txt" as Common
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/PlayerMarkers.Script.txt" as PlayerMarkers
+
+#Const C "MarkersUI"
+
+Text _Model(){
+	declare Text Instances;
+	for(I,0,20){
+		Instances ^= """<frameinstance modelid="{{{PlayerMarkers::C}}}" id="player-{{{I}}}"/>""";
+	}
+	return """
+<framemodel id="{{{C}}}">
+	{{{Instances}}}
+</framemodel>
+""";
+}
+
+Text _Functions(){
+	return """//!
+declare K_{{{PlayerMarkers::C}}}[Text] G_{{{C}}}PlayerMarkers;
+declare K_{{{ChaseTeams::C}}} G_{{{C}}}Team;
+declare CSmPlayer G_{{{C}}}Relayer;
+
+Void {{{C}}}_UpdatePlayerMarkers(){
+	G_{{{C}}}Team = {{{ChaseTeams::C}}}_GetTeam(GUIPlayer);
+	G_{{{C}}}Relayer <=> GetPlayer(G_{{{C}}}Team.RelayerLogin);
+	log("———————");
+	foreach (Marker in UI.Markers) {
+		if(!G_{{{C}}}PlayerMarkers.existskey(Marker.ManialinkFrameId))continue;
+		{{{PlayerMarkers::C}}}_Update(G_{{{C}}}PlayerMarkers[Marker.ManialinkFrameId],Marker);
+	}
+}
+
+""";
+}
+
+Text _Labels(){
+	return """//!
+***Init***
+***
+	for(I,0,20){
+		G_{{{C}}}PlayerMarkers["player-"^I] = {{{PlayerMarkers::C}}}_Get(Page.MainFrame,"player-"^I);
+	}
+***
+
+***GUIPlayer_Change***
+***
+	{{{C}}}_UpdatePlayerMarkers();
+***
+
+***{{{ChaseTeams::C}}}_Change***
+***
+	{{{C}}}_UpdatePlayerMarkers();
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+	Layers::Destroy(C);
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Common::Load();
+	ChaseTeams::Load();
+	PlayerMarkers::Load();
+	Manialink::CreateComponent(C,[PlayerMarkers::C,ChaseTeams::C,"GetPlayer","GUIPlayerObserver"],_Model(),"",_Functions(),_Labels());
+	Layers::Load();
+	Layers::Create(C,Manialink::CreateManialink(C));
+	Layers::SetType(C,CUILayer::EUILayerType::Markers);
+	Layers::AttachAll(C);
+}
