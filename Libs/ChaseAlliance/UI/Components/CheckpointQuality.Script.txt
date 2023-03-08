@@ -156,7 +156,7 @@ Real {{{C}}}_Update(K_{{{C}}} _CheckpointQualityLabel,CSmPlayer _Player, CSmPlay
 				// }
 		}
 	}
-	if (ElapsedTimeSinceLastQualityMessage > 2950){
+	if (ElapsedTimeSinceLastQualityMessage > 3340){
 		_CheckpointQualityLabel.Root.Visible = False;
 		_CheckpointQualityLabel.CheckpointQualityLabel.Value = "";
 	}
