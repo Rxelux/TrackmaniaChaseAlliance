@@ -16,6 +16,7 @@ Text _Directives(){
 	Integer LastSuccessRelayCpTime;
 	Boolean RelayStarted;
 	Boolean PrevRelayWasSuccess;
+	Integer PlayerCount;
 }
 """;
 }

@@ -50,14 +50,18 @@ Text _Labels(){
 	declare K_{{{ChaseTeams::C}}} Team = {{{ChaseTeams::C}}}_GetTeam(GUIPlayer);
 	declare CSmPlayer Relayer <=> GetPlayer(Team.RelayerLogin);
 	declare CSmPlayer PrevRelayer <=> GetPlayer(Team.PrevRelayerLogin);
+	// declare Integer TeamPlayerCount = GetTeamPlayerCount(GUIPlayer); 
 
 	{{{Radar::C}}}_Update(Radar,GUIPlayer,Relayer);
 	{{{RelayStatus::C}}}_Update(RelayStatus,GUIPlayer,Relayer,Team.RelayStarted,Team.PrevRelayWasSuccess,Team.CurrentCp,Team.PrevRelayerLogin);
 	{{{LapCounter::C}}}_Update(LapCounter,GUIPlayer,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer,GUIPlayer);
-	QualityMessageStartTime = {{{CheckpointQuality::C}}}_UpdateMessageTimout(CheckpointQuality,GUIPlayer,Team.CpCrossCount,QualityMessageStartTime);
-	LastSuccessCpSpeed = {{{CheckpointQuality::C}}}_Update(CheckpointQuality,GUIPlayer,Relayer,PrevRelayer, Team.CurrentCp, Team.LastSuccessRelayCpTime, Team.PrevRelayWasSuccess, LastSuccessCpSpeed, QualityMessageStartTime);
-***
+	QualityMessageStartTime = {{{CheckpointQuality::C}}}_GetMessageTimout(GUIPlayer,CpCrossCount,QualityMessageStartTime);
+	LastSuccessRelayCpTime = {{{CheckpointQuality::C}}}_GetLastSuccessRelayCpTime(Relayer,Team.CurrentCp,LastSuccessRelayCpTime);
+	LastSuccessCpSpeed = {{{CheckpointQuality::C}}}_Update(CheckpointQuality,GUIPlayer,Relayer,PrevRelayer, Team.CurrentCp, LastSuccessRelayCpTime, Team.PrevRelayWasSuccess, LastSuccessCpSpeed, QualityMessageStartTime,CpCrossCount, Team.PlayerCount);
+	CpCrossCount = GetCpCrossCount(GUIPlayer, Team.PlayerCount);
+
+	***
 
 """;
 }

@@ -25,6 +25,7 @@
 	Integer LastSuccessRelayCpTime;
 	Boolean RelayStarted;
 	Boolean PrevRelayWasSuccess;
+	Integer PlayerCount;
 }
 
 declare K_ChaseTeams[] G_ChaseTeams;
@@ -189,6 +190,15 @@ Boolean AreComplete(){
 	return IsComplete(1) && IsComplete(2);
 }
 
+Void _SetTeamsPlayerCount(){
+
+	for (I, 1, 2) {
+		G_ChaseTeams[I-1].PlayerCount = ClansNbPlayers[I];
+	}
+	
+	// G_ChaseTeams[1].PlayerCount = ClansNbPlayers[2];
+}
+
 Void PassModeEvent(CSmModeEvent _Event){
 	if(GameState::IsPlaying() && _Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint){
 		if(_Event.Player == Null) return;
@@ -208,7 +218,7 @@ Void PlayLoop(){
 		GameLoop::EndRound();
 		ToNet();
 	}
-
+	_SetTeamsPlayerCount();
 	declare K_SME[] SMEToRemove = [];
 	SMEsWaypointTime = SMEsWaypointTime.sort();
 	foreach (EventId => WaypointTime in SMEsWaypointTime) {
