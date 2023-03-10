@@ -31,11 +31,18 @@ declare K_{{{PlayerMarkers::C}}}[Text] G_{{{C}}}PlayerMarkers;
 declare K_{{{RelayerMarkers::C}}}[Text] G_{{{C}}}RelayerMarkers;
 declare K_{{{ChaseTeams::C}}} G_{{{C}}}Team;
 declare CSmPlayer G_{{{C}}}Relayer;
+declare Text G_{{{C}}}RelayerMarkerFrameId;
 
-Void {{{C}}}_UpdatePlayerMarkers(){
+Void {{{C}}}_UpdatePlayerMarkersVisibility(){
 	G_{{{C}}}Team = {{{ChaseTeams::C}}}_GetTeam(GUIPlayer);
 	G_{{{C}}}Relayer <=> GetPlayer(G_{{{C}}}Team.RelayerLogin);
+
 	foreach (Marker in UI.Markers) {
+
+		if(Marker.Type != CUIConfigMarker::EAnchorType::Player) continue;
+		if(G_{{{C}}}Relayer != Null && Marker.ImageUrl == G_{{{C}}}Relayer.User.Login){
+			G_{{{C}}}RelayerMarkerFrameId = Marker.ManialinkFrameId;
+		}
 		if(G_{{{C}}}PlayerMarkers.existskey(Marker.ManialinkFrameId)){
 			{{{PlayerMarkers::C}}}_UpdateVisibility(G_{{{C}}}PlayerMarkers[Marker.ManialinkFrameId],Marker);
 			continue;
@@ -61,12 +68,21 @@ for(I,0,20){
 
 ***GUIPlayer_Change***
 ***
-{{{C}}}_UpdatePlayerMarkers();
+{{{C}}}_UpdatePlayerMarkersVisibility();
 ***
 
 ***{{{ChaseTeams::C}}}_Change***
 ***
-{{{C}}}_UpdatePlayerMarkers();
+{{{C}}}_UpdatePlayerMarkersVisibility();
+***
+
+
+***Yield***
+***
+if(G_{{{C}}}RelayerMarkerFrameId != "" && G_{{{C}}}RelayerMarkers.existskey(G_{{{C}}}RelayerMarkerFrameId)){
+	{{{RelayerMarkers::C}}}_Update(G_{{{C}}}RelayerMarkers[G_{{{C}}}RelayerMarkerFrameId], G_{{{C}}}Relayer);
+}
+
 ***
 """;
 }

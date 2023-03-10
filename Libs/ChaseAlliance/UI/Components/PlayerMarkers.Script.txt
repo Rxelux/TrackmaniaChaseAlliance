@@ -47,8 +47,6 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 
 Void {{{C}}}_UpdateVisibility(K_{{{C}}} _PlayerMarker,CUIConfigMarker _Marker){
 
-	if(_Marker.Type != CUIConfigMarker::EAnchorType::Player) return;
-	
 	declare CSmPlayer Player <=> GetPlayer(_Marker.ImageUrl);
 	if(Player == Null){
 		_PlayerMarker.Visibility.Hide();
@@ -60,7 +58,7 @@ Void {{{C}}}_UpdateVisibility(K_{{{C}}} _PlayerMarker,CUIConfigMarker _Marker){
 			declare Real L = TL::Length(Player.User.Name)*1.8;
 			_PlayerMarker.PlayerName.Value = Player.User.Name;
 			_PlayerMarker.PlayerName.Size.X = L;
-			_PlayerMarker.Background.BgColor = Teams[Player.CurrentClan-1].ColorSecondary;
+			_PlayerMarker.Background.BgColor = Teams[Player.CurrentClan-1].ColorUI;
 			_PlayerMarker.Background.Size.X = L;
 		}else{
 			if(GUIPlayer.CurrentClan == Player.CurrentClan){
@@ -68,7 +66,7 @@ Void {{{C}}}_UpdateVisibility(K_{{{C}}} _PlayerMarker,CUIConfigMarker _Marker){
 				declare Real L = TL::Length(Player.User.Name)*1.8;
 				_PlayerMarker.PlayerName.Value = Player.User.Name;
 				_PlayerMarker.PlayerName.Size.X = L;
-				_PlayerMarker.Background.BgColor = Teams[Player.CurrentClan-1].ColorSecondary;
+				_PlayerMarker.Background.BgColor = Teams[Player.CurrentClan-1].ColorUI;
 				_PlayerMarker.Background.Size.X = L;
 			}else{
 				_PlayerMarker.Visibility.Hide();

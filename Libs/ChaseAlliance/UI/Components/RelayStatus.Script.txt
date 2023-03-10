@@ -34,7 +34,7 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	};
 }
 
-Void {{{C}}}_Update(K_{{{C}}} _RelayStatus,CSmPlayer _Player,CSmPlayer _Relayer,Boolean _RelayStarted,Boolean _LastSuccessfulRelayCp,Integer _CurrentCp){
+Void {{{C}}}_Update(K_{{{C}}} _RelayStatus,CSmPlayer _Player,CSmPlayer _Relayer,Boolean _RelayStarted,Integer _LastSuccessfulRelayCp,Integer _CurrentCp){
 	if(_Player != Null){
 		_RelayStatus.Root.Visible = True;
 
@@ -45,7 +45,7 @@ Void {{{C}}}_Update(K_{{{C}}} _RelayStatus,CSmPlayer _Player,CSmPlayer _Relayer,
 				if(_Player == _Relayer){
 					_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go Go Go!!!";
 				}else{
-					if(_LastSuccessfulRelayCp == _CurrentCp-1){
+					if(_LastSuccessfulRelayCp == _CurrentCp - 1){
 						_RelayStatus.RelayStatus.Value = "Wait for "^_Relayer.User.Name^".";
 					}else{
 						_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Error)}}}Wait for "^_Relayer.User.Name^".";
@@ -55,7 +55,7 @@ Void {{{C}}}_Update(K_{{{C}}} _RelayStatus,CSmPlayer _Player,CSmPlayer _Relayer,
 				if(_Player.RaceWaypointTimes.count < _CurrentCp){
 					_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go!";
 				}else{
-					if(_LastSuccessfulRelayCp == _CurrentCp-1){
+					if(_LastSuccessfulRelayCp == _CurrentCp - 1){
 						_RelayStatus.RelayStatus.Value = "Wait for players.";
 					}else{
 						_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Error)}}}Wait for players.";
