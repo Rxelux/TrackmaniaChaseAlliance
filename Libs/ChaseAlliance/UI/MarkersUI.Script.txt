@@ -6,13 +6,17 @@
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/PlayerMarkers.Script.txt" as PlayerMarkers
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/RelayerMarkers.Script.txt" as RelayerMarkers
 
 #Const C "MarkersUI"
 
 Text _Model(){
 	declare Text Instances;
 	for(I,0,20){
-		Instances ^= """<frameinstance modelid="{{{PlayerMarkers::C}}}" id="player-{{{I}}}"/>""";
+		Instances ^= """
+<frameinstance modelid="{{{PlayerMarkers::C}}}" id="player-{{{I}}}"/>
+<frameinstance modelid="{{{RelayerMarkers::C}}}" id="relayer-{{{I}}}"/>
+""";
 	}
 	return """
 <framemodel id="{{{C}}}">
@@ -24,19 +28,24 @@ Text _Model(){
 Text _Functions(){
 	return """//!
 declare K_{{{PlayerMarkers::C}}}[Text] G_{{{C}}}PlayerMarkers;
+declare K_{{{RelayerMarkers::C}}}[Text] G_{{{C}}}RelayerMarkers;
 declare K_{{{ChaseTeams::C}}} G_{{{C}}}Team;
 declare CSmPlayer G_{{{C}}}Relayer;
 
 Void {{{C}}}_UpdatePlayerMarkers(){
 	G_{{{C}}}Team = {{{ChaseTeams::C}}}_GetTeam(GUIPlayer);
 	G_{{{C}}}Relayer <=> GetPlayer(G_{{{C}}}Team.RelayerLogin);
-	log("———————");
 	foreach (Marker in UI.Markers) {
-		if(!G_{{{C}}}PlayerMarkers.existskey(Marker.ManialinkFrameId))continue;
-		{{{PlayerMarkers::C}}}_Update(G_{{{C}}}PlayerMarkers[Marker.ManialinkFrameId],Marker);
+		if(G_{{{C}}}PlayerMarkers.existskey(Marker.ManialinkFrameId)){
+			{{{PlayerMarkers::C}}}_UpdateVisibility(G_{{{C}}}PlayerMarkers[Marker.ManialinkFrameId],Marker);
+			continue;
+		}
+		if(G_{{{C}}}RelayerMarkers.existskey(Marker.ManialinkFrameId)){
+			{{{RelayerMarkers::C}}}_UpdateVisibility(G_{{{C}}}RelayerMarkers[Marker.ManialinkFrameId],Marker,G_{{{C}}}Relayer);
+			continue;
+		}
 	}
 }
-
 """;
 }
 
@@ -44,19 +53,20 @@ Text _Labels(){
 	return """//!
 ***Init***
 ***
-	for(I,0,20){
-		G_{{{C}}}PlayerMarkers["player-"^I] = {{{PlayerMarkers::C}}}_Get(Page.MainFrame,"player-"^I);
-	}
+for(I,0,20){
+	G_{{{C}}}PlayerMarkers["player-"^I] = {{{PlayerMarkers::C}}}_Get(Page.MainFrame,"player-"^I);
+	G_{{{C}}}RelayerMarkers["relayer-"^I] = {{{RelayerMarkers::C}}}_Get(Page.MainFrame,"relayer-"^I);
+}
 ***
 
 ***GUIPlayer_Change***
 ***
-	{{{C}}}_UpdatePlayerMarkers();
+{{{C}}}_UpdatePlayerMarkers();
 ***
 
 ***{{{ChaseTeams::C}}}_Change***
 ***
-	{{{C}}}_UpdatePlayerMarkers();
+{{{C}}}_UpdatePlayerMarkers();
 ***
 """;
 }
@@ -75,7 +85,8 @@ Void Load() {
 	Common::Load();
 	ChaseTeams::Load();
 	PlayerMarkers::Load();
-	Manialink::CreateComponent(C,[PlayerMarkers::C,ChaseTeams::C,"GetPlayer","GUIPlayerObserver"],_Model(),"",_Functions(),_Labels());
+	RelayerMarkers::Load();
+	Manialink::CreateComponent(C,[RelayerMarkers::C,PlayerMarkers::C,ChaseTeams::C,"GetPlayer","GUIPlayerObserver"],_Model(),"",_Functions(),_Labels());
 	Layers::Load();
 	Layers::Create(C,Manialink::CreateManialink(C));
 	Layers::SetType(C,CUILayer::EUILayerType::Markers);

@@ -6,17 +6,17 @@
 
 #Const C_LayerName "Commands"
 #Const C_CommandPrefix "Commands_"
+#Const C_EventSource "Commands"
 
 declare Text[] G_PermittedUserLogins;
 
 Void CreateEventFromUIEvent(CUIConfigEvent Event) {
-	declare Text Source;
-	if(Event.UI != Null) {
-		Source = GetPlayer(Event.UI).User.Login;
-	}
+
 	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", Event.CustomEventType, "", "");
 
-	Events::Create(UnprefixedName,Source,Event.CustomEventData);
+	declare Text[] Texts = Event.CustomEventData;
+	Texts.add(GetPlayer(Event.UI).User.Login);
+	Events::Create(UnprefixedName,C_EventSource,Texts,[],[],[]);
 }
 
 Text[] GetPermittedUserLogins() {

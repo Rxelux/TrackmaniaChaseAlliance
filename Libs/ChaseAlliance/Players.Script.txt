@@ -47,14 +47,24 @@ Void AttachMarkers(CSmPlayer _Player) {
 		if(!UsedFrameIds.exists("player-"^I)){
 			declare Marker = UIManager.UIAll.AddMarker(_Player);
 			Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-			Marker.Box = <0.,1.,0.>;
+			Marker.Box = <0.,0.6,0.>;
 			Marker.ImageUrl = _Player.User.Login; //NOTE - shameless hijacking of the ImageUrl Text value to pass the attached player login to the client
 			Marker.ManialinkFrameId = "player-"^I;
 			Marker.HideOnSelf = True;
-			return;
+			break;
 		}
 	}
-	Warn("[Players] AttachMarkers: No Makers were available for player "^_Player.User.Name);
+	for(I,0,20){
+		if(!UsedFrameIds.exists("relayer-"^I)){
+			declare Marker = UIManager.UIAll.AddMarker(_Player);
+			Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+			Marker.Box = <0.,0.,0.>;
+			Marker.ImageUrl = _Player.User.Login;
+			Marker.ManialinkFrameId = "relayer-"^I;
+			Marker.HideOnSelf = True;
+			break;
+		}
+	}
 }
 
 Void Spawn(CSmPlayer _Player,Integer _When){

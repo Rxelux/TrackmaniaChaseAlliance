@@ -2,6 +2,7 @@
 #Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
 #Include "ChaseAlliance/Libs/Common/Users.Script.txt" as UsersL
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+#Include "ChaseAlliance/Libs/Common/Commands.Script.txt" as Commands
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
 #Include "TextLib" as TL
 
@@ -133,26 +134,30 @@ Void Destroy(Text _FakeUserLogin,Text _RealUserLogin){
 
 Void PassLibEvent(Events::K_Event _Event){
 
-	if(_Event.Params.count == 0) return;
+	if(_Event.Source != Commands::C_EventSource)return;
+
+	if(_Event.Texts.count <= 1) return;
 	if(_Event.Name == "Control" || _Event.Name == "ControlLock" || _Event.Name == "ControlFocus"){
 
 		declare Boolean Lock = _Event.Name == "ControlLock";
 		declare Boolean Focus = _Event.Name == "ControlFocus";
 
-		if(_Event.Params.count == 1){
-			declare FakeUser = UsersL::GetFakeUserByNameId(TL::ToInteger(_Event.Params[0]));
+		if(_Event.Texts.count == 2){
+			declare FakeUser = UsersL::GetFakeUserByNameId(TL::ToInteger(_Event.Texts[0]));
 			if(FakeUser == Null)return;
+
+			declare Text CommandExecuter = _Event.Texts[_Event.Texts.count - 1];
 			
-			if(Exists(FakeUser.Login,_Event.Source)){
-				Destroy(FakeUser.Login,_Event.Source);
+			if(Exists(FakeUser.Login,CommandExecuter)){
+				Destroy(FakeUser.Login,CommandExecuter);
 			}else{
-				Create(FakeUser.Login,_Event.Source,Lock,Focus);
+				Create(FakeUser.Login,CommandExecuter,Lock,Focus);
 			}
 		}
-		if(_Event.Params.count == 2){
-			declare FakeUser = UsersL::GetFakeUserByNameId(TL::ToInteger(_Event.Params[0]));
+		if(_Event.Texts.count == 3){
+			declare FakeUser = UsersL::GetFakeUserByNameId(TL::ToInteger(_Event.Texts[0]));
 			if(FakeUser == Null)return;
-			declare RealUser = UsersL::GetRealUserByName(_Event.Params[1]);
+			declare RealUser = UsersL::GetRealUserByName(_Event.Texts[1]);
 			if(RealUser == Null)return;
 
 			if(Exists(FakeUser.Login,RealUser.Login)){
@@ -232,7 +237,8 @@ Void Load() {
 	if(G_Loaded)return;
 	Unload();
 	G_Loaded = True;
-	UsersL::Load();
+	Events::Load();
+	Commands::Load();
 	Layers::Load();
 	Layers::Create(C_LayerName,ML());
 	Layers::SetType(C_LayerName,CUILayer::EUILayerType::Normal);

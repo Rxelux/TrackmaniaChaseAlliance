@@ -1,0 +1,38 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+
+#Const C "Players"
+
+Text _Functions(){
+	return """//!
+	//Player.Id[player.User.Login]
+	declare Ident[Text] G_{{{C}}}_Id;
+
+	CSmPlayer GetPlayer(Text _Login){
+		if(G_{{{C}}}_Id.existskey(_Login)){
+			if(Players.existskey(G_{{{C}}}_Id[_Login])){
+				return G_{{{C}}}_Id[_Login];
+			}
+		}
+		foreach (Player in Players) {
+			if(Player.User.Login == _Login){
+				G_{{{C}}}_Id[_Login] = Player.Id;
+				return Player;
+			}
+		}
+		return Null;
+	}
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],"","",_Functions(),"");
+}

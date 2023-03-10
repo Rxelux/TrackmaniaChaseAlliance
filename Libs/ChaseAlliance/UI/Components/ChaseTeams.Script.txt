@@ -10,10 +10,9 @@ Text _Directives(){
 	Integer RelayPoints;
 	Text RelayerLogin;
 	Integer CurrentCp;
-	Integer LastRelaySuccessCp;
+	Integer LastSuccessfulRelayCp;
 	Integer CpCrossCount;
 	Boolean RelayStarted;
-	Boolean PrevRelayWasSuccess;
 }
 """;
 }
