@@ -1,32 +1,114 @@
 #Struct K_Event {
 	Text Name;
-	Text[] Params;
 	Text Source;
+	Text[] Texts;
+	Integer[] Integers;
+	Real[] Reals;
+	Boolean[] Booleans;
 }
 
-declare K_Event[] G_PendingEvents;
-declare K_Event[] G_NewEvents;
+#Struct K_SortedEvent {
+	Text Name;
+	Text Source;
+	Integer ExpireAt;
+	Text[] Texts;
+	Integer[] Integers;
+	Real[] Reals;
+	Boolean[] Booleans;
+}
 
-Void Create(Text _Name,Text _Source, Text[] _Params) {
-	G_NewEvents.add(K_Event{
+//SECTION OneShotEvents
+declare K_Event[] G_PendingEvents;
+
+Void Create(Text _Name,Text _Source, Text[] _Texts,Integer[] _Integers, Real[] _Reals, Boolean[] _Booleans) {
+	G_PendingEvents.add(K_Event{
 		Name = _Name,
 		Source = _Source,
-		Params = _Params
+		Texts = _Texts,
+		Integers = _Integers,
+		Reals = _Reals,
+		Booleans = _Booleans
 	});
 }
 
 K_Event[] GetPending() {
-	return G_PendingEvents;
+	declare Return = G_PendingEvents;
+	G_PendingEvents.clear();
+	return Return;
+}
+//!SECTION
+
+//SECTION SortedEvents
+declare Integer G_SortedEventLifetime;
+
+Void SetSortedEventLifetime(Integer _Lifetime){
+	G_SortedEventLifetime = _Lifetime;
 }
 
-Void Yield(){
-	G_PendingEvents = G_NewEvents;
-	G_NewEvents.clear();
+declare K_SortedEvent[][Integer] G_PendingSortedEvents;
+
+Void CreateSorted(Integer _EventTime,Text _Name,Text _Source,Text[] _Texts,Integer[] _Integers, Real[] _Reals, Boolean[] _Booleans) {
+	declare Event = K_SortedEvent{
+		Name = _Name,
+		Source = _Source,
+		ExpireAt = Now + G_SortedEventLifetime,
+		Texts = _Texts,
+		Integers = _Integers,
+		Reals = _Reals,
+		Booleans = _Booleans
+	};
+	if(G_PendingSortedEvents.existskey(_EventTime)){
+		G_PendingSortedEvents[_EventTime].add(Event);
+	}else{
+		G_PendingSortedEvents[_EventTime] = [Event];
+	}
 }
+
+Void RemoveAllSortedWithSource(Text _Source){
+	declare K_SortedEvent[][Integer] New;
+
+	foreach (EventsTime => Events in G_PendingSortedEvents) {
+		foreach (Event in Events) {
+			if(Event.Source == _Source) continue;
+			if(New.existskey(EventsTime)){
+				New[EventsTime].add(Event);
+			}else{
+				New[EventsTime] = [Event];
+			}
+		}
+	}
+
+	G_PendingSortedEvents = New;
+}
+
+K_SortedEvent[][Integer] GetPendingSorted() {
+	declare K_SortedEvent[][Integer] Return;
+
+	G_PendingSortedEvents = G_PendingSortedEvents.sort();
+	//NOTE fix for https://forum.nadeo.com/viewtopic.php?f=25&t=3696
+	G_PendingSortedEvents[-1] = []; G_PendingSortedEvents.removekey(-1);
+	//!NOTE
+
+	foreach (EventsTime => Events in G_PendingSortedEvents) {
+		
+		declare ExpireAt = Events[0].ExpireAt;
+		
+		if (ExpireAt <= Now) {
+			Return[EventsTime] = G_PendingSortedEvents[EventsTime];
+			G_PendingSortedEvents.removekey(EventsTime);
+		} else {
+			break;
+		}
+	}
+	return Return;
+}
+//!SECTION 
+
 
 declare Boolean G_Loaded;
 Void Unload() {
 	G_Loaded = False;
+	G_SortedEventLifetime = 250;
 }
 
 Void Load() {

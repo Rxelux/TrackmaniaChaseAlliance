@@ -93,7 +93,7 @@ ChaseTeams::ToNet();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
-Warn(""^UIManager.UIAll.Markers.count);
+Warn("Markers.count : "^UIManager.UIAll.Markers.count);
 PlayersL::SpawnAll(StartTime);
 if(GameState::IsWaiting() && ChaseTeams::AreComplete()){
 	GameState::SetPlaying();
@@ -106,7 +106,21 @@ if(GameState::IsPlaying() && !ChaseTeams::AreComplete()){
 ***PlayLoop***
 ***
 if(GameState::IsPlaying()){
-	ChaseTeams::PlayLoop();
+	// ChaseTeams::PlayLoop();
+	if(!ChaseTeams::IsComplete(1)){
+		ChaseTeams::IncrementTeamRoundPoint(2);
+		ChaseTeams::ToNet();
+		GameLoop::EndRound();
+		Log("Playing -> Team 1 is Not complete");
+
+	}
+	if(!ChaseTeams::IsComplete(2)){
+		ChaseTeams::IncrementTeamRoundPoint(1);
+		ChaseTeams::ToNet();
+		GameLoop::EndRound();
+		Log("Waiting -> Team2 is Not complete");
+
+	}
 }
 if(GameState::IsWaiting()){
 	if(ChaseTeams::AreComplete()){
@@ -168,13 +182,15 @@ foreach (Event in PendingEvents){
 	ChaseTeams::PassModeEvent(Event);
 	PlayersL::PassModeEvent(Event);
 }
+foreach (EventTime => Events in Events::GetPendingSorted()) {
+	ChaseTeams::PassLibSortedEvent(EventTime,Events);
+}
 foreach (Event in Events::GetPending()) {
 	GameLoop::PassLibEvent(Event);
 	UsersL::PassLibEvent(Event);
 	Controller::PassLibEvent(Event);
 	GameState::PassLibEvent(Event);
 }
-Events::Yield();
 Controller::Yield();
 Messages::Yield();
 ***

@@ -5,14 +5,13 @@
 
 #Include "TextLib" as TL
 
-#Const C "PlayerMarkers"
+#Const C "RelayerMarkers"
 
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}">
 	<frame id="visibility" hidden="1"><!-- this is needed because the c++ will force the framemodel to be always visible  -->
-	<quad id="background" size="30 4" opacity="0.5" {{{Align::CC}}}/>
-	<label id="player-name" size="26 4" textsize="1" textfont="RajdhaniMono" textemboss="1" {{{Align::C2}}}/>
+		<quad id="background" pos="0 0" size="5 5" bgcolor="000000FF" {{{Align::CC}}}/>
 	</frame>
 </framemodel>
 """;
@@ -22,9 +21,8 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
-	CMlFrame Visibility;
-	CMlLabel PlayerName;
 	CMlQuad Background;
+	CMlFrame Visibility;
 }
 """;
 }
@@ -34,49 +32,31 @@ Text _Functions(){
 
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
-	declare CMlLabel PlayerName <=> (Root.GetFirstChild("player-name") as CMlLabel);
-	declare CMlFrame Visibility <=> (Root.GetFirstChild("visibility") as CMlFrame);
 	declare CMlQuad Background <=> (Root.GetFirstChild("background") as CMlQuad);
+	declare CMlFrame Visibility <=> (Root.GetFirstChild("visibility") as CMlFrame);
+
 	return K_{{{C}}}{
 		Root = Root,
 		Visibility = Visibility,
-		PlayerName = PlayerName,
-		Background =Background
+		Background = Background
 	};
 }
 
-Void {{{C}}}_UpdateVisibility(K_{{{C}}} _PlayerMarker,CUIConfigMarker _Marker){
+Void {{{C}}}_UpdateVisibility(K_{{{C}}} _RelayerMarker,CUIConfigMarker _Marker,CSmPlayer _Relayer){
 
 	if(_Marker.Type != CUIConfigMarker::EAnchorType::Player) return;
-	
 	declare CSmPlayer Player <=> GetPlayer(_Marker.ImageUrl);
-	if(Player == Null){
-		_PlayerMarker.Visibility.Hide();
+	if(Player == Null || _Relayer == Null || Player != _Relayer){
+		_RelayerMarker.Visibility.Hide();
 		return;
 	}
 	if(Player.CurrentClan == 1 || Player.CurrentClan == 2){
-		if(GUIPlayer == Null){
-			_PlayerMarker.Visibility.Show();
-			declare Real L = TL::Length(Player.User.Name)*1.8;
-			_PlayerMarker.PlayerName.Value = Player.User.Name;
-			_PlayerMarker.PlayerName.Size.X = L;
-			_PlayerMarker.Background.BgColor = Teams[Player.CurrentClan-1].ColorSecondary;
-			_PlayerMarker.Background.Size.X = L;
-		}else{
-			if(GUIPlayer.CurrentClan == Player.CurrentClan){
-				_PlayerMarker.Visibility.Show();
-				declare Real L = TL::Length(Player.User.Name)*1.8;
-				_PlayerMarker.PlayerName.Value = Player.User.Name;
-				_PlayerMarker.PlayerName.Size.X = L;
-				_PlayerMarker.Background.BgColor = Teams[Player.CurrentClan-1].ColorSecondary;
-				_PlayerMarker.Background.Size.X = L;
-			}else{
-				_PlayerMarker.Visibility.Hide();
-			}
+		if(GUIPlayer == Null || GUIPlayer.CurrentClan == Player.CurrentClan){
+			_RelayerMarker.Visibility.Show();
+			return;
 		}
-	}else{
-		_PlayerMarker.Visibility.Hide();
 	}
+	_RelayerMarker.Visibility.Hide();
 }
 """;
 }

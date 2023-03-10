@@ -1,6 +1,8 @@
 //#RequireContext CSmMode
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+#Include "ChaseAlliance/Libs/Common/Commands.Script.txt" as Commands
+
 #Include "TextLib" as TL
 
 declare Integer G_FakeUserNameId;
@@ -23,7 +25,7 @@ CUser GetUserByName(Text _Name) {
 	foreach (User in Users) {
 		if (User.Name == _Name) return User;
 	}
-	Log("""[UserManager] GetUser: No User found with name {{{_Name}}}!""");
+	Log("""[Users] GetUser: No User found with name {{{_Name}}}!""");
 	return Null;
 }
 
@@ -31,7 +33,7 @@ CUser GetRealUserByName(Text _Name) {
 	foreach (User in Users) {
 		if (!User.IsFakeUser && User.Name == _Name) return User;
 	}
-	Log("""[UserManager] GetRealUser: No RealUser found with name {{{_Name}}}!""");
+	Log("""[Users] GetRealUser: No RealUser found with name {{{_Name}}}!""");
 	return Null;
 }
 
@@ -39,7 +41,7 @@ CUser GetFakeUserByName(Text _Name) {
 	foreach (User in Users) {
 		if (User.IsFakeUser && User.Name == _Name) return User;
 	}
-	Log("""[UserManager] GetFakeUser: No FakeUser found with name {{{_Name}}}!""");
+	Log("""[Users] GetFakeUser: No FakeUser found with name {{{_Name}}}!""");
 	return Null;
 }
 
@@ -51,7 +53,7 @@ CUser GetUserByLogin(Text _Login) {
 	foreach (User in Users) {
 		if (User.Login == _Login) return User;
 	}
-	Log("""[UserManager] GetUser: No User found with Login {{{_Login}}}!""");
+	Log("""[Users] GetUser: No User found with Login {{{_Login}}}!""");
 	return Null;
 }
 
@@ -59,7 +61,7 @@ CUser GetRealUserByLogin(Text _Login) {
 	foreach (User in Users) {
 		if (!User.IsFakeUser && User.Login == _Login) return User;
 	}
-	Log("""[UserManager] GetRealUser: No RealUser found with Login {{{_Login}}}!""");
+	Log("""[Users] GetRealUser: No RealUser found with Login {{{_Login}}}!""");
 	return Null;
 }
 
@@ -67,13 +69,13 @@ CUser GetFakeUserByLogin(Text _Login) {
 	foreach (User in Users) {
 		if (User.IsFakeUser && User.Login == _Login) return User;
 	}
-	Log("""[UserManager] GetFakeUser: No FakeUser found with Login {{{_Login}}}!""");
+	Log("""[Users] GetFakeUser: No FakeUser found with Login {{{_Login}}}!""");
 	return Null;
 }
 
 Text AddFakeUserInClan(Integer _Clan){
 	if(_Clan < 0){
-		Log("""[UserManager] AddFakeUserInClan: _Clan is < 0""");return "";
+		Log("""[Users] AddFakeUserInClan: _Clan is < 0""");return "";
 	}
 	declare Text Name = "FakeUser#"^G_FakeUserNameId;
 	declare CUser FakeUser = Users_CreateFake(Name,_Clan);
@@ -104,24 +106,26 @@ Void RemoveFakeUsers(){
 }
 
 Void PassLibEvent(Events::K_Event _Event){
+	if(_Event.Source != Commands::C_EventSource)return;
+
 	switch (_Event.Name) {
 		case "AddFake": {
-			if(_Event.Params.count == 1)
-				AddFakeUserInClan(TL::ToInteger(_Event.Params[0]));
+			if(_Event.Texts.count >= 1)
+				AddFakeUserInClan(TL::ToInteger(_Event.Texts[0]));
 		}
 		case "AddFakes": {
-			if(_Event.Params.count == 2)
+			if(_Event.Texts.count >= 2)
 				AddFakeUsersInClan(
-					TL::ToInteger(_Event.Params[0]),
-					TL::ToInteger(_Event.Params[1])
+					TL::ToInteger(_Event.Texts[0]),
+					TL::ToInteger(_Event.Texts[1])
 				);
 		}
 		case "RemoveFake": {
-			if(_Event.Params.count == 1)
-			RemoveFakeUserByNameId(TL::ToInteger(_Event.Params[0]));
+			if(_Event.Texts.count >= 1)
+			RemoveFakeUserByNameId(TL::ToInteger(_Event.Texts[0]));
 		}
 		case "RemoveFakes": {
-			if(_Event.Params.count == 0)
+			if(_Event.Texts.count >= 0)
 			RemoveFakeUsers();
 		}
 	}
@@ -139,4 +143,5 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Events::Load();
+	Commands::Load();
 }

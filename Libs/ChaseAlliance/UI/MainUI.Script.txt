@@ -57,7 +57,7 @@ Relayer <=> GetPlayer(Team.RelayerLogin);
 ***Yield***
 ***
 	{{{Radar::C}}}_Update(Radar,GUIPlayer,Relayer);
-	{{{RelayStatus::C}}}_Update(RelayStatus,GUIPlayer,Relayer,Team.RelayStarted,Team.PrevRelayWasSuccess,Team.CurrentCp);
+	{{{RelayStatus::C}}}_Update(RelayStatus,GUIPlayer,Relayer,Team.RelayStarted,Team.LastSuccessfulRelayCp,Team.CurrentCp);
 	{{{LapCounter::C}}}_Update(LapCounter,GUIPlayer,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer,GUIPlayer);
 ***

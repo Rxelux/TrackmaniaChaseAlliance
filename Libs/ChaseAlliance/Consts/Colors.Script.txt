@@ -1,6 +1,5 @@
 #Include "ColorLib" as CL
 
-
 #Const C_AllianceLightGreen <0.15, 0.56, 0.27>
 #Const C_AllianceDarkGreen <0.03, 0.47, 0.24>
 #Const C_AlliancePurple <0.2, 0.17, 0.22>
@@ -10,7 +9,9 @@
 #Const C_AllianceLight <0.97, 0.96, 0.97>
 
 #Const C_Team0Primary <0.0, 0.31, 1.0>
+#Const C_Team0Secondary <0.0, 0.1, 0.3>
 #Const C_Team1Primary <1.0, 0.31, 0.0>
+#Const C_Team1Secondary <0.3, 0.1, 0.0>
 
 #Const C_Success <0.5, 1.0, 0.0>
 #Const C_Error <1.0, 0.0, 0.15>
