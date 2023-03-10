@@ -4,18 +4,20 @@
 
 Text _Functions(){
 	return """//!
-	//Player.Id[player.User.Login]
-	declare Ident[Text] G_{{{C}}}_Id;
-
 	CSmPlayer GetPlayer(Text _Login){
-		if(G_{{{C}}}_Id.existskey(_Login)){
-			if(Players.existskey(G_{{{C}}}_Id[_Login])){
-				return G_{{{C}}}_Id[_Login];
+		declare Ident[Text] {{{C}}}_Id for ClientUI;
+		
+		if({{{C}}}_Id.existskey(_Login)){
+			declare Ident Idnt = {{{C}}}_Id[_Login];
+			if(Players.existskey(Idnt)){
+				return Player[Idnt];
+			}else{
+				{{{C}}}_Id.removekey(_Login);
 			}
 		}
 		foreach (Player in Players) {
 			if(Player.User.Login == _Login){
-				G_{{{C}}}_Id[_Login] = Player.Id;
+				{{{C}}}_Id[_Login] = Player.Id;
 				return Player;
 			}
 		}
