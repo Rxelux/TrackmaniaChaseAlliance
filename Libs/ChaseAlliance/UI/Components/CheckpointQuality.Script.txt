@@ -60,12 +60,13 @@ Real CalculateRelayQuality(Integer _PlayerCpTime, Integer _RelayerCpTime, Real _
 Text RelayQualityToString(Real _RelayQuality){
 	declare Integer maxPoint = 1000;
 	if (_RelayQuality < ML::NearestInteger(0.15*maxPoint))
-		return "$888Good";
+		return "$d83Nice";
 	if (_RelayQuality < ML::NearestInteger(0.8*maxPoint))
-		return "$dd5Nice";
+		return "$888Good";
 	if (_RelayQuality < ML::NearestInteger(1.0*maxPoint))
-		return "$fe0$sExcelent";
-	return "$91eLegendary";
+		return "$fe0Excelent";
+	// return "$91eLegendary";
+	return "$2f0Legendary";
 }
 
 Integer GetCpCrossCount(CSmPlayer _Player, Integer _TeamPlayerCount){
