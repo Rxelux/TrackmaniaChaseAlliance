@@ -1,0 +1,111 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "MathLib" as ML
+
+#Const C "CheckpointSplits"
+
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" {{{Align::CC}}} hidden="1">
+	<quad size="30 6" bluramount="500" bgcolor="333333" opacity="0.6" {{{Align::CC}}} />
+    <label size="30 6" id="checkpoint-splits-label" textfont="RajdhaniMono" textsize="2.5" {{{Align::CC}}}/>
+</framemodel>""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+    CMlFrame Root;
+	CMlLabel CheckpointSplitsLabel;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlLabel CheckpointSplitsLabel <=> (Root.GetFirstChild("checkpoint-splits-label") as CMlLabel);
+	return K_{{{C}}}{
+		Root = Root,
+		CheckpointSplitsLabel = CheckpointSplitsLabel
+	};
+}
+
+// Integer GetCpCrossCount(CSmPlayer _Player, Integer _TeamPlayerCount){
+// 	if (_Player == Null)
+// 		return 0;
+// 	declare Integer MaxCpCrossCount = 0;
+// 	declare Integer CpCrossCount = 1;
+
+// 	foreach (Player in Players) {
+// 		if (Player.CurrentClan == _Player.CurrentClan){
+// 			declare Integer playerCpCrossCount = Player.RaceWaypointTimes.count;
+// 		if(playerCpCrossCount > MaxCpCrossCount){
+// 			MaxCpCrossCount = playerCpCrossCount;
+// 			CpCrossCount = 1;
+// 		}
+// 		else if (playerCpCrossCount == MaxCpCrossCount){
+// 			CpCrossCount += 1 ;
+// 		}
+// 		}
+// 	}
+// 	// if (CpCrossCount == _TeamPlayerCount)
+// 	// 	return 0;
+// 	return CpCrossCount;
+// }
+
+Integer GetFatestLastCheckpointTime(CSmPlayer _Player){
+	declare Integer MaxCheckpointCount = _Player.RaceWaypointTimes.count;
+	declare Integer minCheckpointTime = -1;
+	if (MaxCheckpointCount > 0){
+		 minCheckpointTime = _Player.RaceWaypointTimes[MaxCheckpointCount-1];
+	}
+
+	foreach (Player in Players) {
+		if (Player.CurrentClan == _Player.CurrentClan){
+			if ( Player.RaceWaypointTimes.count > MaxCheckpointCount || (Player.RaceWaypointTimes.count > 0 && (Player.RaceWaypointTimes.count == MaxCheckpointCount && (Player.RaceWaypointTimes[Player.RaceWaypointTimes.count-1] < minCheckpointTime || minCheckpointTime == -1)))){
+				minCheckpointTime = Player.RaceWaypointTimes[Player.RaceWaypointTimes.count-1];
+			}
+		}
+	}
+	return minCheckpointTime;
+}
+
+// Text GetCheckpointTimes(CSmPlayer _Player){
+// 	declare Integer[] OrderedCheckpointTimes;
+// 	declare Text[] OrderedPlayer;
+	
+// 	foreach (Player in Players) {
+// 		if (Player.CurrentClan == _Player.CurrentClan){
+						
+// 		}
+// 	}
+// }
+
+
+Void {{{C}}}_Update(K_{{{C}}} _CheckpointSplitsLabel,CSmPlayer _Player){
+	_CheckpointSplitsLabel.Root.Visible = True;
+	if (_Player != Null){
+		declare Integer FatestLastCheckpointTime = GetFatestLastCheckpointTime(_Player);
+		_CheckpointSplitsLabel.CheckpointSplitsLabel.Value = FatestLastCheckpointTime^"  test";
+	}
+}
+
+
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],_Model(),_Directives(),_Functions(),"");
+}
