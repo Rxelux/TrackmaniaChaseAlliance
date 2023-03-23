@@ -7,13 +7,23 @@
 
 #Const C "PlayerMarkers"
 
+#Const C_Circle """image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" """
+#Const C_Arrow """image="file://Media/Painter/Stencils/05-Triangle0/Brush.tga" """
+
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}">
-	<frame id="visibility" hidden="1"><!-- this is needed because the c++ will force the framemodel to be always visible  -->
-	<quad id="background" size="30 4" opacity="0.5" {{{Align::CC}}}/>
-	<label id="player-name" size="26 4" textsize="1" textfont="RajdhaniMono" textemboss="1" {{{Align::C2}}}/>
+	<frame id="card" hidden="1" pos="0 8"><!-- this is needed because the c++ will force the framemodel to be always visible  -->
+		<quad id="background" size="30 4" opacity="0.5" {{{Align::CC}}}/>
+		<label id="player-name" size="26 4" textsize="1" textfont="RajdhaniMono" textemboss="1" {{{Align::C2}}}/>
 	</frame>
+	<frame id="pointer" hidden="1" {{{Align::CT}}}>
+		<quad id="dot" size="3 3" opacity="0.9" {{{Align::CT}}} {{{C_Circle}}}/>
+		<frame id="arrow-pivot" pos="0 -1.5" {{{Align::CT}}}>
+			<quad id="arrow-head" pos="0 1.5" size="3 2" opacity="0.9" {{{Align::CB}}} {{{C_Arrow}}} />
+		</frame>
+	</frame>
+	<quad pos="0 0" size="1 5" {{{Align::CT}}}/>
 </framemodel>
 """;
 }
@@ -22,9 +32,13 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
-	CMlFrame Visibility;
+	CMlFrame Card;
 	CMlLabel PlayerName;
 	CMlQuad Background;
+	CMlFrame Pointer;
+	CMlQuad Dot;
+	CMlFrame ArrowPivot;
+	CMlQuad ArrowHead;
 }
 """;
 }
@@ -34,47 +48,81 @@ Text _Functions(){
 
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
-	declare CMlLabel PlayerName <=> (Root.GetFirstChild("player-name") as CMlLabel);
-	declare CMlFrame Visibility <=> (Root.GetFirstChild("visibility") as CMlFrame);
-	declare CMlQuad Background <=> (Root.GetFirstChild("background") as CMlQuad);
+	declare CMlFrame Card <=> (Root.GetFirstChild("card") as CMlFrame);
+	declare CMlLabel PlayerName <=> (Card.GetFirstChild("player-name") as CMlLabel);
+	declare CMlQuad Background <=> (Card.GetFirstChild("background") as CMlQuad);
+	declare CMlFrame Pointer <=> (Root.GetFirstChild("pointer") as CMlFrame);
+	declare CMlQuad Dot <=> (Pointer.GetFirstChild("dot") as CMlQuad);
+	declare CMlFrame ArrowPivot <=> (Pointer.GetFirstChild("arrow-pivot") as CMlFrame);
+	declare CMlQuad ArrowHead <=> (Pointer.GetFirstChild("arrow-head") as CMlQuad);
 	return K_{{{C}}}{
 		Root = Root,
-		Visibility = Visibility,
+		Card = Card,
 		PlayerName = PlayerName,
-		Background =Background
+		Background = Background,
+		Pointer = Pointer,
+		Dot = Dot,
+		ArrowPivot = ArrowPivot,
+		ArrowHead = ArrowHead
 	};
 }
 
-Void {{{C}}}_UpdateVisibility(K_{{{C}}} _PlayerMarker,CUIConfigMarker _Marker){
+Void {{{C}}}_UpdateVisibility(K_{{{C}}} _PlayerMarker,CUIConfigMarker _Marker,CSmPlayer _Relayer){
 
 	declare CSmPlayer Player <=> GetPlayer(_Marker.ImageUrl);
-	if(Player == Null){
-		_PlayerMarker.Visibility.Hide();
+	if(Player == Null || (Player.CurrentClan != 1 && Player.CurrentClan != 2)){
+		_PlayerMarker.Card.Hide();
+		_PlayerMarker.Pointer.Hide();
 		return;
 	}
-	if(Player.CurrentClan == 1 || Player.CurrentClan == 2){
-		if(GUIPlayer == Null){
-			_PlayerMarker.Visibility.Show();
+
+	if(GUIPlayer == Null){
+		_PlayerMarker.Card.Show();
+		declare Real L = TL::Length(Player.User.Name)*1.8;
+		_PlayerMarker.PlayerName.Value = Player.User.Name;
+		_PlayerMarker.PlayerName.Size.X = L;
+		_PlayerMarker.Background.BgColor = Teams[Player.CurrentClan-1].ColorUI;
+		_PlayerMarker.Background.Size.X = L;
+	}else{
+		if(GUIPlayer.CurrentClan == Player.CurrentClan){
+			_PlayerMarker.Card.Show();
 			declare Real L = TL::Length(Player.User.Name)*1.8;
 			_PlayerMarker.PlayerName.Value = Player.User.Name;
 			_PlayerMarker.PlayerName.Size.X = L;
 			_PlayerMarker.Background.BgColor = Teams[Player.CurrentClan-1].ColorUI;
 			_PlayerMarker.Background.Size.X = L;
 		}else{
-			if(GUIPlayer.CurrentClan == Player.CurrentClan){
-				_PlayerMarker.Visibility.Show();
-				declare Real L = TL::Length(Player.User.Name)*1.8;
-				_PlayerMarker.PlayerName.Value = Player.User.Name;
-				_PlayerMarker.PlayerName.Size.X = L;
-				_PlayerMarker.Background.BgColor = Teams[Player.CurrentClan-1].ColorUI;
-				_PlayerMarker.Background.Size.X = L;
-			}else{
-				_PlayerMarker.Visibility.Hide();
-			}
+			_PlayerMarker.Card.Hide();
+		}
+	}
+
+	if(Player == _Relayer){
+		if(GUIPlayer.CurrentClan == _Relayer.CurrentClan){
+			_PlayerMarker.Pointer.Show();
+			_PlayerMarker.Dot.ModulateColor = Teams[GUIPlayer.CurrentClan - 1].ColorUI;
+			_PlayerMarker.ArrowHead.ModulateColor = Teams[GUIPlayer.CurrentClan - 1].ColorUI;
+			return;
 		}
 	}else{
-		_PlayerMarker.Visibility.Hide();
+		_PlayerMarker.Pointer.Hide();
 	}
+}
+
+Void {{{C}}}_Update(K_{{{C}}} _PlayerMarker, CSmPlayer _Relayer){
+	if(_Relayer == Null || GUIPlayer == Null)return;
+	declare Vec2 BgAbsPos = _PlayerMarker.Dot.AbsolutePosition_V3;
+	log(BgAbsPos);
+	if(BgAbsPos.X > -115 && BgAbsPos.X < 115 && BgAbsPos.Y > -65 && BgAbsPos.Y < 65){
+		_PlayerMarker.ArrowPivot.Hide();
+	}else{
+		_PlayerMarker.ArrowPivot.Show();
+		declare Vec3 PlayerPos = GUIPlayer.Position;
+		declare Vec3 TargetPos = _Relayer.Position;
+		declare Vec3 PlayerForward = GUIPlayer.AimDirection;//for this aim dir should be enough ML::CrossProduct(_Player.LeftDirection, _Player.UpDirection);
+		declare Vec3 TargetRelativePos = TargetPos-PlayerPos;
+		_PlayerMarker.ArrowPivot.RelativeRotation = ML::RadToDeg(ML::OrientedAngle(TargetRelativePos,PlayerForward));
+	}
+			
 }
 """;
 }

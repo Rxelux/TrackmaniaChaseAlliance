@@ -10,8 +10,8 @@
 Text _Model(){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}">
-	<frameinstance modelid="{{{TeamSelection::C}}}" id="team-select"/>
-	<frameinstance modelid="{{{PauseMenu::C}}}" id="pause-menu"/>
+	<!-- <frameinstance modelid="{{{TeamSelection::C}}}" id="team-select"/> -->
+	<frameinstance modelid="{{{PauseMenu::C}}}" id="pause-menu" pos="0 8"/>
 </framemodel>
 """;
 }
@@ -19,21 +19,21 @@ Text _Model(){
 Text _Functions(){
 	return """//!
 
-declare K_{{{TeamSelection::C}}} TeamSelection;
+// declare K_{{{TeamSelection::C}}} TeamSelection;
 declare K_{{{PauseMenu::C}}} PauseMenu;
 declare Boolean OpenOnTeamSelection;
 
 Void OpenPage(){
-	if(OpenOnTeamSelection){
-		OpenOnTeamSelection = False;
-		TeamSelection.Root.Show();
-		PauseMenu.Root.Hide();
-		{{{TeamSelection::C}}}_Enter(TeamSelection,Now+200);
-	}else{
-		TeamSelection.Root.Hide();
+	// if(OpenOnTeamSelection){
+	// 	OpenOnTeamSelection = False;
+	// 	TeamSelection.Root.Show();
+	// 	PauseMenu.Root.Hide();
+	// 	{{{TeamSelection::C}}}_Enter(TeamSelection,Now+200);
+	// }else{
+	// 	TeamSelection.Root.Hide();
 		PauseMenu.Root.Show();
 		{{{PauseMenu::C}}}_Enter(PauseMenu,Now);
-	}
+	// }
 	if(IsSpectator){
 		PauseMenu.SpectateButton.Label.Value = _("Resume");
 		PauseMenu.SwitchButton.Root.Hide();
@@ -49,7 +49,7 @@ Void ClosePage(){
 	if(G_ClosePageTimer == 0){
 		G_ClosePageTimer = Now+500;
 		{{{PauseMenu::C}}}_Exit(PauseMenu,Now);
-		{{{TeamSelection::C}}}_Exit(TeamSelection,Now);
+		// {{{TeamSelection::C}}}_Exit(TeamSelection,Now);
 	}
 }
 """;
@@ -59,7 +59,7 @@ Text _Labels(){
 	return """//!
 ***Init***
 ***
-	TeamSelection = {{{TeamSelection::C}}}_Get(Page.MainFrame,"team-select");
+	// TeamSelection = {{{TeamSelection::C}}}_Get(Page.MainFrame,"team-select");
 	PauseMenu = {{{PauseMenu::C}}}_Get(Page.MainFrame,"pause-menu");
 	declare Boolean PageWasVisible;
 ***
@@ -96,9 +96,10 @@ if(Event.Type == CMlScriptEvent::Type::KeyPress) {
 ***
 	if(IsSpectator){
 		SendCustomEvent("{{{PlayersL::C_ChangeToPlayer}}}", []);
-		{{{PauseMenu::C}}}_Exit(PauseMenu,Now);
-		{{{TeamSelection::C}}}_Enter(TeamSelection,Now+200);
-		TeamSelection.Root.Show();
+		ClosePage();
+		// {{{PauseMenu::C}}}_Exit(PauseMenu,Now);
+		// {{{TeamSelection::C}}}_Enter(TeamSelection,Now+200);
+		// TeamSelection.Root.Show();
 	}else{
 		SendCustomEvent("{{{PlayersL::C_ChangeToSpec}}}", []);
 		ClosePage();
@@ -107,10 +108,15 @@ if(Event.Type == CMlScriptEvent::Type::KeyPress) {
 
 ***{{{PauseMenu::C}}}_SwitchClick***
 ***
-SendCustomEvent("{{{PlayersL::C_ChangeClan}}}", ["0"]);
-{{{PauseMenu::C}}}_Exit(PauseMenu,Now);
-{{{TeamSelection::C}}}_Enter(TeamSelection,Now+200);
-TeamSelection.Root.Show();
+if(InputPlayer != Null){
+	
+	log(InputPlayer.CurrentClan);
+	SendCustomEvent("{{{PlayersL::C_ChangeClan}}}", []);
+	ClosePage();
+}
+// {{{PauseMenu::C}}}_Exit(PauseMenu,Now);
+// {{{TeamSelection::C}}}_Enter(TeamSelection,Now+200);
+// TeamSelection.Root.Show();
 ***
 
 ***{{{PauseMenu::C}}}_QuitClick***
@@ -123,17 +129,17 @@ TeamSelection.Root.Show();
 	ClosePage();
 ***
 
-***{{{TeamSelection::C}}}_JoinTeam1***
-***
-	SendCustomEvent("{{{PlayersL::C_ChangeClan}}}", ["1"]);
-	ClosePage();
-***
+// ***{{{TeamSelection::C}}}_JoinTeam1***
+// ***
+// 	SendCustomEvent("{{{PlayersL::C_ChangeClan}}}", ["1"]);
+// 	ClosePage();
+// ***
 
-***{{{TeamSelection::C}}}_JoinTeam2***
-***
-	SendCustomEvent("{{{PlayersL::C_ChangeClan}}}", ["2"]);
-	ClosePage();
-***
+// ***{{{TeamSelection::C}}}_JoinTeam2***
+// ***
+// 	SendCustomEvent("{{{PlayersL::C_ChangeClan}}}", ["2"]);
+// 	ClosePage();
+// ***
 """;
 }
 
@@ -149,9 +155,11 @@ Void Load() {
 	G_Loaded = True;
 	Manialink::Load();
 	PlayersL::Load();
-	TeamSelection::Load();
+	// TeamSelection::Load();
 	PauseMenu::Load();
-	Manialink::CreateComponent(C,[TeamSelection::C,PauseMenu::C],_Model(),"",_Functions(),_Labels());
+	Manialink::CreateComponent(C,[
+		// TeamSelection::C,
+		PauseMenu::C],_Model(),"",_Functions(),_Labels());
 	Layers::Load();
 	Layers::Create(C,Manialink::CreateManialink(C));
 	Layers::SetType(C,CUILayer::EUILayerType::InGameMenu);

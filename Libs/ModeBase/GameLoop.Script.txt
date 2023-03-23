@@ -78,20 +78,34 @@ main() {
 				}
 				+++EndMap+++
 
-				+++BeforeUnloadMap+++
-				//Yield to process and remove every events before unloading the map
-				---Yield---
-				//This is necessary to avoid getting errors in the events about variables that does not exist anymore
-				//because they were deleted by the C++ cleaning at the map unload
-				if (MapLoaded) RequestUnloadMap();
-				while (MapLoaded){
+				if(GameLoop::MatchIsRunning()){
+					+++BeforeUnloadMap+++
+					//Yield to process and remove every events before unloading the map
 					---Yield---
+					//This is necessary to avoid getting errors in the events about variables that does not exist anymore
+					//because they were deleted by the C++ cleaning at the map unload
+					if (MapLoaded) RequestUnloadMap();
+					while (MapLoaded){
+						---Yield---
+					}
+					+++AfterUnloadMap+++
+					---Yield--- //Needed to properly save persistent variable
 				}
-				+++AfterUnloadMap+++
-				
-				---Yield--- //Needed to properly save persistent variable
 			}
 			+++EndMatch+++
+
+			+++BeforeUnloadMap+++
+			//Yield to process and remove every events before unloading the map
+			---Yield---
+			//This is necessary to avoid getting errors in the events about variables that does not exist anymore
+			//because they were deleted by the C++ cleaning at the map unload
+			if (MapLoaded) RequestUnloadMap();
+			while (MapLoaded){
+				---Yield---
+			}
+			+++AfterUnloadMap+++
+			---Yield--- //Needed to properly save persistent variable
+			
 		}
 		+++EndScript+++
 		

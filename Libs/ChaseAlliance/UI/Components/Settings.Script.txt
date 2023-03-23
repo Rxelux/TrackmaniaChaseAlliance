@@ -1,14 +1,18 @@
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
+
 
 #Const C "Settings"
 
 Text _Directives(){
 	return """//!
 #Struct K_{{{C}}} {
-	Integer LapCount;
 	Integer RelayerCount;
 	Integer RelayGap;
 	Integer RelaySortDelay;
+	Integer LapCount;
+	Integer MapCount;
+	Integer RoundCount;
 }
 """;
 }
@@ -23,6 +27,14 @@ Text _Labels(){
 	return """//!
 ***Init***
 ***
+	G_{{{C}}} = K_{{{C}}}{
+		RelayerCount = {{{Settings::GetRelayerCount()}}},
+		RelayGap = {{{Settings::GetRelayGap()}}},
+		RelaySortDelay = {{{Settings::GetRelaySortDelay()}}},
+		LapCount = {{{Settings::GetLapCount()}}},
+		MapCount = {{{Settings::GetMapCount()}}},
+		RoundCount = {{{Settings::GetRoundCount()}}}
+	};
 	declare netread Integer Net_{{{C}}}Change for Teams[0];
 	declare Integer Prev{{{C}}}Change;
 	declare netread K_{{{C}}} Net_{{{C}}} for Teams[0];
@@ -48,6 +60,7 @@ Void Load() {
 	if(G_Loaded)return;
 	Unload();
 	G_Loaded = True;
+	Settings::Load();
 	Manialink::Load();
 	Manialink::CreateComponent(C,[],"",_Directives(),_Functions(),_Labels());
 }

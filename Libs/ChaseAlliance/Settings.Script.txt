@@ -1,15 +1,16 @@
 //#RequireContext CSmMode
-#Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 #Include "TextLib" as TL
 
-#Const C_MaxPlayerPerTeam 5
+#Const C_MaxPlayerPerTeam 3
 
 #Struct K_Settings {
-	Integer LapCount;
 	Integer RelayerCount;
 	Integer RelayGap;
 	Integer RelaySortDelay;
+	Integer LapCount;
+	Integer MapCount;
+	Integer RoundCount;
 }
 
 declare K_Settings G_Settings;
@@ -21,44 +22,74 @@ Void ToNet(){
 	Net_SettingsChange = Now;
 }
 
-Void SetLapCount(Integer _Value){
-	if(G_Settings.LapCount != _Value){
-		G_Settings.LapCount = _Value;
-		UIManager.UIAll.SendNotice(
-			"$"^TL::ColorToText(Colors::C_Warning)^"LapCount changed to "^_Value^" laps", 
-			CUIConfig::ENoticeLevel::MatchInfo, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
-		LapCountOverride = _Value;
-	}
-}
-
 Void SetRelayerCount(Integer _Value){
 	if(G_Settings.RelayerCount != _Value){
 		G_Settings.RelayerCount = _Value;
-		UIManager.UIAll.SendNotice(
-			"$"^TL::ColorToText(Colors::C_Warning)^"RelayerCount changed to "^_Value^" relayers", 
-			CUIConfig::ENoticeLevel::MatchInfo, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
-		ChaseTeams::SetRelayerCount(_Value);
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"RelayerCount changed to "^_Value^" relayers");
 	}
+}
+
+Integer GetRelayerCount(){
+	return G_Settings.RelayerCount;
 }
 
 Void SetRelayGap(Integer _Value){
 	if(G_Settings.RelayGap != _Value){
 		G_Settings.RelayGap = _Value;
-		UIManager.UIAll.SendNotice(
-			"$"^TL::ColorToText(Colors::C_Warning)^"RelayGap changed to "^_Value^" points",
-			CUIConfig::ENoticeLevel::MatchInfo, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
-		ChaseTeams::SetRelayGap(_Value);
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"RelayGap changed to "^_Value^" points");
+
 	}
+}
+
+Integer GetRelayGap(){
+	return G_Settings.RelayGap;
 }
 
 Void SetRelaySortDelay(Integer _Value){
 	if(G_Settings.RelaySortDelay != _Value){
 		G_Settings.RelaySortDelay = _Value;
-		UIManager.UIAll.SendNotice(
-			"$"^TL::ColorToText(Colors::C_Warning)^"RelaySortDelay changed to "^_Value^" ms",
-			CUIConfig::ENoticeLevel::MatchInfo, Null, CUIConfig::EAvatarVariant::Default, CUIConfig::EUISound::Silence, 0);
-		ChaseTeams::SetRelaySortDelay(_Value);
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"RelaySortDelay changed to "^_Value^" ms");
 	}
+}
+
+Integer GetRelaySortDelay(){
+	return G_Settings.RelaySortDelay;
+}
+
+Void SetLapCount(Integer _Value){
+	if(G_Settings.LapCount != _Value){
+		G_Settings.LapCount = _Value;
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"LapCount changed to "^_Value^" laps");
+		LapCountOverride = _Value;
+	}
+}
+
+Integer GetLapCount(){
+	return G_Settings.LapCount;
+}
+
+Void SetRoundCount(Integer _Value){
+	if(G_Settings.RoundCount != _Value){
+		G_Settings.RoundCount = _Value;
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"RoundCount changed to "^_Value^" laps");
+
+	}
+}
+
+Integer GetRoundCount(){
+	return G_Settings.RoundCount;
+}
+
+Void SetMapCount(Integer _Value){
+	if(G_Settings.MapCount != _Value){
+		G_Settings.MapCount = _Value;
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"MapCount changed to "^_Value^" laps");
+
+	}
+}
+
+Integer GetMapCount(){
+	return G_Settings.MapCount;
 }
 
 Void ApplySettings(){
@@ -81,11 +112,10 @@ Void ApplySettings(){
 	UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
 
 	UIManager.UIAll.UISequence_CutSceneStyle = CUIConfig::ECutSceneStyle::TM;
-	UIManager.UIAll.NoticesFilter_LevelToShowAsBigMessage = CUIConfig::ENoticeLevel::MatchWarning;
 	
 	UIManager.UIAll.OverlayHideChat = False;
-	UIManager.UIAll.OverlayHideNotices = False;
 	
+	UIManager.UIAll.OverlayHideNotices = True;
 	UIManager.UIAll.DisplayControl_UseEsportsProgrammation = True;
 	UIManager.UIAll.LabelsVisibility_SkipMarkersOnly = True;
 	UIManager.UIAll.OverlayHideMapInfo = True;
@@ -110,6 +140,8 @@ Void ApplySettings(){
 	UIManager.UIAll.OverlayHideSpectatorInfos = True;
 	UIManager.UIAll.OverlayChatHideAvatar = True;
 	UIManager.UIAll.DisableZoomTransitions = True;
+
+	// UIManager.UIAll.ScoreTableOnlyManialink = True; // Hide default simple score board
 
 	SpawnInvulnerabilityDuration = 0;
 	UnspawnAnimDuration = 0;
@@ -149,10 +181,11 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	ApplySettings();
-	SetLapCount(5);
 	SetRelayerCount(3);
 	SetRelayGap(3);
 	SetRelaySortDelay(250);
+	SetLapCount(5);
+	SetRoundCount(3);
+	SetMapCount(3);
 	ToNet();
-	ChaseTeams::Load();
 }

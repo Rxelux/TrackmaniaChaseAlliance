@@ -1,0 +1,140 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/Common/UI/Components/LinearGauge.Script.txt" as LGauge
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Settings.Script.txt" as Settings
+
+
+#Include "TextLib" as TL
+
+#Const C "SmallScoresTable"
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CT}}}>
+	<frameinstance id="team1-gauge" data-pos="-56 -2" data-size="40 4" modelid="{{{LGauge::C}}}" rot="180"/>
+
+	<quad pos="-28 0" size="8 4" bgcolor="0D0B0E" opacity="0.9" {{{Align::CT}}}/>
+	<label id="team1-maps" pos="-28 -2.3" size="8 4" text="1" textfont="RajdhaniMono" textsize="3" {{{Align::C2}}}/>
+
+	<frameinstance id="team1-rounds" data-pos="-28 -6" data-size="8 2" modelid="{{{LGauge::C}}}" rot="180"/>
+
+	<quad pos="-12 0" size="16 8" bgcolor="004FFF" opacity="0.9" {{{Align::CT}}}/>
+	<label id="team1-relays" pos="-12 -4.6" size="16 8" textfont="RajdhaniMono" textsize="6" {{{Align::C2}}}/>
+
+	<quad pos="12 0" size="16 8" bgcolor="FF4F00" opacity="0.9" {{{Align::CT}}}/>
+	<label id="team2-relays" pos="12 -4.6" size="16 8"  textfont="RajdhaniMono" textsize="6" {{{Align::C2}}}/>
+
+	<quad pos="28 0" size="8 4" bgcolor="0D0B0E" opacity="0.9" {{{Align::CT}}}/>
+	<label id="team2-maps" pos="28 -2.3" size="8 4" text="1" textfont="RajdhaniMono" textsize="3" {{{Align::C2}}}/>
+
+	<frameinstance id="team2-rounds" data-pos="28 -6" data-size="8 2" modelid="{{{LGauge::C}}}"/>
+
+	<frameinstance id="team2-gauge" data-pos="56 -2" data-size="40 4" modelid="{{{LGauge::C}}}"/>
+
+</framemodel>
+""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	K_{{{LGauge::C}}} Team1Gauge;
+	K_{{{LGauge::C}}} Team2Gauge;
+	CMlLabel Team1Relays;
+	CMlLabel Team2Relays;
+	K_{{{LGauge::C}}} Team1Rounds;
+	K_{{{LGauge::C}}} Team2Rounds;
+	CMlLabel Team1Maps;
+	CMlLabel Team2Maps;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare K_{{{LGauge::C}}} Team1Gauge = {{{LGauge::C}}}_Get(Root,"team1-gauge");
+	declare K_{{{LGauge::C}}} Team2Gauge = {{{LGauge::C}}}_Get(Root,"team2-gauge");
+	declare CMlLabel Team1Relays <=> (Root.GetFirstChild("team1-relays") as CMlLabel);
+	declare CMlLabel Team2Relays <=> (Root.GetFirstChild("team2-relays") as CMlLabel);
+	declare K_{{{LGauge::C}}} Team1Rounds = {{{LGauge::C}}}_Get(Root,"team1-rounds");
+	declare K_{{{LGauge::C}}} Team2Rounds = {{{LGauge::C}}}_Get(Root,"team2-rounds");
+	declare CMlLabel Team1Maps <=> (Root.GetFirstChild("team1-maps") as CMlLabel);
+	declare CMlLabel Team2Maps <=> (Root.GetFirstChild("team2-maps") as CMlLabel);
+
+
+	Team1Gauge.Left.BgColor = Teams[0].ColorUI;
+	Team1Gauge.Left.Opacity = 0.9;
+	Team1Gauge.Right.BgColor = {{{Colors::C_AllianceDark}}};
+	Team1Gauge.Right.Opacity = 0.1;
+
+	Team2Gauge.Left.BgColor = Teams[1].ColorUI;
+	Team2Gauge.Left.Opacity = 0.9;
+	Team2Gauge.Right.BgColor = {{{Colors::C_AllianceDark}}};
+	Team2Gauge.Right.Opacity = 0.1;
+
+	Team1Rounds.Left.BgColor = Teams[0].ColorUI;
+	Team1Rounds.Left.Opacity = 0.9;
+	Team1Rounds.Right.BgColor = {{{Colors::C_AllianceDark}}};
+	Team1Rounds.Right.Opacity = 0.1;
+
+	Team2Rounds.Left.BgColor = Teams[1].ColorUI;
+	Team2Rounds.Left.Opacity = 0.9;
+	Team2Rounds.Right.BgColor = {{{Colors::C_AllianceDark}}};
+	Team2Rounds.Right.Opacity = 0.1;
+
+	return K_{{{C}}}{
+		Root = Root,
+		Team1Gauge = Team1Gauge,
+		Team2Gauge = Team2Gauge,
+		Team1Relays = Team1Relays,
+		Team2Relays = Team2Relays,
+		Team1Rounds = Team1Rounds,
+		Team2Rounds = Team2Rounds,
+		Team1Maps = Team1Maps,
+		Team2Maps = Team2Maps
+	};
+}
+
+Void {{{C}}}_Update(K_{{{C}}} _SScoreTable) {
+	
+	declare Integer Team1Relays = G_{{{ChaseTeams::C}}}[0].RelayPoints;
+	declare Integer Team2Relays = G_{{{ChaseTeams::C}}}[1].RelayPoints;
+	declare Integer Team1Rounds = G_{{{ChaseTeams::C}}}[0].RoundPoints;
+	declare Integer Team2Rounds = G_{{{ChaseTeams::C}}}[1].RoundPoints;
+	declare Integer Team1Maps = G_{{{ChaseTeams::C}}}[0].MapPoints;
+	declare Integer Team2Maps = G_{{{ChaseTeams::C}}}[1].MapPoints;
+	declare Integer RelayGap = G_{{{Settings::C}}}.RelayGap;
+	declare Integer FTRounds = G_{{{Settings::C}}}.RoundCount;
+	
+	_SScoreTable.Team1Relays.Value = ""^Team1Relays;
+	_SScoreTable.Team2Relays.Value = ""^Team2Relays;
+	_SScoreTable.Team1Maps.Value = ""^Team1Maps;
+	_SScoreTable.Team2Maps.Value = ""^Team2Maps;
+	{{{LGauge::C}}}_Update(_SScoreTable.Team1Gauge,ML::Clamp(Team1Relays-Team2Relays,0,RelayGap)/(RelayGap+0.0));
+	{{{LGauge::C}}}_Update(_SScoreTable.Team2Gauge,ML::Clamp(Team2Relays-Team1Relays,0,RelayGap)/(RelayGap+0.0));
+	{{{LGauge::C}}}_Update(_SScoreTable.Team1Rounds,Team1Rounds/(FTRounds+0.0));
+	{{{LGauge::C}}}_Update(_SScoreTable.Team2Rounds,Team2Rounds/(FTRounds+0.0));
+}
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	LGauge::Load();
+	ChaseTeams::Load();
+	Manialink::CreateComponent(C,[LGauge::C,ChaseTeams::C,Settings::C],_Model(),_Directives(),_Functions(),"");
+}

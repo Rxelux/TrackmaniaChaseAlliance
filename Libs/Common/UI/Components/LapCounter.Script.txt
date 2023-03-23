@@ -6,9 +6,9 @@
 
 Text _Model (){
 	return """
-<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
-	<label id="lap-prefix-label" pos="-1 1.2" text="Lap" textfont="RajdhaniMono" textsize="6" {{{Align::RC}}}/>
-	<label id="lap-label" textfont="RajdhaniMono" textsize="12" {{{Align::LC}}}/>
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CT}}}>
+	<label id="prefix" pos="-24 -4.6" size="16 8" text="Lap" textfont="RajdhaniMono" textsize="6" {{{Align::R2}}}/>
+	<label id="lap" pos="0 -8" size="24 16" text="1/5" textfont="RajdhaniMono" textsize="12" {{{Align::R2}}}/>
 </framemodel>
 """;
 }
@@ -17,7 +17,8 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
-	CMlLabel LapLabel;
+	CMlLabel Lap;
+	CMlLabel Prefix;
 }
 """;
 }
@@ -26,16 +27,18 @@ Text _Functions(){
 	return """//!
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
-	declare CMlLabel LapLabel <=> (Root.GetFirstChild("lap-label") as CMlLabel);
+	declare CMlLabel Lap <=> (Root.GetFirstChild("lap") as CMlLabel);
+	declare CMlLabel Prefix <=> (Root.GetFirstChild("prefix") as CMlLabel);
 	return K_{{{C}}}{
 		Root = Root,
-		LapLabel = LapLabel
+		Lap = Lap,
+		Prefix = Prefix
 	};
 }
 
 Void {{{C}}}_Update(K_{{{C}}} _LapCounter,CSmPlayer _Player,Integer _Total){
 	if(_Player != Null){
-		_LapCounter.LapLabel.Value = ""^_Player.CurrentLapNumber+1^"/"^_Total;
+		_LapCounter.Lap.Value = ""^_Player.CurrentLapNumber+1^"/"^_Total;
 		_LapCounter.Root.Visible = True;
 	}else{
 		_LapCounter.Root.Visible = False;
