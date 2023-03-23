@@ -11,30 +11,75 @@
 #Const C_ChangeToSpec "Players_ChangeToSpec"
 #Const C_ChangeToPlayer "Players_ChangeToPlayer"
 
-Boolean _SetClan(CSmPlayer _Player,Integer _Clan){
-	
-	if(_Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned){
-		UnspawnPlayer(_Player);
-	}
+Boolean _TryJoinClan(CSmPlayer _Player,Integer _Clan){
 	if( _Clan == 1 && ClansNbPlayers[1] < Settings::C_MaxPlayerPerTeam){
-		SetPlayerClan(_Player,1);
 		declare Integer ForcedClan for _Player.User = 1;
 		ForcedClan = 1;
+		SetPlayerClan(_Player,1);
 		return True;
 	}
 	if( _Clan == 2 && ClansNbPlayers[2] < Settings::C_MaxPlayerPerTeam){
-		SetPlayerClan(_Player,2);
+		ServerAdmin.ForcePlayerRequestedTeam(_Player.User, 2);
 		declare Integer ForcedClan for _Player.User = 2;
 		ForcedClan = 2;
+		SetPlayerClan(_Player,2);
 		return True;
 	}
-	SetPlayerClan(_Player,0);
-	declare Integer ForcedClan for _Player.User = 0;
-	ForcedClan = 0;
 	return False;
 }
 
-Void AttachMarkers(CSmPlayer _Player) {
+Void _SetSpectator(CSmPlayer _Player){
+	if(_Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned){
+		UnspawnPlayer(_Player);
+	}
+	SetPlayerClan(_Player,0);
+	ServerAdmin.ForceSpectator(_Player.User, CServerAdmin::ESpecMode::SpectatorSelectable);
+}
+
+Boolean _SetClan(CSmPlayer _Player,Integer _Clan){
+	
+	if(_Player.CurrentClan == _Clan) return True;
+	//check if player is not spawned as SetPlayerClan will fail if player is spawned.
+	if(_Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned){
+		UnspawnPlayer(_Player);
+	}
+	declare CUIConfig UI = UIManager.GetUI(_Player);
+
+	if(_Clan == 1){
+		if(_TryJoinClan(_Player,1)){
+			if(UI != Null) UI.SendChat("You joined $"^TL::ColorToText(Teams[0].ColorUI)^Teams[0].Name);
+			return True;
+		}else{
+			if(_TryJoinClan(_Player,2)){
+				if(UI != Null) UI.SendChat("$"^TL::ColorToText(Teams[0].ColorUI)^Teams[0].Name^"$zis full! You joined $"^TL::ColorToText(Teams[1].ColorUI)^Teams[1].Name);
+				return True;
+			}else{
+				if(UI != Null) UI.SendChat("Both teams are full! You've been set to spectator");
+				_SetSpectator(_Player);
+				return False;
+			}
+		}
+	}
+	if(_Clan == 2){
+		if(_TryJoinClan(_Player,2)){
+			if(UI != Null) UI.SendChat("You joined $"^TL::ColorToText(Teams[1].ColorUI)^Teams[1].Name);
+			return True;
+		}else{
+			if(_TryJoinClan(_Player,1)){
+				if(UI != Null) UI.SendChat("$"^TL::ColorToText(Teams[1].ColorUI)^Teams[1].Name^"$zis full! You joined $"^TL::ColorToText(Teams[0].ColorUI)^Teams[0].Name);
+				return True;
+			}else{
+				if(UI != Null) UI.SendChat("Both teams are full! You've been set to spectator");
+				_SetSpectator(_Player);
+				return False;
+			}
+		}
+	}
+	_SetSpectator(_Player);
+	return False;
+}
+
+Void _AttachMarkers(CSmPlayer _Player) {
 	declare CUIConfigMarker[] CMarkers = UIManager.UIAll.Markers;
 	declare Text[] UsedFrameIds;
 	foreach (Marker in CMarkers) {
@@ -46,21 +91,10 @@ Void AttachMarkers(CSmPlayer _Player) {
 	for(I,0,20){
 		if(!UsedFrameIds.exists("player-"^I)){
 			declare Marker = UIManager.UIAll.AddMarker(_Player);
-			Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-			Marker.Box = <0.,0.6,0.>;
-			Marker.ImageUrl = _Player.User.Login; //NOTE - shameless hijacking of the ImageUrl Text value to pass the attached player login to the client
-			Marker.ManialinkFrameId = "player-"^I;
-			Marker.HideOnSelf = True;
-			break;
-		}
-	}
-	for(I,0,20){
-		if(!UsedFrameIds.exists("relayer-"^I)){
-			declare Marker = UIManager.UIAll.AddMarker(_Player);
 			Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 			Marker.Box = <0.,0.,0.>;
-			Marker.ImageUrl = _Player.User.Login;
-			Marker.ManialinkFrameId = "relayer-"^I;
+			Marker.ImageUrl = _Player.User.Login; //NOTE - shameless hijacking of the ImageUrl Text value to pass the attached player login to the client
+			Marker.ManialinkFrameId = "player-"^I;
 			Marker.HideOnSelf = True;
 			break;
 		}
@@ -68,21 +102,13 @@ Void AttachMarkers(CSmPlayer _Player) {
 }
 
 Void Spawn(CSmPlayer _Player,Integer _When){
-	if (_Player == Null) return;
-	declare Integer ForcedClan for _Player.User = 0;
-	if(ForcedClan == 0){
-		if(_Player.User.IsFakeUser){
-			ForcedClan = _Player.RequestedClan;
-		}else{
-			ServerAdmin.ForceSpectator(_Player.User, CServerAdmin::ESpecMode::SpectatorSelectable);
-			return;
-		}
-	}
 	if(_Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned){
 		UnspawnPlayer(_Player);
 	}
+	declare Integer ForcedClan for _Player.User = 0;
+	if(ForcedClan == 0) return;
 	SpawnPlayer(_Player,ForcedClan,1,Spawn::Get(),_When);
-	AttachMarkers(_Player);
+	_AttachMarkers(_Player);
 	_Player.UseCrudeExtrapolation = False;
 	_Player.TrustClientSimu = True;
 	_Player.Dossard_Color = Teams[_Player.CurrentClan-1].ColorPrimary;
@@ -99,20 +125,28 @@ Void PassUIEvent(CUIConfigEvent _Event){
 	if(_Event.UI == Null) return;
 	
 	if(_Event.CustomEventType == C_ChangeClan){
-		if(_Event.CustomEventData.count != 1) return;
 		declare Player = GetPlayer(_Event.UI);
-		declare Integer Clan = TL::ToInteger(_Event.CustomEventData[0]);
+		declare Integer ForcedClan for Player.User = 0; //TODO: ForcedClan should be readonly, protect it
+		declare Integer Clan;
+		if(ForcedClan == 0) Clan = Player.RequestedClan;
+		if(ForcedClan == 1) Clan = 2;
+		if(ForcedClan == 2) Clan = 1;
 		if(_SetClan(Player,Clan) && GameState::IsWaiting()){
 			Spawn(Player,Now+1500);
 		}
 	}
 	if(_Event.CustomEventType == C_ChangeToSpec){
 		declare Player = GetPlayer(_Event.UI);
-		ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::SpectatorSelectable);
+		_SetSpectator(Player);
 	}
 	if(_Event.CustomEventType == C_ChangeToPlayer){
 		declare Player = GetPlayer(_Event.UI);
 		ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::PlayerSelectable);
+		declare Integer ForcedClan for Player.User = 0; //TODO: ForcedClan should be readonly, protect it
+		declare Integer Clan;
+		if(ForcedClan == 0) Clan = Player.RequestedClan;
+		if(ForcedClan == 1 || ForcedClan == 2) Clan = ForcedClan;
+		_SetClan(Player,Clan);
 	}
 }
 
@@ -123,9 +157,10 @@ Void PassModeEvent(CSmModeEvent _Event){
 			(_Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && _Event.IsFinish)){
 			Spawn(_Event.Player,Now+1500);
 		}
-	}else{
-		if(_Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && _Event.IsFinish){
-			UnspawnPlayer(_Event.Player);
+		if(_Event.Type == CSmModeEvent::EType::OnPlayerAdded){
+			if(_SetClan(_Event.Player,_Event.Player.RequestedClan) && GameState::IsWaiting()){
+				Spawn(_Event.Player,Now+1500);
+			}
 		}
 	}
 }

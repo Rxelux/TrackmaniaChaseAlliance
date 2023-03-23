@@ -1,0 +1,68 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/Common/UI/Components/Common.Script.txt" as Common
+
+#Const C "LinearGauge"
+
+#Const C_DefaultSize <40., 4.>
+#Const C_DefaultPos <0.,0.>
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
+	<quad id="left" bgcolor="000" {{{Align::LC}}}/>
+	<quad id="right" bgcolor="FFF" {{{Align::RC}}}/>
+</framemodel>""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	CMlQuad Left;
+	CMlQuad Right;
+	Vec2 Size;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+	K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+		declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+		declare CMlQuad Left <=> (Root.GetFirstChild("left") as CMlQuad);
+		declare CMlQuad Right <=> (Root.GetFirstChild("right") as CMlQuad);
+		declare Size = GetData(Root,"size",{{{C_DefaultSize}}});
+		declare Pos = GetData(Root,"pos",{{{C_DefaultPos}}});
+		Root.RelativePosition_V3 = Pos;
+		Left.Size = Size;
+		Right.Size = Size;
+		Left.RelativePosition_V3 = <-Size.X/2.,0.>;
+		Right.RelativePosition_V3 = <Size.X/2.,0.>;
+		return K_{{{C}}}{
+			Root = Root,
+			Left = Left,
+			Right = Right,
+			Size = Size
+		};
+	}
+
+	Void {{{C}}}_Update(K_{{{C}}} _Gauge, Real _Value) {
+		_Gauge.Left.Size.X = _Gauge.Size.X*_Value;
+		_Gauge.Right.Size.X = _Gauge.Size.X*(1.0-_Value);
+	}
+""";
+}
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Common::Load();
+	Manialink::CreateComponent(C,["GetDataVec2"],_Model(),_Directives(),_Functions(),"");
+}

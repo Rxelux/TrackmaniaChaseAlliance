@@ -39,19 +39,14 @@ K_Event[] GetPending() {
 //!SECTION
 
 //SECTION SortedEvents
-declare Integer G_SortedEventLifetime;
-
-Void SetSortedEventLifetime(Integer _Lifetime){
-	G_SortedEventLifetime = _Lifetime;
-}
 
 declare K_SortedEvent[][Integer] G_PendingSortedEvents;
 
-Void CreateSorted(Integer _EventTime,Text _Name,Text _Source,Text[] _Texts,Integer[] _Integers, Real[] _Reals, Boolean[] _Booleans) {
+Void CreateSorted(Integer _EventTime,Integer _LifeTime, Text _Name,Text _Source,Text[] _Texts,Integer[] _Integers, Real[] _Reals, Boolean[] _Booleans) {
 	declare Event = K_SortedEvent{
 		Name = _Name,
 		Source = _Source,
-		ExpireAt = Now + G_SortedEventLifetime,
+		ExpireAt = Now + _LifeTime,
 		Texts = _Texts,
 		Integers = _Integers,
 		Reals = _Reals,
@@ -108,7 +103,6 @@ K_SortedEvent[][Integer] GetPendingSorted() {
 declare Boolean G_Loaded;
 Void Unload() {
 	G_Loaded = False;
-	G_SortedEventLifetime = 250;
 }
 
 Void Load() {

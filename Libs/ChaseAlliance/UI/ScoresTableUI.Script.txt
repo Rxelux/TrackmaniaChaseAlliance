@@ -1,0 +1,54 @@
+//#RequireContext CSmMlScriptIngame
+#Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ScoresTable.Script.txt" as ScoresTable
+
+#Const C "ScoresTableUI"
+
+Text _Model(){
+	return """
+<framemodel id="{{{C}}}" class="{{{C}}}">
+	<frameinstance modelid="{{{ScoresTable::C}}}" id="scores" pos="0 8"/>
+</framemodel>
+""";
+}
+
+Text _Labels(){
+	return """//!
+***Init***
+***
+	declare K_{{{ScoresTable::C}}} ScoresTable = {{{ScoresTable::C}}}_Get(Page.MainFrame,"scores");
+***
+
+***Yield***
+***
+if(IsInGameMenuDisplayed){
+	ScoresTable.Root.Hide();
+}else{
+	ScoresTable.Root.Show();
+}
+
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+	Layers::Destroy(C);
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	ScoresTable::Load();
+	Manialink::CreateComponent(C,
+		[ScoresTable::C],
+		_Model(),"","",_Labels());
+	Layers::Load();
+	Layers::Create(C,Manialink::CreateManialink(C));
+	Layers::SetType(C,CUILayer::EUILayerType::ScoresTable);
+	Layers::AttachAll(C);
+}

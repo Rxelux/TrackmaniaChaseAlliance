@@ -9,10 +9,10 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
-	<frameinstance modelid="{{{Button::C}}}" id="switch" data-size="50 10" data-pos="6.6 18" data-text="{{{_("Change team")}}}"/>
-	<frameinstance modelid="{{{Button::C}}}" id="spectate" data-size="50 10" data-pos="2.2 6" data-text="{{{_("Spectate")}}}"/>
-	<frameinstance modelid="{{{Button::C}}}" id="quit"  data-size="50 10" data-pos="-2.2 -6" data-text="{{{_("Quit")}}}"/>
-	<frameinstance modelid="{{{Button::C}}}" id="close" data-size="50 10" data-pos="-6.6 -18" data-text="{{{ _("Close")}}}"/>
+	<frameinstance modelid="{{{Button::C}}}" id="switch" data-pos="0 24" data-text="{{{_("Change team")}}}" data-text-size="4"/>
+	<frameinstance modelid="{{{Button::C}}}" id="spectate" data-pos="0 8" data-text="{{{_("Spectate")}}}" data-text-size="4"/>
+	<frameinstance modelid="{{{Button::C}}}" id="quit"  data-pos="0 -8" data-text="{{{_("Quit")}}}" data-text-size="4"/>
+	<frameinstance modelid="{{{Button::C}}}" id="close" data-pos="0 -24" data-text="{{{ _("Close")}}}" data-text-size="4"/>
 </framemodel>
 """;
 }

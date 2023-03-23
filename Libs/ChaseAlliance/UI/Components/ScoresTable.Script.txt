@@ -1,0 +1,81 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "TextLib" as TL
+
+#Const C "ScoreTable"
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
+
+	<quad pos="-40 26" size="72 12" bgcolor="004FFF" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="-40 26" size="72 12" text="Team 1" textfont="RajdhaniMono" textsize="6" {{{Align::C2}}}/>
+
+	<quad pos="-60 14" size="32 8" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="-60 14" size="32 8" text="Map wins 1/3" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
+
+	<quad pos="-20 14" size="32 8" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="-20 14" size="32 8" text="Round wins 1/3" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
+
+	<quad pos="-40 2" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="-72 2" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad pos="-40 -12" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="-72 -12" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad pos="-40 -26" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="-72 -26" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+
+
+	<quad pos="40 26" size="72 12" bgcolor="FF4F00" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="40 26" size="72 12" text="Team 2" textfont="RajdhaniMono" textsize="6" {{{Align::C2}}}/>
+
+	<quad pos="60 14" size="32 8" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="60 14" size="32 8" text="Round wins 1/3" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
+
+	<quad pos="20 14" size="32 8" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="20 14" size="32 8" text="Map wins 1/3" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
+
+	<quad pos="40 2" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="6 2" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad pos="40 -12" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="6 -12" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad pos="40 -26" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
+	<label pos="6 -26" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+
+	<label pos="0 0"  text="$F00WIP WIP WIP" textfont="RajdhaniMono" textsize="30" {{{Align::C2}}} opacity="0.5" rot="-20"/>
+</framemodel>
+""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	return K_{{{C}}}{
+		Root = Root
+	};
+}
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],_Model(),_Directives(),_Functions(),"");
+}

@@ -37,6 +37,7 @@ Text _Labels(){
 	return """//!
 ***Init***
 ***
+	G_{{{C}}} = [K_{{{C}}}{},K_{{{C}}}{}];
 	declare netread Integer Net_{{{C}}}Change for Teams[0];
 	declare Integer Prev{{{C}}}Change;
 	declare netread K_{{{C}}}[] Net_{{{C}}} for Teams[0];

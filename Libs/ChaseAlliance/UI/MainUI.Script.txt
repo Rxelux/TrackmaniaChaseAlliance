@@ -9,6 +9,9 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/RelayStatus.Script.txt" as RelayStatus
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Settings.Script.txt" as Settings
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameStateL
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/SmallScoresTable.Script.txt" as SmallScoresTable
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 
 #Const C "MainUI"
@@ -19,10 +22,11 @@ Text _Model(){
 	declare Text RadarFillColor = Colors::ToDataText(Colors::C_AllianceDark);
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}">
+	<frameinstance modelid="{{{SmallScoresTable::C}}}" id="scores" pos="0 86"/>
 	<frameinstance modelid="{{{Radar::C}}}" id="radar" pos="0 -50" 
 		data-fill-color="{{{RadarFillColor}}}" data-front-color="{{{RadarFrontColor}}}" data-back-color="{{{RadarBackColor}}}"/>
-	<frameinstance modelid="{{{LapCounter::C}}}" id="lap-counter" pos="135 82"/>
-	<frameinstance modelid="{{{RaceTimer::C}}}" id="race-timer" pos="0 -82"/>
+	<frameinstance modelid="{{{LapCounter::C}}}" id="lap-counter" pos="156 86"/>
+	<frameinstance modelid="{{{RaceTimer::C}}}" id="race-timer" pos="0 -86"/>
 	<frameinstance modelid="{{{RelayStatus::C}}}" id="relay-status" pos="0 -68"/>
 </framemodel>
 """;
@@ -34,12 +38,39 @@ Text _Labels(){
 ***
 	HideResumePlayingButton = True;
 	declare K_{{{Radar::C}}} Radar = {{{Radar::C}}}_Get(Page.MainFrame,"radar");
-	Radar.Root.Visible = False;
 	declare K_{{{LapCounter::C}}} LapCounter = {{{LapCounter::C}}}_Get(Page.MainFrame,"lap-counter");
 	declare K_{{{RaceTimer::C}}} RaceTimer = {{{RaceTimer::C}}}_Get(Page.MainFrame,"race-timer");
 	declare K_{{{RelayStatus::C}}} RelayStatus = {{{RelayStatus::C}}}_Get(Page.MainFrame,"relay-status");
+	declare K_{{{SmallScoresTable::C}}} SmallScoresTable = {{{SmallScoresTable::C}}}_Get(Page.MainFrame,"scores");
 	declare K_{{{ChaseTeams::C}}} Team;
 	declare CSmPlayer Relayer;
+***
+
+***GameState_Change***
+***
+switch (G_{{{GameState::C}}}) {
+	case {{{GameStateL::C_Playing}}}: {
+		RaceTimer.RaceTimer.TextColor = <1.,1.,1.>;//TODO get proper coloring on all default color value
+		LapCounter.Lap.TextColor = <1.,1.,1.>;
+		LapCounter.Prefix.TextColor = <1.,1.,1.>;
+		RelayStatus.Root.Show();
+		Radar.Root.Show();
+	}
+	case {{{GameStateL::C_Waiting}}}: {
+		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Warning}}};
+		LapCounter.Lap.TextColor = {{{Colors::C_Warning}}};
+		LapCounter.Prefix.TextColor = {{{Colors::C_Warning}}};
+		RelayStatus.Root.Hide();
+		Radar.Root.Hide();
+	}
+	case {{{GameStateL::C_Pause}}}: {
+		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Warning}}};
+		LapCounter.Lap.TextColor = {{{Colors::C_Warning}}};
+		LapCounter.Prefix.TextColor = {{{Colors::C_Warning}}};
+		RelayStatus.Root.Hide();
+		Radar.Root.Hide();
+	}
+}
 ***
 
 ***GUIPlayer_Change***
@@ -52,6 +83,7 @@ Relayer <=> GetPlayer(Team.RelayerLogin);
 ***
 Team = {{{ChaseTeams::C}}}_GetTeam(GUIPlayer);
 Relayer <=> GetPlayer(Team.RelayerLogin);
+{{{SmallScoresTable::C}}}_Update(SmallScoresTable);
 ***
 
 ***Yield***
@@ -81,9 +113,11 @@ Void Load() {
 	RaceTimer::Load();
 	ChaseTeams::Load();
 	Settings::Load();
+	GameState::Load();
 	RelayStatus::Load();
+	SmallScoresTable::Load();
 	Manialink::CreateComponent(C,
-		[RelayStatus::C,Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C,"GetPlayer","GUIPlayerObserver"],
+		[GameState::C,SmallScoresTable::C,RelayStatus::C,Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C,"GetPlayer","GUIPlayerObserver"],
 		_Model(),"","",_Labels());
 	Layers::Load();
 	Layers::Create(C,Manialink::CreateManialink(C));

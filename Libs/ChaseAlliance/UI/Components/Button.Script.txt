@@ -5,9 +5,10 @@
 #Include "ChaseAlliance/Libs/Common/UI/Components/Anims.Script.txt" as Anims
 
 #Const C "Button"
-#Const C_DefaultSize <50.,10.>
+#Const C_DefaultSize <64., 12.>
+#Const C_DefaultTextSize 6.
 #Const C_DefaultPos <0.,0.>
-#Const C_DefaultGrow <20.,2.>
+#Const C_DefaultGrow <8.,4.>
 #Const C_DefaultMove <50.,0.>
 
 Text _Model(){
@@ -17,7 +18,7 @@ Text _Model(){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
 	<quad id="{{{C}}}_button" bgcolor="{{{IdleColor}}}" bgcolorfocus="{{{FocusColor}}}" scriptevents="1" {{{Align::CC}}}/>
-	<label id="text" textfont="RajdhaniMono" textsize="3" {{{Align::C2}}}/>
+	<label id="text" textfont="RajdhaniMono" {{{Align::C2}}}/>
 </framemodel>
 """;
 }
@@ -29,6 +30,7 @@ Text _Directives(){
 	CMlLabel Label;
 	CMlQuad Quad;
 	Vec2 Size;
+	Real TextSize;
 	Vec2 Pos;
 	Vec2 Grow;
 	Vec2 Move;
@@ -47,6 +49,7 @@ K_{{{C}}} {{{C}}}_GetFromRoot(CMlFrame _Root) {
 		Label = Label,
 		Quad = Quad,
 		Size = GetData(_Root,"size",{{{C_DefaultSize}}}),
+		TextSize = GetData(_Root,"text-size",{{{C_DefaultTextSize}}}),
 		Pos = GetData(_Root,"pos",{{{C_DefaultPos}}}),
 		Grow = GetData(_Root,"grow",{{{C_DefaultGrow}}}),
 		Move = GetData(_Root,"move",{{{C_DefaultMove}}})
@@ -61,15 +64,17 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	Button.Quad.Size = Button.Size;
 	Button.Label.Size = Button.Size;
 	Button.Label.Value = GetData(Root,"text","Button");
+	Button.Label.TextSizeReal = Button.TextSize;
 	return Button;
 }
 
 Void {{{C}}}_In(K_{{{C}}} _Button){
 
 	declare Size = _Button.Size;
+	declare TextSize = _Button.TextSize;
 	declare Grow = _Button.Grow;
 
-	{{{Anims::C}}}_Animate(_Button.Label,"TextSize",0,"BackOut",_Button.Label.TextSizeReal,6.,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Label,"TextSize",0,"BackOut",_Button.Label.TextSizeReal,TextSize*1.5,Now,200);
 	{{{Anims::C}}}_Animate(_Button.Quad,"SizeX",0,"BackOut",_Button.Quad.Size.X,Size.X+Grow.X,Now,200);
 	{{{Anims::C}}}_Animate(_Button.Quad,"SizeY",0,"BackOut",_Button.Quad.Size.Y,Size.Y+Grow.Y,Now,200);
 	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",0,"QuadOut",_Button.Quad.Opacity,1.,Now,200);
@@ -79,11 +84,12 @@ Void {{{C}}}_In(K_{{{C}}} _Button){
 Void {{{C}}}_Out(K_{{{C}}} _Button){
 
 	declare Size = _Button.Size;
+	declare TextSize = _Button.TextSize;
 
-	{{{Anims::C}}}_Animate(_Button.Label,"TextSize",0,"BackOut",_Button.Label.TextSizeReal,3.,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Label,"TextSize",0,"BackOut",_Button.Label.TextSizeReal,TextSize,Now,200);
 	{{{Anims::C}}}_Animate(_Button.Quad,"SizeX",0,"BackOut",_Button.Quad.Size.X,Size.X,Now,200);
 	{{{Anims::C}}}_Animate(_Button.Quad,"SizeY",0,"BackOut",_Button.Quad.Size.Y,Size.Y,Now,200);
-	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",0,"QuadIn",_Button.Quad.Opacity,0.95,Now,200);
+	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",0,"QuadIn",_Button.Quad.Opacity,0.90,Now,200);
 
 }
 
@@ -99,8 +105,8 @@ Void {{{C}}}_Enter(K_{{{C}}} _Button,Integer _StartTime){
 
 	{{{Anims::C}}}_Animate(_Button.Root,"PosX",0,"BackOut",_Button.Root.RelativePosition_V3.X,Pos.X,_StartTime,400);
 	{{{Anims::C}}}_Animate(_Button.Root,"PosY",0,"BackOut",_Button.Root.RelativePosition_V3.Y,Pos.Y,_StartTime,400);
-	{{{Anims::C}}}_Animate(_Button.Label,"TextOpacity",0,"QuadOut",_Button.Label.Opacity,0.95,_StartTime,400);
-	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",0,"QuadOut",_Button.Quad.Opacity,0.95,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Label,"TextOpacity",0,"QuadOut",_Button.Label.Opacity,0.90,_StartTime,400);
+	{{{Anims::C}}}_Animate(_Button.Quad,"BgOpacity",0,"QuadOut",_Button.Quad.Opacity,0.90,_StartTime,400);
 }
 
 Void {{{C}}}_Exit(K_{{{C}}} _Button,Integer _StartTime){
@@ -151,5 +157,5 @@ Void Load() {
 	Manialink::Load();
 	Common::Load();
 	Anims::Load();
-	Manialink::CreateComponent(C,[Anims::C,"GetDataText","GetDataInteger","GetDataVec2"],_Model(),_Directives(),_Functions(),_Labels());
+	Manialink::CreateComponent(C,[Anims::C,"GetDataText","GetDataReal","GetDataVec2"],_Model(),_Directives(),_Functions(),_Labels());
 }

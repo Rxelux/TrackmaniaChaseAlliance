@@ -1,7 +1,6 @@
 //#RequireContext CSmMode
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
-#Include "ChaseAlliance/Libs/Common/Messages.Script.txt" as Messages
 
 #Include "TextLib" as TL
 
@@ -30,7 +29,10 @@ Text GetStateText(){
 	return "?";
 }
 
-
+Void ToNet(){
+	declare netwrite Integer Net_GameState for Teams[0] = 1;
+	Net_GameState = G_GameState;
+}
 
 Boolean IsPlaying(){
 	return G_GameState == C_Playing;
@@ -38,7 +40,7 @@ Boolean IsPlaying(){
 Void SetPlaying(){
 	G_GameState = C_Playing;
 	PreventGiveUp();
-	Messages::SendStatus(UIManager.UIAll,_("Starting in..."),3000,CUIConfig::EUISound::Warning);
+	ToNet();
 }
 
 Boolean IsWaiting(){
@@ -47,7 +49,7 @@ Boolean IsWaiting(){
 Void SetWaiting(){
 	G_GameState = C_Waiting;
 	AllowGiveUp();
-	Messages::SendStatus(UIManager.UIAll,_("Waiting for players"),0, CUIConfig::EUISound::Warning);
+	ToNet();
 }
 
 Boolean IsPause(){
@@ -56,6 +58,7 @@ Boolean IsPause(){
 Void SetPause(){
 	G_GameState = C_Pause;
 	AllowGiveUp();
+	ToNet();
 }
 
 Boolean IsWaitingOrPause(){
