@@ -1,24 +1,19 @@
 //#RequireContext CSmMode
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/Common/Commands.Script.txt" as Commands
 
 #Include "TextLib" as TL
 
+#Const C_EventSource "GameState"
+#Const C_EventOnPlaying "OnPlaying"
+#Const C_EventOnWaiting "OnWaiting"
+#Const C_EventOnPause "OnPause"
 #Const C_Playing 0
 #Const C_Waiting 1
 #Const C_Pause 2
 
 declare Integer G_GameState;
-
-Void AllowGiveUp(){
-	RespawnBehaviour = CSmMode::ERespawnBehaviour::GiveUpBeforeFirstCheckpoint;
-	GiveUpBehaviour = CSmMode::EGiveUpBehaviour::GiveUp;
-}
-
-Void PreventGiveUp(){
-	RespawnBehaviour = CSmMode::ERespawnBehaviour::AlwaysRespawn;
-	GiveUpBehaviour = CSmMode::EGiveUpBehaviour::DoNothing;
-}
 
 Text GetStateText(){
 	switch (G_GameState) {
@@ -38,41 +33,34 @@ Boolean IsPlaying(){
 	return G_GameState == C_Playing;
 }
 Void SetPlaying(){
+	declare Integer PrevState = G_GameState;
 	G_GameState = C_Playing;
-	PreventGiveUp();
 	ToNet();
+	Events::Create(C_EventOnPlaying,C_EventSource,[],[PrevState],[],[]);
 }
 
 Boolean IsWaiting(){
 	return G_GameState == C_Waiting;
 }
 Void SetWaiting(){
+	declare Integer PrevState = G_GameState;
 	G_GameState = C_Waiting;
-	AllowGiveUp();
 	ToNet();
+	Events::Create(C_EventOnWaiting,C_EventSource,[],[PrevState],[],[]);
 }
 
 Boolean IsPause(){
 	return G_GameState == C_Pause;
 }
 Void SetPause(){
+	declare Integer PrevState = G_GameState;
 	G_GameState = C_Pause;
-	AllowGiveUp();
 	ToNet();
+	Events::Create(C_EventOnPause,C_EventSource,[],[PrevState],[],[]);
 }
 
 Boolean IsWaitingOrPause(){
 	return G_GameState > 0;
-}
-
-Void PassLibEvent(Events::K_Event _Event){
-	if(_Event.Name == "Pause"){
-		if(IsPause()){
-			SetWaiting();
-		}else{
-			SetPause();
-		}
-	}
 }
 
 declare Boolean G_Loaded;
@@ -86,4 +74,5 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Events::Load();
+	Commands::Load();
 }

@@ -94,11 +94,15 @@ Void RemoveFakeUser(Text _Login){
 }
 
 Void RemoveFakeUserByName(Text _Name){
-	RemoveFakeUser(GetFakeUserByName(_Name).Login);
+	declare CUser User = GetFakeUserByName(_Name);
+	if(User == Null) return;
+	RemoveFakeUser(User.Login);
 }
 
 Void RemoveFakeUserByNameId(Integer _Id){
-	RemoveFakeUser(GetFakeUserByNameId(_Id).Login);
+	declare CUser User = GetFakeUserByNameId(_Id);
+	if(User == Null) return;
+	RemoveFakeUser(User.Login);
 }
 
 Void RemoveFakeUsers(){
