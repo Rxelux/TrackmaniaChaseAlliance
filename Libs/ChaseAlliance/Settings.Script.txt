@@ -1,5 +1,8 @@
 //#RequireContext CSmMode
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+
 #Include "TextLib" as TL
 
 #Const C_MaxPlayerPerTeam 3
@@ -141,7 +144,7 @@ Void ApplySettings(){
 	UIManager.UIAll.OverlayChatHideAvatar = True;
 	UIManager.UIAll.DisableZoomTransitions = True;
 
-	// UIManager.UIAll.ScoreTableOnlyManialink = True; // Hide default simple score board
+	UIManager.UIAll.ScoreTableOnlyManialink = True; // Hide default score board
 
 	SpawnInvulnerabilityDuration = 0;
 	UnspawnAnimDuration = 0;
@@ -171,6 +174,28 @@ Void ApplySettings(){
 	CrudeExtrapolation_AllowDelay = False;
 }
 
+Void _AllowGiveUp(){
+	RespawnBehaviour = CSmMode::ERespawnBehaviour::GiveUpBeforeFirstCheckpoint;
+	GiveUpBehaviour = CSmMode::EGiveUpBehaviour::GiveUp;
+}
+
+Void _PreventGiveUp(){
+	RespawnBehaviour = CSmMode::ERespawnBehaviour::AlwaysRespawn;
+	GiveUpBehaviour = CSmMode::EGiveUpBehaviour::DoNothing;
+}
+
+Void PassLibEvent(Events::K_Event _Event){
+	if(_Event.Source != GameState::C_EventSource)return;
+	switch(_Event.Name){
+		case GameState::C_EventOnPlaying:
+			_PreventGiveUp();
+		case GameState::C_EventOnWaiting:
+			_AllowGiveUp();
+		case GameState::C_EventOnPause:
+			_AllowGiveUp();	
+	}
+}
+
 declare Boolean G_Loaded;
 Void Unload() {
 	G_Loaded = False;
@@ -180,6 +205,8 @@ Void Load() {
 	if(G_Loaded)return;
 	Unload();
 	G_Loaded = True;
+	GameState::Load();
+	Events::Load();
 	ApplySettings();
 	SetRelayerCount(3);
 	SetRelayGap(3);

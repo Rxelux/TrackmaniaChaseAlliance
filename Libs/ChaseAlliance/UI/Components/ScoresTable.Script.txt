@@ -1,48 +1,68 @@
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Settings.Script.txt" as Settings
 #Include "TextLib" as TL
 
 #Const C "ScoreTable"
 
 Text _Model (){
+	declare Text bgcolor = Colors::ToHex6(Colors::C_AllianceDark);
+
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
 
-	<quad pos="-40 26" size="72 12" bgcolor="004FFF" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="-40 26" size="72 12" text="Team 1" textfont="RajdhaniMono" textsize="6" {{{Align::C2}}}/>
+	<quad pos="-40 26" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="team1-bg" pos="-40 26" size="72 12" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team1-name" pos="-40 26" size="72 12" textfont="RajdhaniMono" textsize="6" {{{Align::C2}}}/>
 
-	<quad pos="-60 14" size="32 8" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="-60 14" size="32 8" text="Map wins 1/3" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
+	<quad pos="-60 14" size="32 8" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad pos="-60 14" size="32 8" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team1-maps" pos="-60 14" size="32 8" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
 
-	<quad pos="-20 14" size="32 8" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="-20 14" size="32 8" text="Round wins 1/3" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
+	<quad pos="-20 14" size="32 8" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad pos="-20 14" size="32 8" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team1-rounds" pos="-20 14" size="32 8" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
 
-	<quad pos="-40 2" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="-72 2" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
-	<quad pos="-40 -12" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="-72 -12" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
-	<quad pos="-40 -26" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="-72 -26" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad pos="-40 2" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="team1-player0-bg" pos="-40 2" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team1-player0" pos="-72 2" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+
+	<quad pos="-40 -12" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="team1-player1-bg" pos="-40 -12" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team1-player1" pos="-72 -12" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+
+	<quad pos="-40 -26" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="team1-player2-bg" pos="-40 -26" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team1-player2" pos="-72 -26" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
 
 
-	<quad pos="40 26" size="72 12" bgcolor="FF4F00" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="40 26" size="72 12" text="Team 2" textfont="RajdhaniMono" textsize="6" {{{Align::C2}}}/>
+	<quad pos="40 26" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="team2-bg" pos="40 26" size="72 12" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team2-name" pos="40 26" size="72 12" textfont="RajdhaniMono" textsize="6" {{{Align::C2}}}/>
 
-	<quad pos="60 14" size="32 8" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="60 14" size="32 8" text="Round wins 1/3" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
+	<quad pos="60 14" size="32 8" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad pos="60 14" size="32 8" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team2-rounds" pos="60 14" size="32 8" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
 
-	<quad pos="20 14" size="32 8" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="20 14" size="32 8" text="Map wins 1/3" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
+	<quad pos="20 14" size="32 8" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad pos="20 14" size="32 8" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team2-maps" pos="20 14" size="32 8" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
 
-	<quad pos="40 2" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="6 2" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
-	<quad pos="40 -12" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="6 -12" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
-	<quad pos="40 -26" size="72 12" bgcolor="0D0B0E" opacity="0.9" {{{Align::CC}}}/>
-	<label pos="6 -26" size="68 12" text="Player 1" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad pos="40 2" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="team2-player0-bg" pos="40 2" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team2-player0" pos="6 2" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
 
-	<label pos="0 0"  text="$F00WIP WIP WIP" textfont="RajdhaniMono" textsize="30" {{{Align::C2}}} opacity="0.5" rot="-20"/>
+	<quad pos="40 -12" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="team2-player1-bg" pos="40 -12" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team2-player1" pos="6 -12" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+
+	<quad pos="40 -26" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="team2-player2-bg" pos="40 -26" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="team2-player2" pos="6 -26" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+
+	<!-- <label pos="0 0"  text="$F00WIP WIP WIP" textfont="RajdhaniMono" textsize="30" {{{Align::C2}}} opacity="0.5" rot="-20"/> -->
 </framemodel>
 """;
 }
@@ -51,6 +71,18 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
+	CMlQuad Team1Bg;
+	CMlLabel Team1Name;
+	CMlLabel Team1Maps;
+	CMlLabel Team1Rounds;
+	CMlLabel[] Team1Players;
+	CMlQuad[] Team1PlayersBg;
+	CMlQuad Team2Bg;
+	CMlLabel Team2Name;
+	CMlLabel Team2Maps;
+	CMlLabel Team2Rounds;
+	CMlLabel[] Team2Players;
+	CMlQuad[] Team2PlayersBg;
 }
 """;
 }
@@ -60,10 +92,106 @@ Text _Functions(){
 
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+
+	declare CMlQuad Team1Bg <=> (Root.GetFirstChild("team1-bg") as CMlQuad);
+	declare CMlLabel Team1Name <=> (Root.GetFirstChild("team1-name") as CMlLabel);
+	declare CMlLabel Team1Maps <=> (Root.GetFirstChild("team1-maps") as CMlLabel);
+	declare CMlLabel Team1Rounds <=> (Root.GetFirstChild("team1-rounds") as CMlLabel);
+
+	declare CMlQuad Team2Bg <=> (Root.GetFirstChild("team2-bg") as CMlQuad);
+	declare CMlLabel Team2Name <=> (Root.GetFirstChild("team2-name") as CMlLabel);
+	declare CMlLabel Team2Maps <=> (Root.GetFirstChild("team2-maps") as CMlLabel);
+	declare CMlLabel Team2Rounds <=> (Root.GetFirstChild("team2-rounds") as CMlLabel);
+
+	declare CMlLabel[] Team1Players;
+	declare CMlQuad[] Team1PlayersBg;
+	declare CMlLabel[] Team2Players;
+	declare CMlQuad[] Team2PlayersBg;
+	for(I,0,2){
+		Team1Players.add((Root.GetFirstChild("team1-player"^I) as CMlLabel));
+		Team1PlayersBg.add((Root.GetFirstChild("team1-player"^I^"-bg") as CMlQuad));
+		Team2Players.add((Root.GetFirstChild("team2-player"^I) as CMlLabel));
+		Team2PlayersBg.add((Root.GetFirstChild("team2-player"^I^"-bg") as CMlQuad));
+	}
+
+	Team1Bg.BgColor = Teams[0].ColorUI;
+	Team1Name.Value = Teams[0].Name;
+	Team2Bg.BgColor = Teams[1].ColorUI;
+	Team2Name.Value = Teams[1].Name;
+
 	return K_{{{C}}}{
-		Root = Root
+		Root = Root,
+		Team1Bg =  Team1Bg,
+		Team1Name =  Team1Name,
+		Team1Maps =  Team1Maps,
+		Team1Rounds =  Team1Rounds,
+		Team1Players =  Team1Players,
+		Team1PlayersBg =  Team1PlayersBg,
+		Team2Bg =  Team2Bg,
+		Team2Name =  Team2Name,
+		Team2Maps =  Team2Maps,
+		Team2Rounds =  Team2Rounds,
+		Team2Players =  Team2Players,
+		Team2PlayersBg =  Team2PlayersBg
 	};
 }
+
+Void {{{C}}}_Update(K_{{{C}}} _ScoreTable) {
+	
+	declare Integer Team1Rounds = G_{{{ChaseTeams::C}}}[0].RoundPoints;
+	declare Integer Team2Rounds = G_{{{ChaseTeams::C}}}[1].RoundPoints;
+	declare Integer Team1Maps = G_{{{ChaseTeams::C}}}[0].MapPoints;
+	declare Integer Team2Maps = G_{{{ChaseTeams::C}}}[1].MapPoints;
+	declare Integer MapCount = G_{{{Settings::C}}}.MapCount;
+	declare Integer RoundCount = G_{{{Settings::C}}}.RoundCount;
+	
+	_ScoreTable.Team1Rounds.Value = "Round wins "^Team1Rounds^"/"^RoundCount;
+	_ScoreTable.Team2Rounds.Value = "Round wins "^Team2Rounds^"/"^RoundCount;
+	_ScoreTable.Team1Maps.Value = "Map wins "^Team1Maps^"/"^MapCount;
+	_ScoreTable.Team2Maps.Value = "Map wins "^Team2Maps^"/"^MapCount;
+
+	declare Team1PlayerCount = 0;
+	declare Team2PlayerCount = 0;
+	for(I,0,2){
+		_ScoreTable.Team1Players[I].Value = "";
+		_ScoreTable.Team1PlayersBg[I].Opacity = 0.1;
+		_ScoreTable.Team2Players[I].Value = "";
+		_ScoreTable.Team2PlayersBg[I].Opacity = 0.1;
+	}
+	foreach (Player in Players) {
+		if(Player.CurrentClan == 1){
+			if(Player.User.ClubTag == ""){
+				_ScoreTable.Team1Players[Team1PlayerCount].Value = ""^Player.User.Name;
+			}else{
+				_ScoreTable.Team1Players[Team1PlayerCount].Value = "["^Player.User.ClubTag^"$z] "^Player.User.Name;
+			}
+			_ScoreTable.Team1PlayersBg[Team1PlayerCount].Opacity = 0.9;
+			if(Team1PlayerCount < 2) Team1PlayerCount += 1;
+		}		
+		if(Player.CurrentClan == 2){
+			if(Player.User.ClubTag == ""){
+				_ScoreTable.Team2Players[Team2PlayerCount].Value = ""^Player.User.Name;
+			}else{
+				_ScoreTable.Team2Players[Team2PlayerCount].Value = "["^Player.User.ClubTag^"$z] "^Player.User.Name;
+			}
+			_ScoreTable.Team2PlayersBg[Team2PlayerCount].Opacity = 0.9;
+			if(Team2PlayerCount < 2) Team2PlayerCount += 1;
+		}
+	}
+}
+""";
+}
+
+Text _Labels(){
+	return """//!
+***Event***
+***
+if (Event.ControlId == "{{{C}}}_button") {
+	declare K_{{{C}}} Button = {{{C}}}_GetFromRoot(Event.Control.Parent);
+	{{{C}}}_Handle(Button,Event.Type);
+	+++{{{C}}}_Event+++
+}
+***
 """;
 }
 
@@ -77,5 +205,7 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Manialink::Load();
-	Manialink::CreateComponent(C,[],_Model(),_Directives(),_Functions(),"");
+	ChaseTeams::Load();
+	Settings::Load();
+	Manialink::CreateComponent(C,[ChaseTeams::C,Settings::C],_Model(),_Directives(),_Functions(),"");
 }

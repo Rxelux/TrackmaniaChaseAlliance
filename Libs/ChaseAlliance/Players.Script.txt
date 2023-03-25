@@ -5,6 +5,8 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+
 #Include "TextLib" as TL
 
 #Const C_ChangeClan "Players_ChangeClan"
@@ -51,7 +53,7 @@ Boolean _SetClan(CSmPlayer _Player,Integer _Clan){
 			return True;
 		}else{
 			if(_TryJoinClan(_Player,2)){
-				if(UI != Null) UI.SendChat("$"^TL::ColorToText(Teams[0].ColorUI)^Teams[0].Name^"$zis full! You joined $"^TL::ColorToText(Teams[1].ColorUI)^Teams[1].Name);
+				if(UI != Null) UI.SendChat("$"^TL::ColorToText(Teams[0].ColorUI)^Teams[0].Name^"$g is full! You joined $"^TL::ColorToText(Teams[1].ColorUI)^Teams[1].Name);
 				return True;
 			}else{
 				if(UI != Null) UI.SendChat("Both teams are full! You've been set to spectator");
@@ -66,7 +68,7 @@ Boolean _SetClan(CSmPlayer _Player,Integer _Clan){
 			return True;
 		}else{
 			if(_TryJoinClan(_Player,1)){
-				if(UI != Null) UI.SendChat("$"^TL::ColorToText(Teams[1].ColorUI)^Teams[1].Name^"$zis full! You joined $"^TL::ColorToText(Teams[0].ColorUI)^Teams[0].Name);
+				if(UI != Null) UI.SendChat("$"^TL::ColorToText(Teams[1].ColorUI)^Teams[1].Name^"$g is full! You joined $"^TL::ColorToText(Teams[0].ColorUI)^Teams[0].Name);
 				return True;
 			}else{
 				if(UI != Null) UI.SendChat("Both teams are full! You've been set to spectator");
@@ -120,18 +122,19 @@ Void SpawnAll(Integer _When){
 	}
 }
 
+declare Text[] G_PlayerToSpawnLogins;
 Void PassUIEvent(CUIConfigEvent _Event){
 	if(_Event.Type != CUIConfigEvent::EType::OnLayerCustomEvent) return;
 	if(_Event.UI == Null) return;
 	
 	if(_Event.CustomEventType == C_ChangeClan){
 		declare Player = GetPlayer(_Event.UI);
-		declare Integer ForcedClan for Player.User = 0; //TODO: ForcedClan should be readonly, protect it
+		declare Integer ForcedClan for Player.User = 0;
 		declare Integer Clan;
 		if(ForcedClan == 0) Clan = Player.RequestedClan;
 		if(ForcedClan == 1) Clan = 2;
 		if(ForcedClan == 2) Clan = 1;
-		if(_SetClan(Player,Clan) && GameState::IsWaiting()){
+		if(_SetClan(Player,Clan) && GameState::IsWaitingOrPause()){
 			Spawn(Player,Now+1500);
 		}
 	}
@@ -142,28 +145,58 @@ Void PassUIEvent(CUIConfigEvent _Event){
 	if(_Event.CustomEventType == C_ChangeToPlayer){
 		declare Player = GetPlayer(_Event.UI);
 		ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::PlayerSelectable);
-		declare Integer ForcedClan for Player.User = 0; //TODO: ForcedClan should be readonly, protect it
+		declare Integer ForcedClan for Player.User = 0;
 		declare Integer Clan;
-		if(ForcedClan == 0) Clan = Player.RequestedClan;
-		if(ForcedClan == 1 || ForcedClan == 2) Clan = ForcedClan;
+		if(ForcedClan == 0){
+			 Clan = Player.RequestedClan;
+		}else{
+			Clan = ForcedClan;
+		}
 		_SetClan(Player,Clan);
+		G_PlayerToSpawnLogins.add(Player.User.Login);
+	}
+}
+
+Void Yield(){
+	if(GameState::IsWaitingOrPause()){
+		foreach (PlayerLogin in G_PlayerToSpawnLogins) {
+			declare CSmPlayer Player = GetPlayer(PlayerLogin);
+			if(Player == Null){
+				G_PlayerToSpawnLogins.remove(PlayerLogin);
+				continue;
+			}
+			if(!Player.RequestsSpectate){
+				if(Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned){
+					 Spawn(Player,Now+1500);
+				}
+			}
+		}
 	}
 }
 
 Void PassModeEvent(CSmModeEvent _Event){
 	if(_Event.Player == Null) return;
-	if(GameState::IsWaiting()){
+	if(GameState::IsWaitingOrPause()){
 		if((_Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn && _Event.GiveUp) || 
 			(_Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && _Event.IsFinish)){
 			Spawn(_Event.Player,Now+1500);
 		}
 		if(_Event.Type == CSmModeEvent::EType::OnPlayerAdded){
-			if(_SetClan(_Event.Player,_Event.Player.RequestedClan) && GameState::IsWaiting()){
+			if(_SetClan(_Event.Player,_Event.Player.RequestedClan) && GameState::IsWaitingOrPause()){
 				Spawn(_Event.Player,Now+1500);
 			}
 		}
 	}
 }
+
+Void PassLibEvent(Events::K_Event _Event){
+	if(_Event.Source != GameState::C_EventSource)return;
+	switch(_Event.Name){
+		case GameState::C_EventOnPlaying:
+			G_PlayerToSpawnLogins.clear();
+	}
+}
+
 
 declare Boolean G_Loaded;
 Void Unload() {
@@ -175,5 +208,6 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Spawn::Load();
+	Events::Load();
 	GameState::Load();
 }

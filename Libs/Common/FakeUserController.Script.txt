@@ -55,9 +55,9 @@ Void _SetFakePlayerVehicleControl(K_RUController _RUController,Boolean _Control)
 	declare UI <=> UIManager.GetUI(RealPlayer);
 	if(UI == Null){Log("""[RUController] _SetFakePlayerVehicleControl: RealPlayer as no UI""");return;}
 
-	declare Real Controlled_X for UI;
-	declare Integer Controlled_A for UI;
-	declare Integer Controlled_B for UI;
+	declare Real Controlled_X for UI = 0.;
+	declare Integer Controlled_A for UI = 0;
+	declare Integer Controlled_B for UI = 0;
 	if(FakePlayer.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned){
 		SetPlayerVehicle_ControlledByMode(FakePlayer,_Control);
 		if(!_Control) return;
@@ -79,6 +79,15 @@ Void _Create(K_RUController _RUController){
 
 	declare CSmPlayer RealPlayer = GetPlayer(_RUController.RealUserLogin);
 	if(RealPlayer == Null){Log("""[RUController] _SetFakePlayerVehicleControl: RealPlayer is Null!""");return;}
+	declare UI <=> UIManager.GetUI(RealPlayer);
+	if(UI == Null){Log("""[RUController] _SetFakePlayerVehicleControl: RealPlayer as no UI""");return;}
+
+	declare Real Controlled_X for UI = 0.;
+	declare Integer Controlled_A for UI = 0;
+	declare Integer Controlled_B for UI = 0;
+	Controlled_X = 0.;
+	Controlled_A = 0;
+	Controlled_B = 0;
 	
 	_HandleLockRealPlayer(_RUController);
 	_HandleFocusFakePlayer(_RUController);

@@ -2,6 +2,7 @@
 #Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ScoresTable.Script.txt" as ScoresTable
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
 
 #Const C "ScoresTableUI"
 
@@ -18,6 +19,7 @@ Text _Labels(){
 ***Init***
 ***
 	declare K_{{{ScoresTable::C}}} ScoresTable = {{{ScoresTable::C}}}_Get(Page.MainFrame,"scores");
+	declare Boolean PageWasVisible;
 ***
 
 ***Yield***
@@ -27,7 +29,22 @@ if(IsInGameMenuDisplayed){
 }else{
 	ScoresTable.Root.Show();
 }
+***
 
+***{{{ChaseTeams::C}}}_Change***
+***
+{{{ScoresTable::C}}}_Update(ScoresTable);
+***
+
+***End***
+***
+if(!PageIsVisible && PageWasVisible){
+	PageWasVisible = False;
+}
+if(PageIsVisible && !PageWasVisible){
+	PageWasVisible = True;
+	{{{ScoresTable::C}}}_Update(ScoresTable);
+}
 ***
 """;
 }
@@ -45,7 +62,7 @@ Void Load() {
 	Manialink::Load();
 	ScoresTable::Load();
 	Manialink::CreateComponent(C,
-		[ScoresTable::C],
+		[ChaseTeams::C,ScoresTable::C],
 		_Model(),"","",_Labels());
 	Layers::Load();
 	Layers::Create(C,Manialink::CreateManialink(C));

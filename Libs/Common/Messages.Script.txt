@@ -148,6 +148,7 @@ Void ClearAll(Integer _Clan){
 }
 
 Void ClearAll(){
+	ClearAll(UIManager.UIAll);
 	foreach (Player in Players) {
 		ClearBig(Player);
 		ClearStatus(Player);

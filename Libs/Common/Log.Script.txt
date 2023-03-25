@@ -1,25 +1,37 @@
 #Include "ChaseAlliance/Libs/Common/Env.Script.txt" as Env
 
-Void Log(Text _Text) {
+Void Log(Text _Text,Boolean _Always) {
 	if (Env::IsDev()) {
 		log("""({{{Now}}}): """^_Text);
 		UIManager.UIAll.SendChat("""({{{Now}}}): """^_Text);
 	}
-	if(Env::IsTest()) log("""({{{Now}}}): """^_Text);
+	if(Env::IsTest() || _Always) log("""({{{Now}}}): """^_Text);
 }
 
-Void Warn(Text _Text) {
+Void Log(Text _Text) {
+	Log(_Text,False);
+}
+
+Void Warn(Text _Text,Boolean _Always) {
 	if (Env::IsDev()) {
 		log("""WARNING({{{Now}}}): """^_Text);
 		UIManager.UIAll.SendChat("""$F80WARNING({{{Now}}}): """^_Text);
 	}
-	if (Env::IsTest()) log("""WARNING({{{Now}}}): """^_Text);
+	if (Env::IsTest() || _Always) log("""WARNING({{{Now}}}): """^_Text);
 }
 
-Void Error(Text _Text) {
+Void Warn(Text _Text) {
+	Warn(_Text,False);
+}
+
+Void Error(Text _Text,Boolean _Always) {
 	if (Env::IsDev()) {
 		UIManager.UIAll.SendChat("""$F00ERROR({{{Now}}}): """^_Text);
 		assert(False,_Text);
 	}
-	if (Env::IsTest()) log("""ERROR({{{Now}}}): """^_Text);
+	if (Env::IsTest() || _Always) log("""ERROR({{{Now}}}): """^_Text);
+}
+
+Void Error(Text _Text) {
+	Error(_Text,False);
 }

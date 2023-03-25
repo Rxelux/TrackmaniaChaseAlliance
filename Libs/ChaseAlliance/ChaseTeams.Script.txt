@@ -149,7 +149,6 @@ Void ResetTeamsRelay(){
 	_ResetTeamRelay(1);
 	_ResetTeamRelay(2);
 	Events::RemoveAllSortedWithSource(C_EventSource);
-	Messages::ClearAll();
 }
 
 Void ResetChaseTeams(){
@@ -225,13 +224,13 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 				// Log("Relay success");
 				
 				declare K_ChaseTeams OpposingTeam = GetOpposingTeam(CurrentClan);
+				_IncrementTeamRelayPoint(CurrentClan);
+				_SetTeamRelayerLogin(CurrentClan,"");//reset relayer
+				_SetTeamLastSuccessfulRelayCp(CurrentClan,RaceWaypoint);
 				if((Team.RelayPoints+1) - OpposingTeam.RelayPoints >= Settings::GetRelayGap()){
 					G_WinState = C_WinByKo;
 					G_WinClan = CurrentClan;
 				}else{
-					_IncrementTeamRelayPoint(CurrentClan);
-					_SetTeamRelayerLogin(CurrentClan,"");//reset relayer
-					_SetTeamLastSuccessfulRelayCp(CurrentClan,RaceWaypoint);
 					Messages::SendBig(CurrentClan,"$"^TL::ColorToText(Colors::C_Success)^"Relay Success",3000,CUIConfig::EUISound::ScoreProgress);
 					Messages::SendStatus(CurrentClan,"",0,CUIConfig::EUISound::Silence);
 					Messages::SendStatus(Player,"Wait for players",3000,CUIConfig::EUISound::Silence);
