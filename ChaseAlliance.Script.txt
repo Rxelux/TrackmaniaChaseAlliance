@@ -24,12 +24,12 @@
 
 #Include "TextLib" as TL
 
-#Setting S_EndRoundPause 800 as "Pause in ms after a round"
-#Setting S_EndMapPause 800 as "Pause in ms after a map"
-#Setting S_EndMatchPause 800 as "Pause in ms after a match"
+#Setting S_EndRoundPause 8000 as "Pause in ms after a round"
+#Setting S_EndMapPause 6000 as "Pause in ms after a map"
+#Setting S_EndMatchPause 4000 as "Pause in ms after a match"
 
-#Setting S_MapIntroDuration 800 as "Map intro duration in ms"
-#Setting S_WarmUpDuration 800 as "Warm-up duration in ms"
+#Setting S_MapIntroDuration 8000 as "Map intro duration in ms"
+#Setting S_WarmUpDuration 30000 as "Warm-up duration in ms"
 
 #Setting S_RelayerCount 3 as "Number of players that do relays per team"
 #Setting S_RelayGap 3 as "Number of failed relay a team can fall behind before getting eliminated"
@@ -38,10 +38,12 @@
 #Setting S_RoundCount 3 as "Number of round to win a map"
 #Setting S_LapCount 5 as "Number of laps to win a round"
 
+#Setting S_Env 0 as "0 = prod, 1 = test, 2 = dev"
+
+
 ***StartServer***
 ***
 // Log("StartServer");
-Env::ToDev();
 Commands::Load();
 UsersL::Load();
 Events::Load();
@@ -102,6 +104,7 @@ UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
 ***
 // Log("StartRound");
 //ValidateSettings
+Env::SetEnv(S_Env);
 Settings::SetRelayerCount(S_RelayerCount);
 Settings::SetRelayGap(S_RelayGap);
 Settings::SetRelaySortDelay(S_RelaySortDelay);
@@ -180,7 +183,7 @@ EndTimeL::SetEndTime(S_EndRoundPause);
 NextYieldSleepMs = S_EndRoundPause;
 ---Yield---
 
-if(GameState::IsPlaying() && !ChaseTeams::AreComplete()){
+if(GameState::IsWarmUp() || GameState::IsPlaying() && !ChaseTeams::AreComplete()){
 	GameState::SetWaiting();
 	Messages::SendStatus(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Waiting)^"Waiting for players",0, CUIConfig::EUISound::Warning);
 }
@@ -198,8 +201,8 @@ if(WinningClan > 0){
 		Log(Teams[0].Name^": Maps "^ChaseTeams::GetTeamMapPoint(1)^"/"^Settings::GetMapCount()^"\n"^Teams[1].Name^": Maps "^ChaseTeams::GetTeamMapPoint(2)^"/"^Settings::GetMapCount(),True);
 	}
 }
-declare netwrite Text Net_Race_LoadingScreen_ImageUrl for Teams[0] = "";
-Net_Race_LoadingScreen_ImageUrl = "https://wallpapercave.com/wp/pXzF4fB.jpg";
+// declare netwrite Text Net_Race_LoadingScreen_ImageUrl for Teams[0] = "https://wallpapercave.com/wp/pXzF4fB.jpg";
+// Net_Race_LoadingScreen_ImageUrl = "https://wallpapercave.com/wp/pXzF4fB.jpg";
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 NextYieldSleepMs = S_EndMapPause;
 ---Yield---

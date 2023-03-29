@@ -70,6 +70,7 @@ switch(G_{{{GameState::C}}}){
 		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Waiting}}};
 		LapCounter.Lap.TextColor = {{{Colors::C_Waiting}}};
 		LapCounter.Prefix.TextColor = {{{Colors::C_Waiting}}};
+		EndTimer.EndTimer.TextColor = {{{Colors::C_Waiting}}};
 		RelayStatus.Root.Hide();
 		Radar.Root.Hide();
 	}
