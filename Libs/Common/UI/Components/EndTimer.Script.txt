@@ -1,0 +1,57 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "TextLib" as TL
+
+#Const C "EndTimer"
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::RC}}}>
+	<label id="timer" pos="0 -0.8" size="64 8" textfont="RajdhaniMono" textsize="6" {{{Align::RC}}}/>
+</framemodel>
+""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	CMlLabel EndTimer;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlLabel EndTimer <=> (Root.GetFirstChild("timer") as CMlLabel);
+	return K_{{{C}}}{
+		Root = Root,
+		EndTimer = EndTimer
+	};
+}
+
+Void {{{C}}}_Update(K_{{{C}}} _EndTimer,Integer _Value){
+	if(_Value >= 0){
+		_EndTimer.EndTimer.Value = ""^TL::TimeToText(_Value,False);
+		_EndTimer.Root.Visible = True;
+	}else{
+		_EndTimer.Root.Visible = False;
+	}
+}
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Manialink::CreateComponent(C,[],_Model(),_Directives(),_Functions(),"");
+}

@@ -1,15 +1,6 @@
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 
-#Const C "GameState"
-
-Text _Directives(){
-	return """//!
-	#Const C_{{{C}}}_Playing 0
-	#Const C_{{{C}}}_Waiting 1
-	#Const C_{{{C}}}_WarmUp 2
-	#Const C_{{{C}}}_Pause 3
-""";
-}
+#Const C "EndTime"
 
 Text _Functions(){
 	return """//!
@@ -44,5 +35,5 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Manialink::Load();
-	Manialink::CreateComponent(C,[],"",_Directives(),_Functions(),_Labels());
+	Manialink::CreateComponent(C,[],"","",_Functions(),_Labels());
 }

@@ -8,20 +8,23 @@
 #Const C_EventSource "GameState"
 #Const C_EventOnPlaying "OnPlaying"
 #Const C_EventOnWaiting "OnWaiting"
+#Const C_EventOnWarmUp "OnWarmUp"
 #Const C_EventOnPause "OnPause"
 #Const C_Playing 0
 #Const C_Waiting 1
-#Const C_Pause 2
+#Const C_WarmUp 2
+#Const C_Pause 3
 
 declare Integer G_GameState;
 
 Text GetStateText(){
 	switch (G_GameState) {
-		case 0: return "Playing";
-		case 1: return "Waiting";
-		case 2: return "Pause";
+		case C_Playing: return "Playing";
+		case C_Waiting: return "Waiting";
+		case C_WarmUp: return "Warm-Up";
+		case C_Pause: return "Pause";
 	}
-	return "?";
+	return "";
 }
 
 Void ToNet(){
@@ -49,6 +52,16 @@ Void SetWaiting(){
 	Events::Create(C_EventOnWaiting,C_EventSource,[],[PrevState],[],[]);
 }
 
+Boolean IsWarmUp(){
+	return G_GameState == C_WarmUp;
+}
+Void SetWarmUp(){
+	declare Integer PrevState = G_GameState;
+	G_GameState = C_WarmUp;
+	ToNet();
+	Events::Create(C_EventOnWarmUp,C_EventSource,[],[PrevState],[],[]);
+}
+
 Boolean IsPause(){
 	return G_GameState == C_Pause;
 }
@@ -59,14 +72,10 @@ Void SetPause(){
 	Events::Create(C_EventOnPause,C_EventSource,[],[PrevState],[],[]);
 }
 
-Boolean IsWaitingOrPause(){
-	return G_GameState > 0;
-}
-
 declare Boolean G_Loaded;
 Void Unload() {
 	G_Loaded = False;
-	SetWaiting();
+	SetWarmUp();
 }
 
 Void Load() {

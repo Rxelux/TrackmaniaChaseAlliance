@@ -9,11 +9,13 @@
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
 #Include "ChaseAlliance/Libs/Common/Messages.Script.txt" as Messages
 #Include "ChaseAlliance/Libs/Common/Spawn.Script.txt" as Spawn
+#Include "ChaseAlliance/Libs/Common/EndTime.Script.txt" as EndTimeL
 #Include "ChaseAlliance/Libs/Common/FakeUserController.Script.txt" as Controller
 #Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
+#Include "ChaseAlliance/Libs/ChaseAlliance/Markers.Script.txt" as MarkersL
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/PauseUI.Script.txt" as PauseUI
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/MainUI.Script.txt" as MainUI
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/ScoresTableUI.Script.txt" as ScoresTableUI
@@ -22,10 +24,12 @@
 
 #Include "TextLib" as TL
 
-#Setting S_MapIntroPause 8000 as "Pause in ms for the map intro"
-#Setting S_EndRoundPause 8000 as "Pause in ms after a round"
-#Setting S_EndMapPause 8000 as "Pause in ms after a map"
-#Setting S_EndMatchPause 8000 as "Pause in ms after a match"
+#Setting S_EndRoundPause 800 as "Pause in ms after a round"
+#Setting S_EndMapPause 800 as "Pause in ms after a map"
+#Setting S_EndMatchPause 800 as "Pause in ms after a match"
+
+#Setting S_MapIntroDuration 800 as "Map intro duration in ms"
+#Setting S_WarmUpDuration 800 as "Warm-up duration in ms"
 
 #Setting S_RelayerCount 3 as "Number of players that do relays per team"
 #Setting S_RelayGap 3 as "Number of failed relay a team can fall behind before getting eliminated"
@@ -46,6 +50,7 @@ Spawn::Load();
 Controller::Load();
 GameState::Load();
 PlayersL::Load();
+MarkersL::Load();
 Settings::Load();
 ChaseTeams::Load();
 PauseUI::Load();
@@ -57,12 +62,10 @@ Commands::AddPermittedUser("V_vWwMxbQqO0GgDYtK3zTg");
 Commands::AddPermittedUser("oNhUUAthQx6SkVe2YK9PXw");
 ***
 
-***StartScript***
+/* ***StartScript***
 ***
 // Log("StartScript");
-GameState::SetWaiting();
-Messages::SendStatus(UIManager.UIAll,_("Waiting for players"),0, CUIConfig::EUISound::Warning);
-***
+*** */
 
 ***StartMatch***
 ***
@@ -82,7 +85,7 @@ Log("BeforeLoadMap");
 // Log("AfterLoadMap");
 Spawn::Find();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
-NextYieldSleepMs = S_MapIntroPause;
+NextYieldSleepMs = S_MapIntroDuration;
 ---Yield---
 ***
 
@@ -91,6 +94,7 @@ NextYieldSleepMs = S_MapIntroPause;
 // Log("StartMap");
 ChaseTeams::ResetTeamsRoundPoint();
 ChaseTeams::ToNet();
+GameState::SetWarmUp();
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
 ***
 
@@ -107,13 +111,16 @@ Settings::SetLapCount(S_LapCount);
 Settings::ToNet();
 ChaseTeams::ResetTeamsRelay();
 ChaseTeams::ToNet();
-if(!GameState::IsPause()){
-	Messages::ClearAll();
+if(GameState::IsWarmUp()){
+	Messages::SendStatus(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_WarmUp)^"Warm-Up",0, CUIConfig::EUISound::Warning);
+	EndTime = Now + S_WarmUpDuration;
+	EndTimeL::SetEndTime(S_WarmUpDuration);
 }
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
 PlayersL::SpawnAll(StartTime);
+MarkersL::RefreshMarkers();
 ***
 
 ***PlayLoop***
@@ -130,6 +137,20 @@ if(GameState::IsWaiting()){
 		GameLoop::EndRound();
 	}
 }
+if(!GameState::IsPlaying()){
+	foreach(Player in Players){
+		if(Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned){
+			PlayersL::Spawn(Player,Now+1500);
+		}
+	}
+}
+if(GameState::IsWarmUp() && Now > EndTime){
+	if(ChaseTeams::AreComplete()){
+		GameState::SetPlaying();
+		Messages::SendStatus(UIManager.UIAll,"Starting Round!",S_EndRoundPause,CUIConfig::EUISound::Warning);
+	}
+	GameLoop::EndRound();
+}
 ***
 
 ***EndRound***
@@ -142,7 +163,7 @@ if(WinningClan > 0){
 	ChaseTeams::IncrementTeamRoundPoint(WinningClan);
 	Messages::SendStatus(UIManager.UIAll,ChaseTeams::GetWinStateString(),S_EndRoundPause,CUIConfig::EUISound::Warning);
 	Log(Teams[WinningClan-1].Name^" wins the round: "^ChaseTeams::GetWinStateString(),True);
-	Messages::SendBig(UIManager.UIAll,Teams[WinningClan-1].Name^" wins the round." ,S_EndRoundPause,CUIConfig::EUISound::VictoryPoint );
+	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the round." ,S_EndRoundPause,CUIConfig::EUISound::VictoryPoint );
 	if(ChaseTeams::GetTeamRoundPoint(WinningClan) >= Settings::GetRoundCount()){
 		ChaseTeams::IncrementTeamMapPoint(WinningClan);
 		GameLoop::EndMap();
@@ -155,13 +176,13 @@ if(GameState::IsWaiting() && ChaseTeams::AreComplete()){
 	GameState::SetPlaying();
 	Messages::SendStatus(UIManager.UIAll,"Starting Round!",S_EndRoundPause,CUIConfig::EUISound::Warning);
 }
-
+EndTimeL::SetEndTime(S_EndRoundPause);
 NextYieldSleepMs = S_EndRoundPause;
 ---Yield---
 
 if(GameState::IsPlaying() && !ChaseTeams::AreComplete()){
 	GameState::SetWaiting();
-	Messages::SendStatus(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Warning)^"Waiting for players",0, CUIConfig::EUISound::Warning);
+	Messages::SendStatus(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Waiting)^"Waiting for players",0, CUIConfig::EUISound::Warning);
 }
 ***
 
@@ -171,12 +192,14 @@ if(GameState::IsPlaying() && !ChaseTeams::AreComplete()){
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 if(WinningClan > 0){
 	Log(Teams[WinningClan-1].Name^" wins the map.",True);
-	Messages::SendBig(UIManager.UIAll,Teams[WinningClan-1].Name^" wins the map." ,S_EndMapPause,CUIConfig::EUISound::EndRound);
+	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the map." ,S_EndMapPause,CUIConfig::EUISound::EndRound);
 	if(ChaseTeams::GetTeamMapPoint(WinningClan) >= Settings::GetMapCount()){
 		GameLoop::EndMatch();
 		Log(Teams[0].Name^": Maps "^ChaseTeams::GetTeamMapPoint(1)^"/"^Settings::GetMapCount()^"\n"^Teams[1].Name^": Maps "^ChaseTeams::GetTeamMapPoint(2)^"/"^Settings::GetMapCount(),True);
 	}
 }
+declare netwrite Text Net_Race_LoadingScreen_ImageUrl for Teams[0] = "";
+Net_Race_LoadingScreen_ImageUrl = "https://wallpapercave.com/wp/pXzF4fB.jpg";
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 NextYieldSleepMs = S_EndMapPause;
 ---Yield---
@@ -221,6 +244,7 @@ foreach (Event in PendingEvents){
 	Commands::PassModeEvent(Event);
 	ChaseTeams::PassModeEvent(Event);
 	PlayersL::PassModeEvent(Event);
+	MarkersL::PassModeEvent(Event);
 }
 foreach (EventTime => Events in Events::GetPendingSorted()) {
 	ChaseTeams::PassLibSortedEvent(EventTime,Events);
@@ -229,18 +253,19 @@ foreach (Event in Events::GetPending()) {
 	GameLoop::PassLibEvent(Event);
 	UsersL::PassLibEvent(Event);
 	Controller::PassLibEvent(Event);
-	PlayersL::PassLibEvent(Event);
+	Settings::PassLibEvent(Event);
 	if(Event.Source == Commands::C_EventSource){
 		if(Event.Name == "Pause"){
 			if(GameState::IsPause()){
 				Log("Match resume",True);
 				GameState::SetWaiting();
 				Messages::ClearAll();
+				Messages::SendStatus(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Waiting)^"Waiting for players",0, CUIConfig::EUISound::Warning);
 			}else{
 				GameState::SetPause();
 				Messages::ClearAll();
 				Log("Match is Paused",True);
-				Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Warning)^"Pause",0,CUIConfig::EUISound::EndRound);
+				Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Pause)^"Pause",0,CUIConfig::EUISound::EndRound);
 				GameLoop::EndRound();
 			}
 		}
@@ -249,6 +274,4 @@ foreach (Event in Events::GetPending()) {
 Controller::Yield();
 Messages::Yield();
 ChaseTeams::Yield();
-PlayersL::Yield();
-
 ***
