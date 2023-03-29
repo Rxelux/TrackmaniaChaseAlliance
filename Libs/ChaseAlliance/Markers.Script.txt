@@ -1,0 +1,33 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
+
+Void RefreshMarkers(){
+	UIManager.UIAll.ClearMarkers();
+	for(I => Player in Players){
+		declare Marker = UIManager.UIAll.AddMarker(Player);
+		Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+		Marker.Box = <0.,0.,0.>;
+		Marker.ImageUrl = Player.User.Login; //NOTE - shameless hijacking of the ImageUrl Text value to pass the attached player login to the client
+		Marker.ManialinkFrameId = "player-"^I;
+		Marker.HideOnSelf = True;
+	}
+}
+
+Void PassModeEvent(CSmModeEvent _Event){
+	if(!GameState::IsPlaying()){
+		if(_Event.Type == CSmModeEvent::EType::OnPlayerAdded || _Event.Type == CSmModeEvent::EType::OnPlayerRemoved){
+			RefreshMarkers();
+		}
+	}
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+}

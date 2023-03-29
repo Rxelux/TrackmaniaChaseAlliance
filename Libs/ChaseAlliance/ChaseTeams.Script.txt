@@ -241,12 +241,12 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 				if(Team.RelayStarted){
 					//relay failed
 					// Log("Relay failed");
-					Messages::SendBig(CurrentClan,"$"^TL::ColorToText(Colors::C_Error)^"Relay Failed",3000,CUIConfig::EUISound::FirstHit);
+					Messages::SendBig(CurrentClan,"$"^TL::ColorToText(Colors::C_Failure)^"Relay Failed",3000,CUIConfig::EUISound::FirstHit);
 					if(Team.RelayerLogin == ""){
-						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for players",3000,CUIConfig::EUISound::Silence);
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for players",3000,CUIConfig::EUISound::Silence);
 					}else{
 						declare CSmPlayer RelayerPlayer = GetPlayer(Team.RelayerLogin);
-						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for "^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Silence);
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for "^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Silence);
 					}
 				}else{
 					//first cp crossed
@@ -265,10 +265,10 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 					//relay failed
 					// Log("Relay failed2");
 					if(Team.RelayerLogin == ""){
-						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for players",3000,CUIConfig::EUISound::Silence);
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for players",3000,CUIConfig::EUISound::Silence);
 					}else{
 						declare CSmPlayer RelayerPlayer = GetPlayer(Team.RelayerLogin);
-						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Error)^"Wait for "^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Silence);
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for "^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Silence);
 					}
 				}
 			}
@@ -283,7 +283,7 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 					if(Team.LastSuccessfulRelayCp == Team.CurrentCp || Team.CurrentCp == 1){
 						Messages::SendBig(CurrentClan,"$"^TL::ColorToText(Colors::C_Success)^""^Player.User.Name,3000,CUIConfig::EUISound::Warning);
 					}else{
-						Messages::SendBig(CurrentClan,"$"^TL::ColorToText(Colors::C_Error)^""^Player.User.Name,3000,CUIConfig::EUISound::Warning);
+						Messages::SendBig(CurrentClan,"$"^TL::ColorToText(Colors::C_Failure)^""^Player.User.Name,3000,CUIConfig::EUISound::Warning);
 					}
 					Messages::SendStatus(CurrentClan,"Next Checkpoint",3000,CUIConfig::EUISound::Silence);
 				}
@@ -323,13 +323,9 @@ Void Unload() {
 	G_Loaded = False;
 	G_ChaseTeams.add(K_ChaseTeams{});
 	G_ChaseTeams.add(K_ChaseTeams{});
-	Teams[0].ColorPrimary = Colors::C_Team0Primary;
-	Teams[0].ColorSecondary = Colors::C_Team0Secondary;
-	Teams[0].ColorUI = Colors::C_Team0Primary;
+	Teams[0].ColorUI = Colors::C_Team0;
 	Teams[0].Name = "Team Azure";
-	Teams[1].ColorPrimary = Colors::C_Team1Primary;
-	Teams[1].ColorSecondary = Colors::C_Team1Secondary;
-	Teams[1].ColorUI = Colors::C_Team1Primary;
+	Teams[1].ColorUI = Colors::C_Team1;
 	Teams[1].Name = "Team Orange";
 }
 

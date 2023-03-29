@@ -1,21 +1,21 @@
 #Include "ColorLib" as CL
 
-#Const C_AllianceLightGreen <0.15, 0.56, 0.27>
-#Const C_AllianceDarkGreen <0.03, 0.47, 0.24>
-#Const C_AlliancePurple <0.2, 0.17, 0.22>
-#Const C_AllianceGrey <0.87, 0.86, 0.87>
+#Const C_Primary <0.15, 0.56, 0.27> //alliance light green
+#Const C_Secondary <0.03, 0.47, 0.24> //alliance dark green
 
-#Const C_AllianceDark <0.05, 0.042, 0.055>
-#Const C_AllianceLight <0.97, 0.96, 0.97>
+#Const C_Dark <0.05, 0.042, 0.055> //alliance dark color (bg)
+#Const C_Light <0.97, 0.96, 0.97> //alliance light color (text)
 
-#Const C_Team0Primary <0.0, 0.31, 1.0>
-#Const C_Team0Secondary <0.0, 0.1, 0.3>
-#Const C_Team1Primary <1.0, 0.16, 0.1>
-#Const C_Team1Secondary <0.3, 0.1, 0.0>
+#Const C_Team0 <0.0, 0.31, 1.0>
+#Const C_Team1 <1.0, 0.2, 0.1>
+
+#Const C_Playing <0.91, 0.95, 0.99> //default trackmania color font
+#Const C_Waiting <0.66, 0.85, 0.94>
+#Const C_WarmUp <1.0, 0.65, 0.0>
+#Const C_Pause <1.0, 0.45, 0.0>
 
 #Const C_Success <0.5, 1.0, 0.0>
-#Const C_Error <1.0, 0.0, 0.15>
-#Const C_Warning <1.0, 0.65, 0.0>
+#Const C_Failure <1.0, 0.0, 0.15>
 
 Text ToDataText(Vec3 _V){
 	return """{{{_V.X}}} {{{_V.Y}}} {{{_V.Z}}}""";

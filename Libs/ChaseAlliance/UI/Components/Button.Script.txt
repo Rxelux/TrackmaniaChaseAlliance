@@ -12,8 +12,8 @@
 #Const C_DefaultMove <50.,0.>
 
 Text _Model(){
-	declare Text IdleColor = Colors::ToHex6(Colors::C_AllianceDark);
-	declare Text FocusColor = Colors::ToHex6(Colors::C_AllianceLightGreen);
+	declare Text IdleColor = Colors::ToHex6(Colors::C_Dark);
+	declare Text FocusColor = Colors::ToHex6(Colors::C_Primary);
 
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>

@@ -8,7 +8,7 @@
 #Const C "ScoreTable"
 
 Text _Model (){
-	declare Text bgcolor = Colors::ToHex6(Colors::C_AllianceDark);
+	declare Text bgcolor = Colors::ToHex6(Colors::C_Dark);
 
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
@@ -62,7 +62,6 @@ Text _Model (){
 	<quad id="team2-player2-bg" pos="40 -26" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
 	<label id="team2-player2" pos="6 -26" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
 
-	<!-- <label pos="0 0"  text="$F00WIP WIP WIP" textfont="RajdhaniMono" textsize="30" {{{Align::C2}}} opacity="0.5" rot="-20"/> -->
 </framemodel>
 """;
 }

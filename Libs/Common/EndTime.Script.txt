@@ -1,0 +1,30 @@
+declare Integer G_EndTime;
+
+Void _ToNet(){
+	declare netwrite Integer Net_EndTime for Teams[0] = -1;
+	Net_EndTime = G_EndTime;
+}
+
+Void SetEndTime(Integer _Value){
+	if(G_EndTime == _Value){
+		G_EndTime = _Value - 1;
+	}else{
+		G_EndTime = _Value;
+	}
+	_ToNet();
+}
+
+Integer GetEndTime(){
+	return G_EndTime;
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+}

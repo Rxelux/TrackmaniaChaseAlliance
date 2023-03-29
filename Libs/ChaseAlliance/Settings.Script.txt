@@ -1,4 +1,6 @@
 //#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 #Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
@@ -28,7 +30,7 @@ Void ToNet(){
 Void SetRelayerCount(Integer _Value){
 	if(G_Settings.RelayerCount != _Value){
 		G_Settings.RelayerCount = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"RelayerCount changed to "^_Value^" relayers");
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RelayerCount changed to "^_Value^" relayers");
 	}
 }
 
@@ -39,7 +41,7 @@ Integer GetRelayerCount(){
 Void SetRelayGap(Integer _Value){
 	if(G_Settings.RelayGap != _Value){
 		G_Settings.RelayGap = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"RelayGap changed to "^_Value^" points");
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RelayGap changed to "^_Value^" points");
 
 	}
 }
@@ -51,7 +53,7 @@ Integer GetRelayGap(){
 Void SetRelaySortDelay(Integer _Value){
 	if(G_Settings.RelaySortDelay != _Value){
 		G_Settings.RelaySortDelay = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"RelaySortDelay changed to "^_Value^" ms");
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RelaySortDelay changed to "^_Value^" ms");
 	}
 }
 
@@ -62,7 +64,7 @@ Integer GetRelaySortDelay(){
 Void SetLapCount(Integer _Value){
 	if(G_Settings.LapCount != _Value){
 		G_Settings.LapCount = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"LapCount changed to "^_Value^" laps");
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"LapCount changed to "^_Value^" laps");
 		LapCountOverride = _Value;
 	}
 }
@@ -74,7 +76,7 @@ Integer GetLapCount(){
 Void SetRoundCount(Integer _Value){
 	if(G_Settings.RoundCount != _Value){
 		G_Settings.RoundCount = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"RoundCount changed to "^_Value^" laps");
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RoundCount changed to "^_Value^" rounds");
 
 	}
 }
@@ -86,7 +88,7 @@ Integer GetRoundCount(){
 Void SetMapCount(Integer _Value){
 	if(G_Settings.MapCount != _Value){
 		G_Settings.MapCount = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_Warning)^"MapCount changed to "^_Value^" laps");
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"MapCount changed to "^_Value^" maps");
 
 	}
 }
@@ -186,13 +188,10 @@ Void _PreventGiveUp(){
 
 Void PassLibEvent(Events::K_Event _Event){
 	if(_Event.Source != GameState::C_EventSource)return;
-	switch(_Event.Name){
-		case GameState::C_EventOnPlaying:
-			_PreventGiveUp();
-		case GameState::C_EventOnWaiting:
-			_AllowGiveUp();
-		case GameState::C_EventOnPause:
-			_AllowGiveUp();	
+	if(_Event.Name == GameState::C_EventOnPlaying){
+		_PreventGiveUp();
+	}else{
+		_AllowGiveUp();
 	}
 }
 

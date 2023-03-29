@@ -11,7 +11,7 @@
 #Const C "SmallScoresTable"
 
 Text _Model (){
-	declare Text bgcolor = Colors::ToHex6(Colors::C_AllianceDark);
+	declare Text bgcolor = Colors::ToHex6(Colors::C_Dark);
 
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CT}}}>
@@ -86,22 +86,22 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 
 	Team1Gauge.Left.BgColor = Teams[0].ColorUI;
 	Team1Gauge.Left.Opacity = 0.8;
-	Team1Gauge.Right.BgColor = {{{Colors::C_AllianceDark}}};
+	Team1Gauge.Right.BgColor = {{{Colors::C_Dark}}};
 	Team1Gauge.Right.Opacity = 0.1;
 
 	Team2Gauge.Left.BgColor = Teams[1].ColorUI;
 	Team2Gauge.Left.Opacity = 0.8;
-	Team2Gauge.Right.BgColor = {{{Colors::C_AllianceDark}}};
+	Team2Gauge.Right.BgColor = {{{Colors::C_Dark}}};
 	Team2Gauge.Right.Opacity = 0.1;
 
 	Team1Rounds.Left.BgColor = Teams[0].ColorUI;
 	Team1Rounds.Left.Opacity = 0.8;
-	Team1Rounds.Right.BgColor = {{{Colors::C_AllianceDark}}};
+	Team1Rounds.Right.BgColor = {{{Colors::C_Dark}}};
 	Team1Rounds.Right.Opacity = 0.1;
 
 	Team2Rounds.Left.BgColor = Teams[1].ColorUI;
 	Team2Rounds.Left.Opacity = 0.8;
-	Team2Rounds.Right.BgColor = {{{Colors::C_AllianceDark}}};
+	Team2Rounds.Right.BgColor = {{{Colors::C_Dark}}};
 	Team2Rounds.Right.Opacity = 0.1;
 
 	return K_{{{C}}}{

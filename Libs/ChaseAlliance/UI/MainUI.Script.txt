@@ -6,11 +6,12 @@
 #Include "ChaseAlliance/Libs/Common/UI/Components/Common.Script.txt" as Common
 #Include "ChaseAlliance/Libs/Common/UI/Components/LapCounter.Script.txt" as LapCounter
 #Include "ChaseAlliance/Libs/Common/UI/Components/RaceTimer.Script.txt" as RaceTimer
+#Include "ChaseAlliance/Libs/Common/UI/Components/EndTimer.Script.txt" as EndTimer
+#Include "ChaseAlliance/Libs/Common/UI/Components/EndTime.Script.txt" as EndTimeL
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/RelayStatus.Script.txt" as RelayStatus
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/GameState.Script.txt" as GameState
-#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameStateL
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/SmallScoresTable.Script.txt" as SmallScoresTable
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 
@@ -18,8 +19,8 @@
 
 Text _Model(){
 	declare Text RadarFrontColor = Colors::ToDataText(Colors::C_Success);
-	declare Text RadarBackColor = Colors::ToDataText(Colors::C_Error);
-	declare Text RadarFillColor = Colors::ToDataText(Colors::C_AllianceDark);
+	declare Text RadarBackColor = Colors::ToDataText(Colors::C_Failure);
+	declare Text RadarFillColor = Colors::ToDataText(Colors::C_Dark);
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}">
 	<frameinstance modelid="{{{SmallScoresTable::C}}}" id="scores" pos="0 86"/>
@@ -27,6 +28,7 @@ Text _Model(){
 		data-fill-color="{{{RadarFillColor}}}" data-front-color="{{{RadarFrontColor}}}" data-back-color="{{{RadarBackColor}}}"/>
 	<frameinstance modelid="{{{LapCounter::C}}}" id="lap-counter" pos="156 86"/>
 	<frameinstance modelid="{{{RaceTimer::C}}}" id="race-timer" pos="0 -86"/>
+	<frameinstance modelid="{{{EndTimer::C}}}" id="end-timer" pos="156 0"/>
 	<frameinstance modelid="{{{RelayStatus::C}}}" id="relay-status" pos="0 -68"/>
 </framemodel>
 """;
@@ -40,33 +42,49 @@ Text _Labels(){
 	declare K_{{{Radar::C}}} Radar = {{{Radar::C}}}_Get(Page.MainFrame,"radar");
 	declare K_{{{LapCounter::C}}} LapCounter = {{{LapCounter::C}}}_Get(Page.MainFrame,"lap-counter");
 	declare K_{{{RaceTimer::C}}} RaceTimer = {{{RaceTimer::C}}}_Get(Page.MainFrame,"race-timer");
+	declare K_{{{EndTimer::C}}} EndTimer = {{{EndTimer::C}}}_Get(Page.MainFrame,"end-timer");
 	declare K_{{{RelayStatus::C}}} RelayStatus = {{{RelayStatus::C}}}_Get(Page.MainFrame,"relay-status");
 	declare K_{{{SmallScoresTable::C}}} SmallScoresTable = {{{SmallScoresTable::C}}}_Get(Page.MainFrame,"scores");
 	declare K_{{{ChaseTeams::C}}} Team;
 	declare CSmPlayer Relayer;
+	declare Integer NowAtEndTimerChange = -1;
 ***
 
-***GameState_Change***
+***{{{EndTimeL::C}}}_Change***
 ***
-switch (G_{{{GameState::C}}}) {
-	case {{{GameStateL::C_Playing}}}: {
-		RaceTimer.RaceTimer.TextColor = <1.,1.,1.>;//TODO get proper coloring on all default color value
-		LapCounter.Lap.TextColor = <1.,1.,1.>;
-		LapCounter.Prefix.TextColor = <1.,1.,1.>;
+NowAtEndTimerChange = Now;
+***
+
+***{{{GameState::C}}}_Change***
+***
+switch(G_{{{GameState::C}}}){
+	case C_{{{GameState::C}}}_Playing :{
+		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Playing}}};
+		LapCounter.Lap.TextColor = {{{Colors::C_Playing}}};
+		LapCounter.Prefix.TextColor = {{{Colors::C_Playing}}};
+		EndTimer.EndTimer.TextColor = {{{Colors::C_Playing}}};
 		RelayStatus.Root.Show();
 		Radar.Root.Show();
 	}
-	case {{{GameStateL::C_Waiting}}}: {
-		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Warning}}};
-		LapCounter.Lap.TextColor = {{{Colors::C_Warning}}};
-		LapCounter.Prefix.TextColor = {{{Colors::C_Warning}}};
+	case C_{{{GameState::C}}}_Waiting :{
+		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Waiting}}};
+		LapCounter.Lap.TextColor = {{{Colors::C_Waiting}}};
+		LapCounter.Prefix.TextColor = {{{Colors::C_Waiting}}};
 		RelayStatus.Root.Hide();
 		Radar.Root.Hide();
 	}
-	case {{{GameStateL::C_Pause}}}: {
-		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Warning}}};
-		LapCounter.Lap.TextColor = {{{Colors::C_Warning}}};
-		LapCounter.Prefix.TextColor = {{{Colors::C_Warning}}};
+	case C_{{{GameState::C}}}_WarmUp :{
+		RaceTimer.RaceTimer.TextColor = {{{Colors::C_WarmUp}}};
+		LapCounter.Lap.TextColor = {{{Colors::C_WarmUp}}};
+		LapCounter.Prefix.TextColor = {{{Colors::C_WarmUp}}};
+		EndTimer.EndTimer.TextColor = {{{Colors::C_WarmUp}}};
+		RelayStatus.Root.Hide();
+		Radar.Root.Hide();
+	}
+	case C_{{{GameState::C}}}_Pause :{
+		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Pause}}};
+		LapCounter.Lap.TextColor = {{{Colors::C_Pause}}};
+		LapCounter.Prefix.TextColor = {{{Colors::C_Pause}}};
 		RelayStatus.Root.Hide();
 		Radar.Root.Hide();
 	}
@@ -92,6 +110,7 @@ Relayer <=> GetPlayer(Team.RelayerLogin);
 	{{{RelayStatus::C}}}_Update(RelayStatus,GUIPlayer,Relayer,Team.RelayStarted,Team.LastSuccessfulRelayCp,Team.CurrentCp);
 	{{{LapCounter::C}}}_Update(LapCounter,GUIPlayer,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer,GUIPlayer);
+	{{{EndTimer::C}}}_Update(EndTimer,G_{{{EndTimeL::C}}} - (Now - NowAtEndTimerChange));
 ***
 
 """;
@@ -115,9 +134,11 @@ Void Load() {
 	Settings::Load();
 	GameState::Load();
 	RelayStatus::Load();
+	EndTimeL::Load();
+	EndTimer::Load();
 	SmallScoresTable::Load();
 	Manialink::CreateComponent(C,
-		[GameState::C,SmallScoresTable::C,RelayStatus::C,Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C,"GetPlayer","GUIPlayerObserver"],
+		[EndTimeL::C,EndTimer::C,GameState::C,SmallScoresTable::C,RelayStatus::C,Radar::C,LapCounter::C,RaceTimer::C,ChaseTeams::C,Settings::C,"GetPlayer","GUIPlayerObserver"],
 		_Model(),"","",_Labels());
 	Layers::Load();
 	Layers::Create(C,Manialink::CreateManialink(C));
