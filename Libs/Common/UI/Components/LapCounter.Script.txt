@@ -7,8 +7,8 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CT}}}>
-	<label id="prefix" pos="-24 -4.6" size="16 8" text="Lap" textfont="RajdhaniMono" textsize="6" {{{Align::R2}}}/>
-	<label id="lap" pos="0 -8" size="24 16" text="1/5" textfont="RajdhaniMono" textsize="12" {{{Align::R2}}}/>
+	<label id="prefix" pos="-24 -4.6" size="16 8" text="Lap" textfont="RajdhaniMono" textsize="6" textemboss="1" {{{Align::R2}}}/>
+	<label id="lap" pos="0 -8" size="24 16" text="1/5" textfont="RajdhaniMono" textsize="12" textemboss="1" {{{Align::R2}}}/>
 </framemodel>
 """;
 }
