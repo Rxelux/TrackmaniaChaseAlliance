@@ -47,16 +47,12 @@ for(I,0,20){
 	G_{{{C}}}PlayerMarkers["player-"^I] = {{{PlayerMarkers::C}}}_Get(Page.MainFrame,"player-"^I);
 }
 declare K_{{{ChaseTeams::C}}} Team;
-declare CSmPlayer Relayer;
 ***
 
 ***GUIPlayer_Change***
 ***
 if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
 	Team = G_{{{ChaseTeams::C}}}[GUIPlayer.CurrentClan - 1];
-	Relayer <=> GetPlayer(Team.RelayerLogin);
-}else{
-	Relayer = Null;
 }
 {{{C}}}_UpdatePlayerMarkersVisibility();
 ***
@@ -65,15 +61,13 @@ if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
 ***
 if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
 	Team = G_{{{ChaseTeams::C}}}[GUIPlayer.CurrentClan - 1];
-	Relayer <=> GetPlayer(Team.RelayerLogin);
-}else{
-	Relayer = Null;
 }
 {{{C}}}_UpdatePlayerMarkersVisibility();
 ***
 
 ***Yield***
 ***
+declare CSmPlayer Relayer <=> GetPlayer(Team.RelayerLogin);
 if(Relayer != Null){
 	foreach (Marker in UI.Markers) {
 		if(Marker.Type != CUIConfigMarker::EAnchorType::Player) continue;

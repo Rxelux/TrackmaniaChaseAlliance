@@ -159,7 +159,7 @@ Void {{{C}}}_Update(K_{{{C}}} _ScoreTable) {
 		_ScoreTable.Team2Players[I].Value = "";
 		_ScoreTable.Team2PlayersBg[I].Opacity = 0.1;
 		_ScoreTable.Team2PlayersBg[I].BgColorFocus = _ScoreTable.Team2PlayersBg[I].BgColor;
-
+		_ScoreTable.Team1PlayersBg[I].DataAttributeSet("{{{C}}}-login","");
 	}
 	foreach (Player in Players) {
 		if(Player.CurrentClan == 1){
@@ -193,7 +193,7 @@ Text _Labels(){
 	return """//!
 ***Event***
 ***
-if (Event.Type == CMlScriptEvent::Type::MouseClick && Event.Control.DataAttributeExists("{{{C}}}-login")) {
+if (Event.Control != Null && Event.Type == CMlScriptEvent::Type::MouseClick && Event.Control.DataAttributeExists("{{{C}}}-login")) {
 	if(InputPlayer != Null && InputPlayer.RequestsSpectate){
 		SetSpectateTarget(Event.Control.DataAttributeGet("{{{C}}}-login"));
 	}

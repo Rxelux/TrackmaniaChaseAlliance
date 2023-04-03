@@ -25,9 +25,9 @@
 
 #Include "TextLib" as TL
 
-#Setting S_EndRoundPause 8000 as "Pause in ms after a round"
-#Setting S_EndMapPause 6000 as "Pause in ms after a map"
-#Setting S_EndMatchPause 4000 as "Pause in ms after a match"
+#Setting S_EndRoundPause 15000 as "Pause in ms after a round"
+#Setting S_EndMapPause 20000 as "Pause in ms after a map"
+#Setting S_EndMatchPause 25000 as "Pause in ms after a match"
 
 #Setting S_MapIntroDuration 8000 as "Map intro duration in ms"
 #Setting S_WarmUpDuration 30000 as "Warm-up duration in ms"
@@ -214,8 +214,7 @@ if(WinningClan > 0){
 		Log(Teams[0].Name^": Maps "^ChaseTeams::GetTeamMapPoint(1)^"/"^Settings::GetMapCount()^"\n"^Teams[1].Name^": Maps "^ChaseTeams::GetTeamMapPoint(2)^"/"^Settings::GetMapCount(),True);
 	}
 }
-// declare netwrite Text Net_Race_LoadingScreen_ImageUrl for Teams[0] = "https://wallpapercave.com/wp/pXzF4fB.jpg";
-// Net_Race_LoadingScreen_ImageUrl = "https://wallpapercave.com/wp/pXzF4fB.jpg";
+
 GameState::Set(GameStates::C_Outro);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 Sleep(S_EndMapPause);
