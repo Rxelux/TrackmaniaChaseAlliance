@@ -1,4 +1,4 @@
-//#RequireContext CSmMode
+//#RequireContext CSmMlScriptIngame
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 #Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
@@ -26,22 +26,13 @@ Text _Model(){
 Text _Functions(){
 	return """//!
 declare K_{{{PlayerMarkers::C}}}[Text] G_{{{C}}}PlayerMarkers;
-declare K_{{{ChaseTeams::C}}} G_{{{C}}}Team;
-declare CSmPlayer G_{{{C}}}Relayer;
-declare Text G_{{{C}}}RelayerMarkerFrameId;
 
 Void {{{C}}}_UpdatePlayerMarkersVisibility(){
-	G_{{{C}}}Team = {{{ChaseTeams::C}}}_GetTeam(GUIPlayer);
-	G_{{{C}}}Relayer <=> GetPlayer(G_{{{C}}}Team.RelayerLogin);
-
+	declare Text[] RelayerLogins = [G_{{{ChaseTeams::C}}}[0].RelayerLogin,G_{{{ChaseTeams::C}}}[1].RelayerLogin];
 	foreach (Marker in UI.Markers) {
-
 		if(Marker.Type != CUIConfigMarker::EAnchorType::Player) continue;
-		if(G_{{{C}}}Relayer != Null && Marker.ImageUrl == G_{{{C}}}Relayer.User.Login){
-			G_{{{C}}}RelayerMarkerFrameId = Marker.ManialinkFrameId;
-		}
 		if(G_{{{C}}}PlayerMarkers.existskey(Marker.ManialinkFrameId)){
-			{{{PlayerMarkers::C}}}_UpdateVisibility(G_{{{C}}}PlayerMarkers[Marker.ManialinkFrameId],Marker,G_{{{C}}}Relayer);
+			{{{PlayerMarkers::C}}}_UpdateVisibility(G_{{{C}}}PlayerMarkers[Marker.ManialinkFrameId],Marker,RelayerLogins);
 		}
 	}
 }
@@ -55,23 +46,42 @@ Text _Labels(){
 for(I,0,20){
 	G_{{{C}}}PlayerMarkers["player-"^I] = {{{PlayerMarkers::C}}}_Get(Page.MainFrame,"player-"^I);
 }
+declare K_{{{ChaseTeams::C}}} Team;
+declare CSmPlayer Relayer;
 ***
 
 ***GUIPlayer_Change***
 ***
+if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
+	Team = G_{{{ChaseTeams::C}}}[GUIPlayer.CurrentClan - 1];
+	Relayer <=> GetPlayer(Team.RelayerLogin);
+}else{
+	Relayer = Null;
+}
 {{{C}}}_UpdatePlayerMarkersVisibility();
 ***
 
 ***{{{ChaseTeams::C}}}_Change***
 ***
+if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
+	Team = G_{{{ChaseTeams::C}}}[GUIPlayer.CurrentClan - 1];
+	Relayer <=> GetPlayer(Team.RelayerLogin);
+}else{
+	Relayer = Null;
+}
 {{{C}}}_UpdatePlayerMarkersVisibility();
 ***
 
-
 ***Yield***
 ***
-if(G_{{{C}}}RelayerMarkerFrameId != "" && G_{{{C}}}PlayerMarkers.existskey(G_{{{C}}}RelayerMarkerFrameId)){
-	{{{PlayerMarkers::C}}}_Update(G_{{{C}}}PlayerMarkers[G_{{{C}}}RelayerMarkerFrameId], G_{{{C}}}Relayer);
+if(Relayer != Null){
+	foreach (Marker in UI.Markers) {
+		if(Marker.Type != CUIConfigMarker::EAnchorType::Player) continue;
+		if(Marker.ImageUrl != Relayer.User.Login) continue;
+		if(G_{{{C}}}PlayerMarkers.existskey(Marker.ManialinkFrameId)){
+			{{{PlayerMarkers::C}}}_Update(G_{{{C}}}PlayerMarkers[Marker.ManialinkFrameId],Relayer);
+		}
+	}
 }
 ***
 """;

@@ -1,3 +1,4 @@
+//#RequireContext CSmMlScriptIngame
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
@@ -8,7 +9,9 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
-	<label id="relay-status" size="50 5" {{{Align::CC}}} textsize="4" textfont="RajdhaniMono" textemboss="1" />
+	<frame id="frame" hidden="1">
+		<label id="relay-status" size="50 5" {{{Align::CC}}} textsize="4" textfont="RajdhaniMono" textemboss="1" />
+	</frame>
 </framemodel>
 """;
 }
@@ -17,6 +20,7 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
+	CMlFrame Frame;
 	CMlLabel RelayStatus;
 }
 """;
@@ -27,43 +31,46 @@ Text _Functions(){
 
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlFrame Frame <=> (Root.GetFirstChild("frame") as CMlFrame);
 	declare CMlLabel RelayStatus <=> (Root.GetFirstChild("relay-status") as CMlLabel);
 	return K_{{{C}}}{
 		Root = Root,
+		Frame = Frame,
 		RelayStatus = RelayStatus
 	};
 }
 
-Void {{{C}}}_Update(K_{{{C}}} _RelayStatus,CSmPlayer _Player,CSmPlayer _Relayer,Boolean _RelayStarted,Integer _LastSuccessfulRelayCp,Integer _CurrentCp){
-	if(_Player != Null){
+Void {{{C}}}_Update(K_{{{C}}} _RelayStatus,CSmPlayer _Relayer,Boolean _RelayStarted,Integer _LastSuccessfulRelayCp,Integer _CurrentCp){
+	if(GUIPlayer == Null){
+		_RelayStatus.Frame.Visible = False;
+		return;
+	}
+	_RelayStatus.Frame.Visible = True;
 
-		if(!_RelayStarted){
-			_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go!";
-		}else{
-			if(_Relayer != Null){
-				if(_Player == _Relayer){
-					_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go Go Go!!!";
-				}else{
-					if(_LastSuccessfulRelayCp == _CurrentCp){
-						_RelayStatus.RelayStatus.Value = "Wait for "^_Relayer.User.Name^".";
-					}else{
-						_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Failure)}}}Wait for "^_Relayer.User.Name^".";
-					}
-				}
+	if(!_RelayStarted){
+		_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go!";
+	}else{
+		if(_Relayer == Null){
+			if(GUIPlayer.RaceWaypointTimes.count < _CurrentCp){
+				_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go!";
 			}else{
-				if(_Player.RaceWaypointTimes.count < _CurrentCp){
-					_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go!";
+				if(_LastSuccessfulRelayCp == _CurrentCp || _CurrentCp == 1){
+					_RelayStatus.RelayStatus.Value = "Wait for players.";
 				}else{
-					if(_LastSuccessfulRelayCp == _CurrentCp || _CurrentCp == 1){
-						_RelayStatus.RelayStatus.Value = "Wait for players.";
-					}else{
-						_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Failure)}}}Wait for players.";
-					}
+					_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Failure)}}}Wait for players.";
+				}
+			}
+		}else{
+			if(GUIPlayer == _Relayer){
+				_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Success)}}}Go Go Go!!!";
+			}else{
+				if(_LastSuccessfulRelayCp == _CurrentCp){
+					_RelayStatus.RelayStatus.Value = "Wait for "^_Relayer.User.Name^".";
+				}else{
+					_RelayStatus.RelayStatus.Value = "${{{TL::ColorToText(Colors::C_Failure)}}}Wait for "^_Relayer.User.Name^".";
 				}
 			}
 		}
-	}else{
-		_RelayStatus.RelayStatus.Value = "";
 	}
 }
 """;

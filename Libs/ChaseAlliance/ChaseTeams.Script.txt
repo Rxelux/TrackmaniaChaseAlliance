@@ -2,12 +2,14 @@
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
 #Include "ChaseAlliance/Libs/Common/Messages.Script.txt" as Messages
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
-#Include "ChaseAlliance/Libs/ModeBase/GameLoopState.Script.txt" as GameLoop
-#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
-#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/Common/Commands.Script.txt" as Commands
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
 
 #Include "TextLib" as TL
+#Include "MathLib" as ML
 
 #Const C_EventSource "ChaseTeams"
 
@@ -167,7 +169,7 @@ Boolean AreComplete(){
 
 Void PassModeEvent(CSmModeEvent _Event){
 	if(G_WinState >= 0) return;
-	if(GameState::IsPlaying() && _Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint){
+	if(GameState::Is(GameStates::C_Playing) && _Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint){
 		if(_Event.Player == Null) return;
 		if(_Event.Player.CurrentClan != 1 && _Event.Player.CurrentClan != 2)return;
 		//add event to sorted event
@@ -183,6 +185,33 @@ Void PassModeEvent(CSmModeEvent _Event){
 			[_Event.IsFinish]);
 	}
 }
+
+
+Void PassLibEvent(Events::K_Event _Event){
+	if(_Event.Source != Commands::C_EventSource)return;
+
+	switch (_Event.Name) {
+		case "SetMapPoint": {
+			if(_Event.Texts.count >= 2){
+				_SetTeamMapPoint(
+					ML::Clamp(TL::ToInteger(_Event.Texts[0]),1,2),
+					ML::Clamp(TL::ToInteger(_Event.Texts[1]),0,65535)
+				);
+				ToNet();
+			}
+		}
+		case "SetRoundPoint": {
+			if(_Event.Texts.count >= 2){
+				_SetTeamRoundPoint(
+					ML::Clamp(TL::ToInteger(_Event.Texts[0]),1,2),
+					ML::Clamp(TL::ToInteger(_Event.Texts[1]),0,65535)
+				);
+				ToNet();
+			}
+		}
+	}
+}
+
 
 Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 
@@ -216,12 +245,12 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 		declare K_ChaseTeams Team = GetTeam(CurrentClan);
 		
 		if(RaceWaypoint > Team.CurrentCp){ //crossed a new cp
-			// Log("Crossed a new cp");
+			// Log("""[ChaseTeams] {{{CurrentClan}}} {{{Player.User.Name}}} Crossed a new cp""");
 			
 			if(Team.RelayerLogin == Player.User.Login){//check if player is relayer
-				// Log("Player was relayer");
+				// Log("""[ChaseTeams] {{{CurrentClan}}} {{{Player.User.Name}}} was relayer""");
 				//relay passed
-				// Log("Relay success");
+				// Log("""[ChaseTeams] {{{CurrentClan}}} Relay success""");
 				
 				declare K_ChaseTeams OpposingTeam = GetOpposingTeam(CurrentClan);
 				_IncrementTeamRelayPoint(CurrentClan);
@@ -237,10 +266,11 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 				}
 
 			}else{
-				// Log("Player was Not relayer");
+				// Log("""[ChaseTeams] {{{CurrentClan}}} {{{Player.User.Name}}} was Not relayer""");
+				
 				if(Team.RelayStarted){
 					//relay failed
-					// Log("Relay failed");
+					// Log("""[ChaseTeams] {{{CurrentClan}}} Relay failed""");
 					Messages::SendBig(CurrentClan,"$"^TL::ColorToText(Colors::C_Failure)^"Relay Failed",3000,CUIConfig::EUISound::FirstHit);
 					if(Team.RelayerLogin == ""){
 						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for players",3000,CUIConfig::EUISound::Silence);
@@ -250,7 +280,7 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 					}
 				}else{
 					//first cp crossed
-					// Log("First cp crossed");
+					// Log("""[ChaseTeams] {{{CurrentClan}}} First cp crossed""");
 					Messages::SendStatus(Player,"Wait for players",3000,CUIConfig::EUISound::Silence);
 					_SetTeamRelayStarted(CurrentClan, True);
 				}
@@ -260,10 +290,10 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 		} 
 		else if (RaceWaypoint > Team.LastSuccessfulRelayCp){
 			if(Team.RelayerLogin != PlayerLogin){//check if player is not relayer
-				// Log("Player was Not relayer2");
+				// Log("""[ChaseTeams] {{{CurrentClan}}} {{{Player.User.Name}}} was Not relayer""");
 				if(Team.RelayStarted){
 					//relay failed
-					// Log("Relay failed2");
+					// Log("""[ChaseTeams] {{{CurrentClan}}} Relay failed""");
 					if(Team.RelayerLogin == ""){
 						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for players",3000,CUIConfig::EUISound::Silence);
 					}else{
@@ -274,9 +304,9 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 			}
 		}
 		if(RaceWaypoint == Team.CurrentCp){ //crossed the current cp
-			// Log("Crossed current cp");
+			// Log("""[ChaseTeams] {{{CurrentClan}}} {{{Player.User.Name}}} Crossed current cp""");
 			if(Team.CpCrossCount == Settings::GetRelayerCount()-1){//current cp was crossed by all team but this player
-				// Log("Current cp was crossed by all team");
+				// Log("""[ChaseTeams] {{{CurrentClan}}} {{{Player.User.Name}}} Current cp was crossed by all team""");
 				if(Team.RelayerLogin == ""){
 					_SetTeamRelayerLogin(CurrentClan, PlayerLogin);
 
@@ -289,12 +319,12 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 				}
 			}
 			// else{
-				// Log("Current cp was Not crossed by all team");
+				// Log("""[ChaseTeams] {{{CurrentClan}}} Current cp was Not crossed by all team""");
 			// }
 			_SetTeamCpCrossCount(CurrentClan, Team.CpCrossCount + 1);
 		}
 		// if(RaceWaypoint < Team.CurrentCp){
-			// Log("Crossed a previous cp");
+			// Log(""""[ChaseTeams] {{{CurrentClan}}} Crossed a previous cp""");
 		// }
 	}
 	if(NeedUpdateNet){
@@ -304,7 +334,7 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 
 Void Yield(){
 
-	if(!GameState::IsPlaying() || G_WinState >= 0) return;
+	if(!GameState::Is(GameStates::C_Playing) || G_WinState >= 0) return;
 
 	if(!IsComplete(1)){
 		G_WinState = C_WinByForfeit;
@@ -336,5 +366,5 @@ Void Load() {
 	Messages::Load();
 	Events::Load();
 	GameState::Load();
-	GameLoop::Load();
+	Commands::Load();
 }

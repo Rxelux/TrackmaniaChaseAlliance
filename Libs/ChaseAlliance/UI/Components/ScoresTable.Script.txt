@@ -1,3 +1,4 @@
+//#RequireContext CSmMlScriptIngame
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
@@ -26,16 +27,16 @@ Text _Model (){
 	<label id="team1-rounds" pos="-20 14" size="32 8" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
 
 	<quad pos="-40 2" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
-	<quad id="team1-player0-bg" pos="-40 2" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
-	<label id="team1-player0" pos="-72 2" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad id="team1-player0-bg" pos="-40 2" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}} scriptevents="1"/>
+	<label id="team1-player0" pos="-74 2" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}} />
 
 	<quad pos="-40 -12" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
-	<quad id="team1-player1-bg" pos="-40 -12" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
-	<label id="team1-player1" pos="-72 -12" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad id="team1-player1-bg" pos="-40 -12" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}} scriptevents="1"/>
+	<label id="team1-player1" pos="-74 -12" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}} />
 
 	<quad pos="-40 -26" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
-	<quad id="team1-player2-bg" pos="-40 -26" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
-	<label id="team1-player2" pos="-72 -26" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad id="team1-player2-bg" pos="-40 -26" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}} scriptevents="1"/>
+	<label id="team1-player2" pos="-74 -26" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}} />
 
 
 	<quad pos="40 26" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
@@ -51,16 +52,16 @@ Text _Model (){
 	<label id="team2-maps" pos="20 14" size="32 8" textfont="RajdhaniMono" textsize="2.5" {{{Align::C2}}}/>
 
 	<quad pos="40 2" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
-	<quad id="team2-player0-bg" pos="40 2" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
-	<label id="team2-player0" pos="6 2" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad id="team2-player0-bg" pos="40 2" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}} scriptevents="1"/>
+	<label id="team2-player0" pos="6 2" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}} />
 
 	<quad pos="40 -12" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
-	<quad id="team2-player1-bg" pos="40 -12" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
-	<label id="team2-player1" pos="6 -12" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad id="team2-player1-bg" pos="40 -12" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}} scriptevents="1"/>
+	<label id="team2-player1" pos="6 -12" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}} />
 
 	<quad pos="40 -26" size="72 12" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
-	<quad id="team2-player2-bg" pos="40 -26" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
-	<label id="team2-player2" pos="6 -26" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}}/>
+	<quad id="team2-player2-bg" pos="40 -26" size="72 12" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}} scriptevents="1"/>
+	<label id="team2-player2" pos="6 -26" size="68 12" textfont="RajdhaniMono" textsize="4" {{{Align::L2}}} />
 
 </framemodel>
 """;
@@ -154,8 +155,11 @@ Void {{{C}}}_Update(K_{{{C}}} _ScoreTable) {
 	for(I,0,2){
 		_ScoreTable.Team1Players[I].Value = "";
 		_ScoreTable.Team1PlayersBg[I].Opacity = 0.1;
+		_ScoreTable.Team1PlayersBg[I].BgColorFocus = _ScoreTable.Team1PlayersBg[I].BgColor;
 		_ScoreTable.Team2Players[I].Value = "";
 		_ScoreTable.Team2PlayersBg[I].Opacity = 0.1;
+		_ScoreTable.Team2PlayersBg[I].BgColorFocus = _ScoreTable.Team2PlayersBg[I].BgColor;
+
 	}
 	foreach (Player in Players) {
 		if(Player.CurrentClan == 1){
@@ -164,7 +168,9 @@ Void {{{C}}}_Update(K_{{{C}}} _ScoreTable) {
 			}else{
 				_ScoreTable.Team1Players[Team1PlayerCount].Value = "["^Player.User.ClubTag^"$z] "^Player.User.Name;
 			}
+			_ScoreTable.Team1PlayersBg[Team1PlayerCount].DataAttributeSet("{{{C}}}-login",Player.User.Login);
 			_ScoreTable.Team1PlayersBg[Team1PlayerCount].Opacity = 0.9;
+			_ScoreTable.Team1PlayersBg[Team1PlayerCount].BgColorFocus = Teams[0].ColorUI;
 			if(Team1PlayerCount < 2) Team1PlayerCount += 1;
 		}		
 		if(Player.CurrentClan == 2){
@@ -173,7 +179,9 @@ Void {{{C}}}_Update(K_{{{C}}} _ScoreTable) {
 			}else{
 				_ScoreTable.Team2Players[Team2PlayerCount].Value = "["^Player.User.ClubTag^"$z] "^Player.User.Name;
 			}
+			_ScoreTable.Team2PlayersBg[Team2PlayerCount].DataAttributeSet("{{{C}}}-login",Player.User.Login);
 			_ScoreTable.Team2PlayersBg[Team2PlayerCount].Opacity = 0.9;
+			_ScoreTable.Team2PlayersBg[Team2PlayerCount].BgColorFocus = Teams[1].ColorUI;
 			if(Team2PlayerCount < 2) Team2PlayerCount += 1;
 		}
 	}
@@ -185,10 +193,10 @@ Text _Labels(){
 	return """//!
 ***Event***
 ***
-if (Event.ControlId == "{{{C}}}_button") {
-	declare K_{{{C}}} Button = {{{C}}}_GetFromRoot(Event.Control.Parent);
-	{{{C}}}_Handle(Button,Event.Type);
-	+++{{{C}}}_Event+++
+if (Event.Type == CMlScriptEvent::Type::MouseClick && Event.Control.DataAttributeExists("{{{C}}}-login")) {
+	if(InputPlayer != Null && InputPlayer.RequestsSpectate){
+		SetSpectateTarget(Event.Control.DataAttributeGet("{{{C}}}-login"));
+	}
 }
 ***
 """;
@@ -206,5 +214,5 @@ Void Load() {
 	Manialink::Load();
 	ChaseTeams::Load();
 	Settings::Load();
-	Manialink::CreateComponent(C,[ChaseTeams::C,Settings::C],_Model(),_Directives(),_Functions(),"");
+	Manialink::CreateComponent(C,[ChaseTeams::C,Settings::C],_Model(),_Directives(),_Functions(),_Labels());
 }

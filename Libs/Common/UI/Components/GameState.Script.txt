@@ -1,13 +1,17 @@
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
 
 #Const C "GameState"
 
 Text _Directives(){
+	declare Text Consts = "";
+	foreach (I => Const in GameState::GetStates()) {
+		Consts ^=
+"""#Const C_{{{C}}}_{{{Const}}} {{{I}}}
+""";
+	}
 	return """//!
-	#Const C_{{{C}}}_Playing 0
-	#Const C_{{{C}}}_Waiting 1
-	#Const C_{{{C}}}_WarmUp 2
-	#Const C_{{{C}}}_Pause 3
+	{{{Consts}}}
 """;
 }
 
@@ -21,7 +25,7 @@ Text _Labels(){
 	return """//!
 ***Init***
 ***
-	declare netread Integer Net_{{{C}}} for Teams[0];
+	declare netread Integer Net_{{{C}}} for Teams[0] = -1;
 ***
 
 ***Yield***

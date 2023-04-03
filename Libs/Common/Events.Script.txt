@@ -80,9 +80,6 @@ K_SortedEvent[][Integer] GetPendingSorted() {
 	declare K_SortedEvent[][Integer] Return;
 
 	G_PendingSortedEvents = G_PendingSortedEvents.sort();
-	//NOTE fix for https://forum.nadeo.com/viewtopic.php?f=25&t=3696
-	G_PendingSortedEvents[-1] = []; G_PendingSortedEvents.removekey(-1);
-	//!NOTE
 
 	foreach (EventsTime => Events in G_PendingSortedEvents) {
 		

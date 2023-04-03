@@ -1,115 +1,255 @@
 #RequireContext CSmMode
-#Include "ChaseAlliance/Libs/ModeBase/GameLoopState.Script.txt" as GameLoop
 
-declare Integer _CurrentNow; // Save the value of Now after the yield
-declare Integer _SleepUntil; // Save the value of Now before the sleep
-declare Integer NextYieldSleepMs; // Number of ms to sleep during yield
+#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt" as XmlRpc
+#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt" as XmlRpc_Base
 
-//This should be the only place in a game mode script where a script yields
-***Yield***
+#Const C_LoopLevel_Server 0
+#Const C_LoopLevel_Match 1
+#Const C_LoopLevel_Map 2
+#Const C_LoopLevel_Round 3
+#Const C_LoopLevel_Turn 4
+
+declare Boolean _RunSection_Script; //While this is true the script can't stop
+declare Boolean _RunSection_Server; //Run the server section as long as this is true
+declare Boolean _RunSection_Match; //Run the match section as long as this is true
+declare Boolean _RunSection_Map; //Run the map section as long as this is true
+declare Boolean _RunSection_Round; //Run the round section as long as this is true
+declare Boolean _RunSection_Turn; //Run the turn section as long as this is true
+
+declare Integer _SectionCount_Match; //Number of matches played since the beginning of the script
+declare Integer _SectionCount_Map; //Number of maps played since the beginning of the match
+declare Integer _SectionCount_Round; //Number of rounds played since the beginning of the map
+
+declare Integer _CurrentNow; //Save the value of Now after the yield
+
+***LoadLibraries***
 ***
-	_SleepUntil = Now + NextYieldSleepMs + 1;
-	while (Now < _SleepUntil && GameLoop::ServerIsRunning()) {
-		+++BeforeYield+++
-		if (_CurrentNow > 0 && Now > _CurrentNow) {
-			log("WARNING: A frame was skipped ("^_CurrentNow^" > "^Now^"), Use ---Yield--- to yield and NextYieldSleepMs = x followed by ---Yield--- to sleep");
-		}
-		yield;
-		_CurrentNow = Now;
-		+++AfterYield+++
+XmlRpc::Load();
+XmlRpc_Base::Load();
+***
+
+***UnloadLibraries***
+***
+XmlRpc::Unload();
+XmlRpc_Base::Unload();
+***
+
+***AfterYield***
+***
+XmlRpc_Base::Yield();
+***
+
+Void StopServer() {
+	_RunSection_Server = False;
+}
+
+Void StopScript() {
+	_RunSection_Script = False;
+}
+
+Void StopMatch() {
+	_RunSection_Match = False;
+}
+
+Void StopMap() {
+	_RunSection_Map = False;
+}
+
+Void StopRound() {
+	_RunSection_Round = False;
+}
+
+Void StopTurn() {
+	_RunSection_Turn = False;
+}
+
+Boolean ServerIsRunning() {
+	return (!ServerShutdownRequested &&_RunSection_Server);
+}
+
+Boolean ScriptIsRunning() {
+	return (ServerIsRunning() &&_RunSection_Script);
+}
+
+Boolean MatchIsRunning() {
+	return (ScriptIsRunning() &&_RunSection_Match);
+}
+
+Boolean MapIsRunning() {
+	// MatchEndRequested is in fact used as a EndMapRequested since a match can span multiple maps
+	return (MatchIsRunning() &&!MatchEndRequested &&_RunSection_Map);
+}
+
+Boolean RoundIsRunning() {
+	return (MapIsRunning() &&_RunSection_Round);
+}
+
+Integer GetMatchCount() {
+	return _SectionCount_Match;
+}
+
+Integer GetMapCount() {
+	return _SectionCount_Map;
+}
+
+Integer GetRoundCount() {
+	return _SectionCount_Round;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+/** yield; the script
+ *	This should be the only place in a game mode script
+ *	where a script yields
+ */
+Void Yield() {
+	{ +++BeforeYield+++ }
+	if (_CurrentNow > 0 && Now > _CurrentNow) {
+		log("WARNING: A frame was skipped with `yield`, `sleep()` or `wait()` ("^_CurrentNow^" > "^Now^"). Always use `Yield()` or `Sleep()` to advance to the next frame.");
 	}
-	NextYieldSleepMs = 0;
-***
-Void NOP(){}
+	yield;
+	_CurrentNow = Now;
+	{ +++AfterYield+++ }
+}
+
+Void Sleep(Integer _Duration) {
+	declare End = Now + _Duration;
+	while (Now < End && ServerIsRunning()) Yield();
+}
+
+Void _LoadMap() {
+	if (!MapLoaded) RequestLoadMap();
+	while (!MapLoaded) Yield();
+}
+
+Void _UnloadMap() {
+	if (MapLoaded) RequestUnloadMap();
+	while (MapLoaded) Yield();
+}
 
 main() {
-	GameLoop::Load();
-	GameLoop::StartServer();
-	// First yield to prevent inconsistant use of local variables in yield Label
-	---Yield---
-	
-	+++StartServer+++
-	while (GameLoop::ServerIsRunning()) {
 
-		GameLoop::StartScript();
-		GameLoop::ResetMatchSectionCount();
-		GameLoop::ResetMapSectionCount();
-		GameLoop::ResetRoundSectionCount();
-		
-		+++StartScript+++
+	_RunSection_Server = True;
 
-		while (GameLoop::ScriptIsRunning()) {
-
-			GameLoop::StartMatch();
-			GameLoop::IncrementMatchSectionCount();
-			GameLoop::ResetMapSectionCount();
-			GameLoop::ResetRoundSectionCount();
-
-			+++StartMatch+++
-		
-			while (GameLoop::MatchIsRunning()) {
-
-				GameLoop::StartMap();
-				GameLoop::IncrementMapSectionCount();
-				GameLoop::ResetRoundSectionCount();
-			
-				+++BeforeLoadMap+++
-
-				if (!MapLoaded) RequestLoadMap();
-				while (!MapLoaded){
-					---Yield---
-				}
-				+++AfterLoadMap+++
-				+++StartMap+++
-
-				while (GameLoop::MapIsRunning()) {
-
-					GameLoop::StartRound();
-					GameLoop::IncrementRoundSectionCount();
-
-					+++StartRound+++
-
-					while (GameLoop::RoundIsRunning()) {
-
-						---Yield---
-						+++PlayLoop+++
-					}
-					+++EndRound+++
-				}
-				+++EndMap+++
-
-				if(GameLoop::MatchIsRunning()){
-					+++BeforeUnloadMap+++
-					//Yield to process and remove every events before unloading the map
-					---Yield---
-					//This is necessary to avoid getting errors in the events about variables that does not exist anymore
-					//because they were deleted by the C++ cleaning at the map unload
-					if (MapLoaded) RequestUnloadMap();
-					while (MapLoaded){
-						---Yield---
-					}
-					+++AfterUnloadMap+++
-					---Yield--- //Needed to properly save persistent variable
-				}
-			}
-			+++EndMatch+++
-
-			+++BeforeUnloadMap+++
-			//Yield to process and remove every events before unloading the map
-			---Yield---
-			//This is necessary to avoid getting errors in the events about variables that does not exist anymore
-			//because they were deleted by the C++ cleaning at the map unload
-			if (MapLoaded) RequestUnloadMap();
-			while (MapLoaded){
-				---Yield---
-			}
-			+++AfterUnloadMap+++
-			---Yield--- //Needed to properly save persistent variable
-			
-		}
-		+++EndScript+++
-		
+	declare _ServerModeName for This = "";
+	declare _ServerModeUpdated = False;
+	if (_ServerModeName != "" && _ServerModeName != ServerModeName) {
+		_ServerModeUpdated = True;
 	}
+	_ServerModeName = ServerModeName;
+
+	while (ServerIsRunning()) {
+
+		_SectionCount_Match = 0;
+		_SectionCount_Map = 0;
+		_SectionCount_Round = 0;
+		_RunSection_Script = True;
+
+		declare persistent _PersistentServerRestarted = False;
+		declare _ServerRestarted = _PersistentServerRestarted;
+		_PersistentServerRestarted = True;
+
+		XmlRpc_Base::SendStartServer_Start(_ServerRestarted, _ServerModeUpdated, _ServerModeName);
+		{ +++StartServer+++ }
+		XmlRpc_Base::SendStartServer_End(_ServerRestarted, _ServerModeUpdated, _ServerModeName);
+
+		while (ScriptIsRunning()) {
+
+			_RunSection_Match = True;
+			_SectionCount_Match += 1;
+			_SectionCount_Map = 0;
+			_SectionCount_Round = 0;
+
+			XmlRpc_Base::SendStartMatch_Start(_SectionCount_Match);
+			{ +++StartMatch+++ }
+			XmlRpc_Base::SendStartMatch_End(_SectionCount_Match);
+
+			while (MatchIsRunning()) {
+
+				MatchEndRequested = False; // (True when a vote for next map pass)
+				_RunSection_Map = True;
+				_SectionCount_Map += 1;
+				_SectionCount_Round = 0;
+
+				declare persistent _PersistentMapRestarted = False;
+				declare _MapRestarted = _PersistentMapRestarted;
+				_PersistentMapRestarted = True;
+
+				XmlRpc_Base::SendLoadingMap_Start(_MapRestarted);
+				{ +++BeforeLoadMap+++ }
+				_LoadMap();
+				{ +++AfterLoadMap+++ }
+				XmlRpc_Base::SendLoadingMap_End(Map, _MapRestarted);
+
+				XmlRpc_Base::SendStartMap_Start(_SectionCount_Map, Map, _MapRestarted);
+				{ +++StartMap+++ }
+				XmlRpc_Base::SendStartMap_End(_SectionCount_Map, Map, _MapRestarted);
+
+				while (MapIsRunning()) {
+
+					_RunSection_Round = True;
+					_SectionCount_Round += 1;
+
+					XmlRpc_Base::SendStartRound_Start(_SectionCount_Round);
+					{ +++StartRound+++ }
+					XmlRpc_Base::SendStartRound_End(_SectionCount_Round);
+
+					XmlRpc_Base::SendStartPlayLoop(_SectionCount_Round);
+					while (RoundIsRunning()) {
+
+						Yield();
+						{ +++PlayLoop+++ }
+					}
+					XmlRpc_Base::SendEndPlayLoop(_SectionCount_Round);
+
+					XmlRpc_Base::SendEndRound_Start(_SectionCount_Round);
+					{ +++EndRound+++ }
+					XmlRpc_Base::SendEndRound_End(_SectionCount_Round);
+				}
+
+				XmlRpc_Base::SendEndMap_Start(_SectionCount_Map, Map);
+				{ +++EndMap+++ }
+				XmlRpc_Base::SendEndMap_End(_SectionCount_Map, Map);
+
+				if(MatchIsRunning()){
+					XmlRpc_Base::SendUnloadingMap_Start(Map);
+					{ +++BeforeUnloadMap+++ }
+					// Yield to process and remove every events before unloading the map
+					// This is necessary to avoid getting errors in the events about variables that does not exist anymore
+					// because they were deleted by the C++ cleaning at the map unload
+					Yield();
+					_UnloadMap();
+					{ +++AfterUnloadMap+++ }
+					XmlRpc_Base::SendUnloadingMap_End();
+	
+					_PersistentMapRestarted = False;
+					Yield(); // Needed to properly save persistent variable
+				}
+			}
+
+			XmlRpc_Base::SendEndMatch_Start(_SectionCount_Match);
+			{ +++EndMatch+++ }
+			XmlRpc_Base::SendEndMatch_End(_SectionCount_Match);
+
+			XmlRpc_Base::SendUnloadingMap_Start(Map);
+			{ +++BeforeUnloadMap+++ }
+			// Yield to process and remove every events before unloading the map
+			// This is necessary to avoid getting errors in the events about variables that does not exist anymore
+			// because they were deleted by the C++ cleaning at the map unload
+			Yield();
+			_UnloadMap();
+			{ +++AfterUnloadMap+++ }
+			XmlRpc_Base::SendUnloadingMap_End();
+
+			Yield(); // Needed to properly save persistent variable
+		}
+
+		XmlRpc_Base::SendEndServer_Start();
+		{ +++EndServer+++ }
+		XmlRpc_Base::SendEndServer_End();
+
+		_PersistentServerRestarted = False;
+	}
+
 	// Last yield for logging
-	---Yield---
+	yield;
 }

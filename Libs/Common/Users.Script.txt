@@ -4,6 +4,7 @@
 #Include "ChaseAlliance/Libs/Common/Commands.Script.txt" as Commands
 
 #Include "TextLib" as TL
+#Include "MathLib" as ML
 
 declare Integer G_FakeUserNameId;
 
@@ -115,13 +116,13 @@ Void PassLibEvent(Events::K_Event _Event){
 	switch (_Event.Name) {
 		case "AddFake": {
 			if(_Event.Texts.count >= 1)
-				AddFakeUserInClan(TL::ToInteger(_Event.Texts[0]));
+				AddFakeUserInClan(ML::Clamp(TL::ToInteger(_Event.Texts[0]),1,100));
 		}
 		case "AddFakes": {
 			if(_Event.Texts.count >= 2)
 				AddFakeUsersInClan(
-					TL::ToInteger(_Event.Texts[0]),
-					TL::ToInteger(_Event.Texts[1])
+					ML::Clamp(TL::ToInteger(_Event.Texts[0]),0,30),
+					ML::Clamp(TL::ToInteger(_Event.Texts[1]),1,100)
 				);
 		}
 		case "RemoveFake": {

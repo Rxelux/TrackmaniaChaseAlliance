@@ -1,3 +1,4 @@
+//#RequireContext CSmMlScriptIngame
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "TextLib" as TL
@@ -7,8 +8,10 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CT}}}>
-	<label id="prefix" pos="-24 -4.6" size="16 8" text="Lap" textfont="RajdhaniMono" textsize="6" textemboss="1" {{{Align::R2}}}/>
-	<label id="lap" pos="0 -8" size="24 16" text="1/5" textfont="RajdhaniMono" textsize="12" textemboss="1" {{{Align::R2}}}/>
+	<frame id="frame" hidden="1">
+		<label id="prefix" pos="-24 -4.6" size="16 8" text="Lap" textfont="RajdhaniMono" textsize="6" textemboss="1" {{{Align::R2}}}/>
+		<label id="lap" pos="0 -8" size="24 16" text="1/5" textfont="RajdhaniMono" textsize="12" textemboss="1" {{{Align::R2}}}/>
+	</frame>
 </framemodel>
 """;
 }
@@ -17,6 +20,7 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
+	CMlFrame Frame;
 	CMlLabel Lap;
 	CMlLabel Prefix;
 }
@@ -27,22 +31,24 @@ Text _Functions(){
 	return """//!
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlFrame Frame <=> (Root.GetFirstChild("frame") as CMlFrame);
 	declare CMlLabel Lap <=> (Root.GetFirstChild("lap") as CMlLabel);
 	declare CMlLabel Prefix <=> (Root.GetFirstChild("prefix") as CMlLabel);
 	return K_{{{C}}}{
 		Root = Root,
+		Frame = Frame,
 		Lap = Lap,
 		Prefix = Prefix
 	};
 }
 
-Void {{{C}}}_Update(K_{{{C}}} _LapCounter,CSmPlayer _Player,Integer _Total){
-	if(_Player != Null){
-		_LapCounter.Lap.Value = ""^_Player.CurrentLapNumber+1^"/"^_Total;
-		_LapCounter.Root.Visible = True;
-	}else{
-		_LapCounter.Root.Visible = False;
+Void {{{C}}}_Update(K_{{{C}}} _LapCounter,Integer _Total){
+	if(GUIPlayer == Null){
+		_LapCounter.Frame.Hide();
+		return;
 	}
+	_LapCounter.Frame.Show();
+	_LapCounter.Lap.Value = ""^GUIPlayer.CurrentLapNumber+1^"/"^_Total;
 }
 """;
 }

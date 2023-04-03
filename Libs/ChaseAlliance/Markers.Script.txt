@@ -1,5 +1,7 @@
 //#RequireContext CSmMode
-#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
+
 
 Void RefreshMarkers(){
 	UIManager.UIAll.ClearMarkers();
@@ -14,7 +16,7 @@ Void RefreshMarkers(){
 }
 
 Void PassModeEvent(CSmModeEvent _Event){
-	if(!GameState::IsPlaying()){
+	if(!GameState::Is(GameStates::C_Playing)){
 		if(_Event.Type == CSmModeEvent::EType::OnPlayerAdded || _Event.Type == CSmModeEvent::EType::OnPlayerRemoved){
 			RefreshMarkers();
 		}

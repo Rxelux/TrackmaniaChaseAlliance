@@ -20,15 +20,8 @@ Text _Directives(){
 Text _Functions(){
 	return """//!
 declare K_{{{C}}}[] G_{{{C}}};
-K_{{{C}}} {{{C}}}_GetTeam(CSmPlayer _Player){
-	if(_Player != Null){
-		declare Integer Clan = _Player.CurrentClan;
-		if(_Player.CurrentClan == 0 || _Player.CurrentClan > G_{{{C}}}.count){
-			return K_{{{C}}}{};
-		}
-		return G_{{{C}}}[Clan-1];
-	}
-	return K_{{{C}}}{};
+Boolean {{{C}}}_CheckPlayer(CSmPlayer _Player){
+	return _Player != Null && (_Player.CurrentClan == 1 || _Player.CurrentClan == 2);
 }
 """;
 }
