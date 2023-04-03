@@ -1,3 +1,4 @@
+//#RequireContext CSmMlScriptIngame
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "TextLib" as TL
@@ -7,7 +8,9 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CB}}}>
-	<label id="race-timer" pos="0 -0.8" size="64 8" textfont="RajdhaniMono" textsize="8" textemboss="1" {{{Align::CB}}}/>
+	<frame id="frame" hidden="1">
+		<label id="race-timer" pos="0 -0.8" size="64 8" textfont="RajdhaniMono" textsize="8" textemboss="1" {{{Align::CB}}}/>
+	</frame>
 </framemodel>
 """;
 }
@@ -16,6 +19,7 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
+	CMlFrame Frame;
 	CMlLabel RaceTimer;
 }
 """;
@@ -25,20 +29,22 @@ Text _Functions(){
 	return """//!
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlFrame Frame <=> (Root.GetFirstChild("frame") as CMlFrame);
 	declare CMlLabel RaceTimer <=> (Root.GetFirstChild("race-timer") as CMlLabel);
 	return K_{{{C}}}{
 		Root = Root,
+		Frame = Frame,
 		RaceTimer = RaceTimer
 	};
 }
 
-Void {{{C}}}_Update(K_{{{C}}} _RaceTimer,CSmPlayer _Player){
-	if(_Player != Null){
-		_RaceTimer.RaceTimer.Value = ""^TL::TimeToText(_Player.CurrentRaceTime,True);
-		_RaceTimer.Root.Visible = True;
-	}else{
-		_RaceTimer.Root.Visible = False;
+Void {{{C}}}_Update(K_{{{C}}} _RaceTimer){
+	if(GUIPlayer == Null){
+		_RaceTimer.Frame.Hide();
+		return;
 	}
+	_RaceTimer.Frame.Show();
+	_RaceTimer.RaceTimer.Value = ""^TL::TimeToText(GUIPlayer.CurrentRaceTime,True);
 }
 """;
 }

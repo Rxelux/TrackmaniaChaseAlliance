@@ -11,12 +11,14 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
-	<quad id="circular-bg" size="20 20" {{{Align::CC}}} {{{C_Circle}}} opacity="0.9" />
-	<quad id="circular-border" size="20 20" {{{Align::CC}}} {{{C_CircleBorder}}} />
-	<frameinstance modelid="{{{CGauge::C}}}" id="distance-gauge" rot="180" scale="0.98" />
-	<label id="distance-label" size="17 5" {{{Align::C2}}} textfont="RajdhaniMono" textsize="4" />
-	<frame id="arrow-pivot">
-		<quad id="arrow-head" pos="0 10" size="10 6" {{{Align::CB}}} {{{C_Arrow}}} />
+	<frame id="frame" hidden="1">
+		<quad id="circular-bg" size="20 20" {{{Align::CC}}} {{{C_Circle}}} opacity="0.9" />
+		<quad id="circular-border" size="20 20" {{{Align::CC}}} {{{C_CircleBorder}}} />
+		<frameinstance modelid="{{{CGauge::C}}}" id="distance-gauge" rot="180" scale="0.98" />
+		<label id="distance-label" size="17 5" {{{Align::C2}}} textfont="RajdhaniMono" textsize="4" />
+		<frame id="arrow-pivot">
+			<quad id="arrow-head" pos="0 10" size="10 6" {{{Align::CB}}} {{{C_Arrow}}} />
+		</frame>
 	</frame>
 </framemodel>""";
 }
@@ -26,6 +28,7 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
+	CMlFrame Frame;
 	CMlQuad CircularBorder;
 	K_{{{CGauge::C}}} DistanceGauge;
 	CMlLabel DistanceLabel;
@@ -41,6 +44,7 @@ Text _Functions(){
 	return """//!
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlFrame Frame <=> (Root.GetFirstChild("frame") as CMlFrame);
 	declare CMlQuad CircularBorder <=> (Root.GetFirstChild("circular-border") as CMlQuad);
 	declare K_{{{CGauge::C}}} DistanceGauge = {{{CGauge::C}}}_Get(Root,"distance-gauge");
 	declare CMlLabel DistanceLabel <=> (Root.GetFirstChild("distance-label") as CMlLabel);
@@ -55,6 +59,7 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 
 	return K_{{{C}}}{
 		Root = Root,
+		Frame = Frame,
 		CircularBorder = CircularBorder,
 		DistanceGauge = DistanceGauge,
 		DistanceLabel = DistanceLabel,
@@ -65,43 +70,44 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	};
 }
 
-Void {{{C}}}_Update(K_{{{C}}} _Radar,CSmPlayer _Player, CSmPlayer _Target) {
+Void {{{C}}}_Update(K_{{{C}}} _Radar, CSmPlayer _Target) {
 
-	if(_Player != Null && _Target != Null && _Player != _Target){
-		_Radar.Root.Visible = True;
-
-		if(_Target.IsEntityStateAvailable){
-			declare Vec3 PlayerPos = _Player.Position;
-			declare Vec3 TargetPos = _Target.Position;
-			declare Vec3 PlayerForward = ML::CrossProduct(_Player.LeftDirection, _Player.UpDirection);
-			declare Vec3 TargetRelativePos = TargetPos-PlayerPos;
-			declare Real PlayerTargetDistance = ML::Distance(PlayerPos, TargetPos);
-			declare Real PlayerInFront = ML::DotProduct(PlayerForward, TargetRelativePos);
-
-			_Radar.DistanceLabel.Value = TL::FormatReal(PlayerTargetDistance,0,False,True)^"m";
-			{{{CGauge::C}}}_Update(_Radar.DistanceGauge,ML::Clamp(1-ML::Exp(-0.02*PlayerTargetDistance), 0., 1.));
-
-			if (PlayerInFront >= 0 ){
-				_Radar.DistanceGauge.Left.Colorize = _Radar.FrontColor;
-				_Radar.DistanceGauge.Right.Colorize = _Radar.FrontColor;
-				_Radar.CircularBorder.ModulateColor = _Radar.FrontColor;
-				_Radar.ArrowHead.ModulateColor = _Radar.FrontColor;
-			}else{
-				_Radar.DistanceGauge.Left.Colorize = _Radar.BackColor;
-				_Radar.DistanceGauge.Right.Colorize = _Radar.BackColor;
-				_Radar.CircularBorder.ModulateColor = _Radar.BackColor;
-				_Radar.ArrowHead.ModulateColor = _Radar.BackColor;
-			}
-							
-			_Radar.ArrowPivot.Visible = True;
-			_Radar.ArrowPivot.RelativeRotation = ML::RadToDeg(ML::OrientedAngle(TargetRelativePos,PlayerForward));
-		}else{
-			_Radar.DistanceLabel.Value = "Too Far";
-			_Radar.ArrowPivot.Visible = False;
-		}
-	}else{
-		_Radar.Root.Visible = False;
+	if(GUIPlayer == Null || _Target == Null || GUIPlayer == _Target) {
+		_Radar.Frame.Hide();
+		return;
 	}
+	_Radar.Frame.Show();
+
+	if(_Target.IsEntityStateAvailable){
+		declare Vec3 PlayerPos = GUIPlayer.Position;
+		declare Vec3 TargetPos = _Target.Position;
+		declare Vec3 PlayerForward = ML::CrossProduct(GUIPlayer.LeftDirection, GUIPlayer.UpDirection);
+		declare Vec3 TargetRelativePos = TargetPos-PlayerPos;
+		declare Real PlayerTargetDistance = ML::Distance(PlayerPos, TargetPos);
+		declare Real PlayerInFront = ML::DotProduct(PlayerForward, TargetRelativePos);
+
+		_Radar.DistanceLabel.Value = TL::FormatReal(PlayerTargetDistance,0,False,True)^"m";
+		{{{CGauge::C}}}_Update(_Radar.DistanceGauge,ML::Clamp(1-ML::Exp(-0.02*PlayerTargetDistance), 0., 1.));
+
+		if (PlayerInFront >= 0 ){
+			_Radar.DistanceGauge.Left.Colorize = _Radar.FrontColor;
+			_Radar.DistanceGauge.Right.Colorize = _Radar.FrontColor;
+			_Radar.CircularBorder.ModulateColor = _Radar.FrontColor;
+			_Radar.ArrowHead.ModulateColor = _Radar.FrontColor;
+		}else{
+			_Radar.DistanceGauge.Left.Colorize = _Radar.BackColor;
+			_Radar.DistanceGauge.Right.Colorize = _Radar.BackColor;
+			_Radar.CircularBorder.ModulateColor = _Radar.BackColor;
+			_Radar.ArrowHead.ModulateColor = _Radar.BackColor;
+		}
+						
+		_Radar.ArrowPivot.Visible = True;
+		_Radar.ArrowPivot.RelativeRotation = ML::RadToDeg(ML::OrientedAngle(TargetRelativePos,PlayerForward));
+	}else{
+		_Radar.DistanceLabel.Value = "Too Far";
+		_Radar.ArrowPivot.Visible = False;
+	}
+
 }
 """;
 }

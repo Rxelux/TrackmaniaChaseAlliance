@@ -2,10 +2,11 @@
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
 #Include "ChaseAlliance/Libs/Common/Spawn.Script.txt" as Spawn
 #Include "ChaseAlliance/Libs/Common/Messages.Script.txt" as Messages
-#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
-#Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
 
 #Include "TextLib" as TL
 
@@ -86,6 +87,7 @@ Void Spawn(CSmPlayer _Player,Integer _When){
 	if(_Player.CurrentClan == 0){
 		_SetClan(_Player,_Player.RequestedClan);
 	}
+	if(_Player.CurrentClan != 1 && _Player.CurrentClan != 2) return;
 	SpawnPlayer(_Player,_Player.CurrentClan,1,Spawn::Get(),_When);
 	_Player.UseCrudeExtrapolation = False;
 	_Player.TrustClientSimu = True;
@@ -126,7 +128,7 @@ Void PassModeEvent(CSmModeEvent _Event){
 	if(_Event.Type == CSmModeEvent::EType::OnPlayerAdded){
 		_SetClan(_Event.Player,_Event.Player.RequestedClan);
 	}
-	if(GameState::IsPlaying())return;
+	if(GameState::Is(GameStates::C_Playing))return;
 	if((_Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn && _Event.GiveUp) || 
 		(_Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && _Event.IsFinish)){
 		UnspawnPlayer(_Event.Player);

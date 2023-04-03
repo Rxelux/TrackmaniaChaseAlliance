@@ -1,11 +1,13 @@
 //#RequireContext CSmMode
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
 
-#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
-#Include "ChaseAlliance/Libs/ChaseAlliance/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
 
 #Include "TextLib" as TL
+#Include "MathLib" as ML
 
 #Const C_MaxPlayerPerTeam 3
 
@@ -29,8 +31,8 @@ Void ToNet(){
 
 Void SetRelayerCount(Integer _Value){
 	if(G_Settings.RelayerCount != _Value){
-		G_Settings.RelayerCount = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RelayerCount changed to "^_Value^" relayers");
+		G_Settings.RelayerCount = ML::Clamp(_Value,2,3);
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RelayerCount changed to "^G_Settings.RelayerCount^" relayers");
 	}
 }
 
@@ -40,8 +42,8 @@ Integer GetRelayerCount(){
 
 Void SetRelayGap(Integer _Value){
 	if(G_Settings.RelayGap != _Value){
-		G_Settings.RelayGap = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RelayGap changed to "^_Value^" points");
+		G_Settings.RelayGap = ML::Clamp(_Value,2,65535);
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RelayGap changed to "^G_Settings.RelayGap^" points");
 
 	}
 }
@@ -52,8 +54,8 @@ Integer GetRelayGap(){
 
 Void SetRelaySortDelay(Integer _Value){
 	if(G_Settings.RelaySortDelay != _Value){
-		G_Settings.RelaySortDelay = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RelaySortDelay changed to "^_Value^" ms");
+		G_Settings.RelaySortDelay = ML::Clamp(_Value,50,500);
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RelaySortDelay changed to "^G_Settings.RelaySortDelay^" ms");
 	}
 }
 
@@ -63,7 +65,7 @@ Integer GetRelaySortDelay(){
 
 Void SetLapCount(Integer _Value){
 	if(G_Settings.LapCount != _Value){
-		G_Settings.LapCount = _Value;
+		G_Settings.LapCount = ML::Clamp(_Value,1,65535);
 		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"LapCount changed to "^_Value^" laps");
 		LapCountOverride = _Value;
 	}
@@ -75,8 +77,8 @@ Integer GetLapCount(){
 
 Void SetRoundCount(Integer _Value){
 	if(G_Settings.RoundCount != _Value){
-		G_Settings.RoundCount = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RoundCount changed to "^_Value^" rounds");
+		G_Settings.RoundCount = ML::Clamp(_Value,1,65535);
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RoundCount changed to "^G_Settings.RoundCount^" rounds");
 
 	}
 }
@@ -87,8 +89,8 @@ Integer GetRoundCount(){
 
 Void SetMapCount(Integer _Value){
 	if(G_Settings.MapCount != _Value){
-		G_Settings.MapCount = _Value;
-		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"MapCount changed to "^_Value^" maps");
+		G_Settings.MapCount = ML::Clamp(_Value,1,65535);
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"MapCount changed to "^G_Settings.MapCount^" maps");
 
 	}
 }
@@ -158,7 +160,8 @@ Void ApplySettings(){
 	UseClans = True;
 	UseForcedClans = False;
 	UsePvPCollisions = False;
-	UsePvECollisions = True; //to force ghosts on
+	UsePvECollisions = False;
+	// UsePvECollisions = True; //to force ghosts on
 	UseGuns = False;
 	UsePvPWeapons = False;
 	UseInterractiveScreensIn3d = False;
@@ -188,10 +191,13 @@ Void _PreventGiveUp(){
 
 Void PassLibEvent(Events::K_Event _Event){
 	if(_Event.Source != GameState::C_EventSource)return;
-	if(_Event.Name == GameState::C_EventOnPlaying){
-		_PreventGiveUp();
-	}else{
-		_AllowGiveUp();
+	if(_Event.Name == GameState::C_EventChange){
+		declare Integer State = _Event.Integers[0];
+		if(State == GameStates::C_Playing){
+			_PreventGiveUp();
+		}else{
+			_AllowGiveUp();
+		}
 	}
 }
 

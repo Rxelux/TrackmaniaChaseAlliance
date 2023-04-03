@@ -1,0 +1,71 @@
+//#RequireContext CSmMode
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+#Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
+#Include "ChaseAlliance/Libs/Common/Commands.Script.txt" as Commands
+
+#Include "TextLib" as TL
+
+#Const C_EventSource "GameState"
+#Const C_EventChange "GameStateChange"
+
+declare Text[] G_GameStates;
+declare Integer G_GameState;
+declare Integer G_PrevGameState;
+
+Void Add(Text _StateName){
+	G_GameStates.add(_StateName);
+}
+
+Text GetText(Integer _State){
+	return G_GameStates[_State];
+}
+
+Text GetText(){
+	return GetText(G_GameState);
+}
+
+Void LogStateChange(){
+	Log("""[GameState]: {{{GetText(G_PrevGameState)}}} -> {{{GetText(G_GameState)}}}""");
+}
+
+Void ToNet(){
+	declare netwrite Integer Net_GameState for Teams[0] = 0;
+	Net_GameState = G_GameState;
+}
+
+Boolean Is(Integer _State){
+	return G_GameState == _State;
+}
+
+Boolean IsPrev(Integer _State){
+	return G_PrevGameState == _State;
+}
+
+Integer Get(){
+	return G_GameState;
+}
+
+Text[] GetStates(){
+	return G_GameStates;
+}
+
+Void Set(Integer _State){
+	G_PrevGameState = G_GameState;
+	G_GameState = _State;
+	LogStateChange();
+	ToNet();
+	Events::Create(C_EventChange,C_EventSource,[],[G_GameState,G_PrevGameState],[],[]);
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Events::Load();
+	Commands::Load();
+}

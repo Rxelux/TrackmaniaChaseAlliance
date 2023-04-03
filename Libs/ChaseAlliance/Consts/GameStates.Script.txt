@@ -1,0 +1,17 @@
+#Const C_Playing 0
+#Const C_Waiting 1
+#Const C_WarmUp 2
+#Const C_Pause 3
+#Const C_EndRound 4
+#Const C_Intro 5
+#Const C_Outro 6
+#Const C_Podium 7
+
+#Const C_PlayingName "Playing"
+#Const C_WaitingName "Waiting"
+#Const C_WarmUpName "WarmUp"
+#Const C_PauseName "Pause"
+#Const C_EndRoundName "EndRound"
+#Const C_IntroName "Intro"
+#Const C_OutroName "Outro"
+#Const C_PodiumName "Podium"

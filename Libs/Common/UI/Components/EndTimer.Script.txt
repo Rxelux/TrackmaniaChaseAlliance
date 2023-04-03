@@ -1,3 +1,4 @@
+//#RequireContext CSmMlScriptIngame
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
 #Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
 #Include "TextLib" as TL
@@ -7,7 +8,9 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::RC}}}>
-	<label id="timer" pos="0 -0.8" size="64 8" textfont="RajdhaniMono" textsize="6" textemboss="1" {{{Align::RC}}}/>
+	<frame id="frame">
+		<label id="timer" pos="0 -0.8" size="64 8" textfont="RajdhaniMono" textsize="6" textemboss="1" {{{Align::RC}}}/>
+	</frame>
 </framemodel>
 """;
 }
@@ -16,7 +19,9 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
+	CMlFrame Frame;
 	CMlLabel EndTimer;
+	Vec3 EndColor;
 }
 """;
 }
@@ -25,19 +30,27 @@ Text _Functions(){
 	return """//!
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlFrame Frame <=> (Root.GetFirstChild("frame") as CMlFrame);
 	declare CMlLabel EndTimer <=> (Root.GetFirstChild("timer") as CMlLabel);
+	declare Vec3 EndColor = GetData(Root,"end-color",<1., 0., 0.>);
+
 	return K_{{{C}}}{
 		Root = Root,
-		EndTimer = EndTimer
+		Frame = Frame,
+		EndTimer = EndTimer,
+		EndColor = EndColor
 	};
 }
 
 Void {{{C}}}_Update(K_{{{C}}} _EndTimer,Integer _Value){
-	if(_Value >= 0){
-		_EndTimer.EndTimer.Value = ""^TL::TimeToText(_Value,False);
-		_EndTimer.Root.Visible = True;
-	}else{
-		_EndTimer.Root.Visible = False;
+	if(_Value < 0){
+		_EndTimer.Frame.Hide();
+		return;
+	}
+	_EndTimer.Frame.Show();
+	_EndTimer.EndTimer.Value = ""^TL::TimeToText(_Value,False);
+	if(_Value < 4000){
+		_EndTimer.EndTimer.TextColor = _EndTimer.EndColor;
 	}
 }
 """;
@@ -53,5 +66,5 @@ Void Load() {
 	Unload();
 	G_Loaded = True;
 	Manialink::Load();
-	Manialink::CreateComponent(C,[],_Model(),_Directives(),_Functions(),"");
+	Manialink::CreateComponent(C,["GetDataVec3"],_Model(),_Directives(),_Functions(),"");
 }
