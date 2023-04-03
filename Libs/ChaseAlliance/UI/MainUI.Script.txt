@@ -13,6 +13,7 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/RelayStatus.Script.txt" as RelayStatus
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/SmallScoresTable.Script.txt" as SmallScoresTable
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/CpTimes.Script.txt" as CpTimes
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 
 #Const C "MainUI"
@@ -30,6 +31,7 @@ Text _Model(){
 	<frameinstance modelid="{{{RaceTimer::C}}}" id="race-timer" pos="0 -86"/>
 	<frameinstance modelid="{{{EndTimer::C}}}" id="end-timer" pos="156 0" data-end-color="{{{RadarBackColor}}}"/>
 	<frameinstance modelid="{{{RelayStatus::C}}}" id="relay-status" pos="0 -68"/>
+	<frameinstance modelid="{{{CpTimes::C}}}" id="cp-times" pos="80 -82"/>
 </framemodel>
 """;
 }
@@ -45,9 +47,9 @@ Text _Labels(){
 	declare K_{{{EndTimer::C}}} EndTimer = {{{EndTimer::C}}}_Get(Page.MainFrame,"end-timer");
 	declare K_{{{RelayStatus::C}}} RelayStatus = {{{RelayStatus::C}}}_Get(Page.MainFrame,"relay-status");
 	declare K_{{{SmallScoresTable::C}}} SmallScoresTable = {{{SmallScoresTable::C}}}_Get(Page.MainFrame,"scores");
+	declare K_{{{CpTimes::C}}} CpTimes = {{{CpTimes::C}}}_Get(Page.MainFrame,"cp-times");
 
 	declare K_{{{ChaseTeams::C}}} Team;
-	declare CSmPlayer Relayer;
 	declare Integer NowAtEndTimerChange = -1;
 ***
 
@@ -70,6 +72,7 @@ switch(G_{{{GameState::C}}}){
 		EndTimer.Root.Hide();
 		RelayStatus.Root.Show();
 		SmallScoresTable.Root.Show();
+		CpTimes.Root.Show();
 	}
 	case C_{{{GameState::C}}}_Waiting :{
 		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Waiting}}};
@@ -82,6 +85,7 @@ switch(G_{{{GameState::C}}}){
 		RaceTimer.Root.Show();
 		EndTimer.Root.Show();
 		SmallScoresTable.Root.Show();
+		CpTimes.Root.Show();
 	}
 	case C_{{{GameState::C}}}_WarmUp :{
 		RaceTimer.RaceTimer.TextColor = {{{Colors::C_WarmUp}}};
@@ -94,6 +98,7 @@ switch(G_{{{GameState::C}}}){
 		RaceTimer.Root.Show();
 		EndTimer.Root.Show();
 		SmallScoresTable.Root.Show();
+		CpTimes.Root.Show();
 	}
 	case C_{{{GameState::C}}}_Pause :{
 		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Pause}}};
@@ -105,6 +110,7 @@ switch(G_{{{GameState::C}}}){
 		RaceTimer.Root.Show();
 		EndTimer.Root.Show();
 		SmallScoresTable.Root.Show();
+		CpTimes.Root.Show();
 	}
 	case C_{{{GameState::C}}}_EndRound :{
 		RelayStatus.Root.Hide();
@@ -114,6 +120,7 @@ switch(G_{{{GameState::C}}}){
 		EndTimer.EndTimer.TextColor = {{{Colors::C_Playing}}};
 		EndTimer.Root.Show();
 		SmallScoresTable.Root.Show();
+		CpTimes.Root.Hide();
 	}
 	default: {
 		RelayStatus.Root.Hide();
@@ -122,6 +129,7 @@ switch(G_{{{GameState::C}}}){
 		RaceTimer.Root.Hide();
 		EndTimer.Root.Hide();
 		SmallScoresTable.Root.Hide();
+		CpTimes.Root.Hide();
 	}
 }
 ***
@@ -130,9 +138,6 @@ switch(G_{{{GameState::C}}}){
 ***
 if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
 	Team = G_{{{ChaseTeams::C}}}[GUIPlayer.CurrentClan - 1];
-	Relayer <=> GetPlayer(Team.RelayerLogin);
-}else{
-	Relayer = Null;
 }
 ***
 
@@ -140,19 +145,18 @@ if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
 ***
 if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
 	Team = G_{{{ChaseTeams::C}}}[GUIPlayer.CurrentClan - 1];
-	Relayer <=> GetPlayer(Team.RelayerLogin);
-}else{
-	Relayer = Null;
 }
 {{{SmallScoresTable::C}}}_Update(SmallScoresTable);
 ***
 
 ***Yield***
 ***
+	declare CSmPlayer Relayer <=> GetPlayer(Team.RelayerLogin);
 	{{{Radar::C}}}_Update(Radar,Relayer);
 	{{{RelayStatus::C}}}_Update(RelayStatus,Relayer,Team.RelayStarted,Team.LastSuccessfulRelayCp,Team.CurrentCp);
 	{{{LapCounter::C}}}_Update(LapCounter,G_{{{Settings::C}}}.LapCount);
 	{{{RaceTimer::C}}}_Update(RaceTimer);
+	{{{CpTimes::C}}}_Update(CpTimes);
 	{{{EndTimer::C}}}_Update(EndTimer,G_{{{EndTimeL::C}}} - (Now - NowAtEndTimerChange));
 ***
 
@@ -179,9 +183,11 @@ Void Load() {
 	RelayStatus::Load();
 	EndTimeL::Load();
 	EndTimer::Load();
+	CpTimes::Load();
 	SmallScoresTable::Load();
 	Manialink::CreateComponent(C,
 		[	
+			CpTimes::C,
 			EndTimeL::C,
 			EndTimer::C,
 			GameState::C,

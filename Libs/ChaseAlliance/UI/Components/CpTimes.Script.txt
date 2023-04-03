@@ -1,0 +1,201 @@
+//#RequireContext CSmMlScriptIngame
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/ChaseTeams.Script.txt" as ChaseTeams
+
+#Include "TextLib" as TL
+
+#Const C "CpTimes"
+
+Text _Model (){
+	declare Text bgcolor = Colors::ToHex6(Colors::C_Dark);
+
+	return """
+<framemodel id="{{{C}}}-line" class="{{{C}}}-line" {{{Align::CC}}}>
+	<quad pos="-27 -2" size="4 4" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="bg" pos="-27 -2" size="4 4" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}}/>
+	<label id="pos" pos="-27 -2" size="4 4" textfont="RajdhaniMono" textsize="1.5" {{{Align::C2}}}/>
+	<quad pos="3 -2" size="54 4" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
+	<quad id="bg2" pos="3 -2" size="54 4" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CC}}} scriptevents="1"/>
+	<label id="name" pos="-22 -2" size="25 4" textfont="RajdhaniMono" textsize="1.5" {{{Align::L2}}}/>
+	<label id="time" pos="28 -2" size="25 4" textfont="RajdhaniMono" textsize="1.5" {{{Align::R2}}}/>
+</framemodel>
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
+	<frame id="frame">
+		<frameinstance modelid="{{{C}}}-line" id="player0" pos="0 25" />
+		<frameinstance modelid="{{{C}}}-line" id="player1" pos="0 20" />
+		<frameinstance modelid="{{{C}}}-line" id="player2" pos="0 15" />
+		<frameinstance modelid="{{{C}}}-line" id="player3" pos="0 10" />
+		<frameinstance modelid="{{{C}}}-line" id="player4" pos="0 5" />
+		<frameinstance modelid="{{{C}}}-line" id="player5" pos="0 0" />
+	</frame>	
+</framemodel>
+""";
+}
+
+Text _Directives(){
+	return """//!
+
+#Struct K_{{{C}}}_Line{
+	CMlFrame Root;
+	CMlQuad Bg;
+	CMlQuad Bg2;
+	CMlLabel Pos;
+	CMlLabel Name;
+	CMlLabel Time;
+}
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	CMlFrame Frame;
+	K_{{{C}}}_Line[] Lines;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+
+K_{{{C}}}_Line {{{C}}}_Line_Get(CMlFrame _Parent,Text _Id){
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlQuad Bg <=> (Root.GetFirstChild("bg") as CMlQuad);
+	declare CMlQuad Bg2 <=> (Root.GetFirstChild("bg2") as CMlQuad);
+	declare CMlLabel Pos <=> (Root.GetFirstChild("pos") as CMlLabel);
+	declare CMlLabel Name <=> (Root.GetFirstChild("name") as CMlLabel);
+	declare CMlLabel Time <=> (Root.GetFirstChild("time") as CMlLabel);
+	
+	return K_{{{C}}}_Line{
+		Root = Root,
+		Bg = Bg,
+		Bg2 = Bg2,
+		Pos = Pos,
+		Name = Name,
+		Time = Time
+	};
+}
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare CMlFrame Frame <=> (Root.GetFirstChild("frame") as CMlFrame);
+	
+	declare K_{{{C}}}_Line[] Lines;
+	for(I,0,5){
+		Lines.add({{{C}}}_Line_Get(Root,"player"^I));
+	}
+
+	return K_{{{C}}}{
+		Root = Root,
+		Frame = Frame,
+		Lines = Lines
+	};
+}
+
+Void _{{{C}}}_UpdateLine(K_{{{C}}}_Line _Line,CSmPlayer _Player,Integer _Rank,Integer _Time,Integer _RefTime,Integer _CpNb,Integer _RefCpNb){
+	_Line.Bg.BgColor = Teams[_Player.CurrentClan -1].ColorUI;
+	_Line.Bg2.BgColorFocus = Teams[_Player.CurrentClan -1].ColorUI;
+	_Line.Bg2.DataAttributeSet("{{{C}}}-login",_Player.User.Login);
+	if(_Player == GUIPlayer){
+		_Line.Bg.Opacity = 0.9;
+		_Line.Bg2.Opacity = 0.9;
+	}else{
+		_Line.Bg.Opacity = 0.7;
+		_Line.Bg2.Opacity = 0.7;
+	}
+	_Line.Pos.Value = ""^_Rank;
+	if(_Player.User.ClubTag == ""){
+		_Line.Name.Value = ""^_Player.User.Name;
+	}else{
+		_Line.Name.Value = "["^_Player.User.ClubTag^"$z] "^_Player.User.Name;
+	}
+	if(_Time == _RefTime){
+		_Line.Time.Value = ""^TL::TimeToText(_Time,True,True);
+	}else{
+		if(_RefCpNb-_CpNb > 0){
+			if(_Time-_RefTime >= 0){
+				_Line.Time.Value = "$bbb+"^(_RefCpNb-_CpNb)^"CP$g +"^TL::TimeToText(_Time-_RefTime,True,True);
+			}else{
+				_Line.Time.Value = "$bbb+"^(_RefCpNb-_CpNb)^"CP$g "^TL::TimeToText(_Time-_RefTime,True,True);
+			}
+		}else{
+			_Line.Time.Value = "+"^TL::TimeToText(_Time-_RefTime,True,True);
+		}
+	}
+}
+
+Void _{{{C}}}_ResetLine(K_{{{C}}}_Line _Line){
+	_Line.Bg.BgColor = {{{Colors::C_Dark}}};
+	_Line.Bg2.BgColorFocus = {{{Colors::C_Dark}}};
+	_Line.Bg2.DataAttributeSet("{{{C}}}-login","");
+	_Line.Bg.Opacity = 0.1;
+	_Line.Bg2.BgColor = {{{Colors::C_Dark}}};
+	_Line.Bg2.Opacity = 0.1;
+	_Line.Pos.Value = "";
+	_Line.Name.Value = "";
+	_Line.Time.Value = "";
+}
+
+Void {{{C}}}_Update(K_{{{C}}} _CpTimes) {
+	
+	if(!{{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
+		_CpTimes.Frame.Visible = False;
+		return;
+	}
+	_CpTimes.Frame.Visible = True;
+
+	declare Integer[Ident][Integer] CheckpointsSort;
+	declare MaxCpCount = 0;
+	foreach(Player in Players){
+		if(!{{{ChaseTeams::C}}}_CheckPlayer(Player)) continue;
+		if(Player.RaceWaypointTimes.count > 0){
+			if(Player.RaceWaypointTimes.count > MaxCpCount)MaxCpCount = Player.RaceWaypointTimes.count;
+			if(!CheckpointsSort.existskey(Player.RaceWaypointTimes.count)) CheckpointsSort[Player.RaceWaypointTimes.count] = [];
+			CheckpointsSort[Player.RaceWaypointTimes.count][Player.Id] = Player.RaceWaypointTimes[Player.RaceWaypointTimes.count-1];
+		}
+	}
+	
+	CheckpointsSort = CheckpointsSort.sortkeyreverse();
+	declare Integer I;
+	declare Ident LeadingPlayer;
+	foreach(CpNumber => CpTimes in CheckpointsSort){
+		CheckpointsSort[CpNumber] = CpTimes.sort();
+
+		foreach (PlayerId => Time in CheckpointsSort[CpNumber]) {
+			if(LeadingPlayer == NullId)LeadingPlayer = PlayerId;
+			_{{{C}}}_UpdateLine(_CpTimes.Lines[I],Players[PlayerId],I+1,Time,Players[LeadingPlayer].RaceWaypointTimes[CpNumber-1],CpNumber,MaxCpCount);
+			I += 1;
+			if(I > 5)break;
+		}
+		if(I > 5)break;
+	}
+	for(J,I,5){
+		_{{{C}}}_ResetLine(_CpTimes.Lines[J]);
+	}
+}
+""";
+}
+
+Text _Labels(){
+	return """//!
+***Event***
+***
+if (Event.Control != Null && Event.Type == CMlScriptEvent::Type::MouseClick && Event.Control.DataAttributeExists("{{{C}}}-login")) {
+	if(InputPlayer != Null && InputPlayer.RequestsSpectate){
+		SetSpectateTarget(Event.Control.DataAttributeGet("{{{C}}}-login"));
+	}
+}
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	ChaseTeams::Load();
+	Manialink::CreateComponent(C,[ChaseTeams::C],_Model(),_Directives(),_Functions(),_Labels());
+}

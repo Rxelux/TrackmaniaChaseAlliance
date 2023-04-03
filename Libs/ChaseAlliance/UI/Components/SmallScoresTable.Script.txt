@@ -20,7 +20,7 @@ Text _Model (){
 
 	<quad pos="-28 0" size="8 4" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CT}}}/>
 	<quad pos="-28 0" size="8 4" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CT}}}/>
-	<label id="team1-maps" pos="-28 -2.3" size="8 4" text="1" textfont="RajdhaniMono" textsize="3" {{{Align::C2}}}/>
+	<label id="team1-maps" pos="-28 -2.3" size="8 4" textfont="RajdhaniMono" textsize="3" {{{Align::C2}}}/>
 
 	<quad pos="-28 -6" size="8 2" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
 	<frameinstance id="team1-rounds" data-pos="-28 -6" data-size="8 2" modelid="{{{LGauge::C}}}" rot="180"/>
@@ -35,7 +35,7 @@ Text _Model (){
 
 	<quad pos="28 0" size="8 4" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CT}}}/>
 	<quad pos="28 0" size="8 4" bgcolor="{{{bgcolor}}}" opacity="0.9" {{{Align::CT}}}/>
-	<label id="team2-maps" pos="28 -2.3" size="8 4" text="1" textfont="RajdhaniMono" textsize="3" {{{Align::C2}}}/>
+	<label id="team2-maps" pos="28 -2.3" size="8 4" textfont="RajdhaniMono" textsize="3" {{{Align::C2}}}/>
 
 	<quad pos="28 -6" size="8 2" style="Bgs1" substyle="BgCardInventoryItem" bluramount="1" {{{Align::CC}}}/>
 	<frameinstance id="team2-rounds" data-pos="28 -6" data-size="8 2" modelid="{{{LGauge::C}}}"/>

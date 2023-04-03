@@ -83,9 +83,12 @@ K_SortedEvent[][Integer] GetPendingSorted() {
 
 	foreach (EventsTime => Events in G_PendingSortedEvents) {
 		
-		declare ExpireAt = Events[0].ExpireAt;
+		declare Integer MaxExpireAt = -1;
+		foreach (Event in Events) {
+			if(Event.ExpireAt > MaxExpireAt) MaxExpireAt = Event.ExpireAt;
+		}
 		
-		if (ExpireAt <= Now) {
+		if (MaxExpireAt <= Now) {
 			Return[EventsTime] = G_PendingSortedEvents[EventsTime];
 			G_PendingSortedEvents.removekey(EventsTime);
 		} else {

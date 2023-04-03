@@ -16,7 +16,7 @@ Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}">
 	<frame id="card" hidden="1" pos="0 8"><!-- this is needed because the c++ will force the framemodel to be always visible  -->
-		<quad id="background" size="30 4" opacity="0.5" {{{Align::CC}}}/>
+		<quad id="background" size="30 4" opacity="0.7" {{{Align::CC}}}/>
 		<label id="player-name" size="26 4" textsize="1" textfont="RajdhaniMono" textemboss="1" {{{Align::C2}}}/>
 	</frame>
 	<frame id="pointer" hidden="1" {{{Align::CT}}}>
@@ -91,6 +91,8 @@ Void {{{C}}}_UpdateVisibility(K_{{{C}}} _PlayerMarker,CUIConfigMarker _Marker,Te
 			_PlayerMarker.ArrowPivot.Hide();
 			_PlayerMarker.Dot.ModulateColor = Teams[Player.CurrentClan-1].ColorUI;
 			_PlayerMarker.ArrowHead.ModulateColor = Teams[Player.CurrentClan-1].ColorUI;
+		}else{
+			_PlayerMarker.Pointer.Hide();
 		}
 	}else{
 		if(GUIPlayer.CurrentClan == Player.CurrentClan){
@@ -105,9 +107,12 @@ Void {{{C}}}_UpdateVisibility(K_{{{C}}} _PlayerMarker,CUIConfigMarker _Marker,Te
 				_PlayerMarker.Pointer.Show();
 				_PlayerMarker.Dot.ModulateColor = Teams[Player.CurrentClan - 1].ColorUI;
 				_PlayerMarker.ArrowHead.ModulateColor = Teams[Player.CurrentClan - 1].ColorUI;
+			}else{
+				_PlayerMarker.Pointer.Hide();
 			}
 		}else{
 			_PlayerMarker.Card.Hide();
+			_PlayerMarker.Pointer.Hide();
 		}
 	}
 }
