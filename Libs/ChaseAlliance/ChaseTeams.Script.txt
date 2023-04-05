@@ -251,7 +251,7 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 		}
 	}
 
-	Log("""[ChaseTeams] Events at {{{TL::TimeToText(_EventsTime)}}} : {{{Events}}}""");
+	Log("""[ChaseTeams] Events at {{{TL::TimeToText(_EventsTime,True,True)}}} : {{{Events}}}""");
 
 	foreach (Event in Events) {
 		if(G_WinState >= 0) continue;
