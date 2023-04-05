@@ -79,16 +79,11 @@ Void RemoveAllSortedWithSource(Text _Source){
 K_SortedEvent[][Integer] GetPendingSorted() {
 	declare K_SortedEvent[][Integer] Return;
 
-	G_PendingSortedEvents = G_PendingSortedEvents.sort();
+	G_PendingSortedEvents = G_PendingSortedEvents.sortkey();
 
 	foreach (EventsTime => Events in G_PendingSortedEvents) {
 		
-		declare Integer MaxExpireAt = -1;
-		foreach (Event in Events) {
-			if(Event.ExpireAt > MaxExpireAt) MaxExpireAt = Event.ExpireAt;
-		}
-		
-		if (MaxExpireAt <= Now) {
+		if (Events[0].ExpireAt <= Now) {
 			Return[EventsTime] = G_PendingSortedEvents[EventsTime];
 			G_PendingSortedEvents.removekey(EventsTime);
 		} else {

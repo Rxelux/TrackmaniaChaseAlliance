@@ -218,6 +218,7 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 	if(G_WinState >= 0) return;
 
 	//here event are in order
+	
 	declare Boolean NeedUpdateNet = False;
 
 	//since we now have all the events that occured at the same time we can use this to make sure that
@@ -249,6 +250,8 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 			Events.add(Event);
 		}
 	}
+
+	Log("""[ChaseTeams] Events at {{{TL::TimeToText(_EventsTime)}}} : {{{Events}}}""");
 
 	foreach (Event in Events) {
 		if(G_WinState >= 0) continue;
@@ -311,7 +314,22 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 			_SetTeamCurrentCp(CurrentClan,RaceWaypoint);
 			_SetTeamCpCrossCount(CurrentClan,1);
 		}
-		else if(RaceWaypoint == Team.CurrentCp){ //crossed the current cp
+		else if (RaceWaypoint > Team.LastSuccessfulRelayCp){//crossed not a new cp but a cp ahead of the relayer
+			if(Team.RelayerLogin != PlayerLogin){//check if player is not relayer
+				Log("""[ChaseTeams] Team{{{CurrentClan-1}}} {{{Player.User.Name}}} Rushed a previous cp""");
+				if(Team.RelayStarted){
+					//relay failed
+					Log("""[ChaseTeams] Team{{{CurrentClan-1}}} Relay failed""");
+					if(Team.RelayerLogin == ""){
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for players",3000,CUIConfig::EUISound::Silence);
+					}else{
+						declare CSmPlayer RelayerPlayer = GetPlayer(Team.RelayerLogin);
+						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for "^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Silence);
+					}
+				}
+			}
+		}
+		if(RaceWaypoint == Team.CurrentCp){ //crossed the current cp
 			Log("""[ChaseTeams] Team{{{CurrentClan-1}}} {{{Player.User.Name}}} Crossed current cp""");
 			if(Team.CpCrossCount == Settings::GetRelayerCount()-1){//current cp was crossed by all team but this player
 				Log("""[ChaseTeams] Team{{{CurrentClan-1}}} {{{Player.User.Name}}} Current cp was crossed by all team""");
@@ -331,23 +349,7 @@ Void PassLibSortedEvent(Integer _EventsTime, Events::K_SortedEvent[] _Events){
 			}
 			_SetTeamCpCrossCount(CurrentClan, Team.CpCrossCount + 1);
 		}
-		else if (RaceWaypoint > Team.LastSuccessfulRelayCp){
-			Log("""[ChaseTeams] Team{{{CurrentClan-1}}} {{{Player.User.Name}}} Rushed a previous cp""");
-			if(Team.RelayerLogin != PlayerLogin){//check if player is not relayer
-				Log("""[ChaseTeams] Team{{{CurrentClan-1}}} {{{Player.User.Name}}} was Not relayer""");
-				if(Team.RelayStarted){
-					//relay failed
-					Log("""[ChaseTeams] Team{{{CurrentClan-1}}} Relay failed""");
-					if(Team.RelayerLogin == ""){
-						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for players",3000,CUIConfig::EUISound::Silence);
-					}else{
-						declare CSmPlayer RelayerPlayer = GetPlayer(Team.RelayerLogin);
-						Messages::SendStatus(Player,"$"^TL::ColorToText(Colors::C_Failure)^"Wait for "^RelayerPlayer.User.Name,3000,CUIConfig::EUISound::Silence);
-					}
-				}
-			}
-		}
-		else if(RaceWaypoint < Team.CurrentCp){
+		if(RaceWaypoint < Team.CurrentCp){
 			Log(""""[ChaseTeams] Team{{{CurrentClan-1}}} Crossed a previous cp""");
 		}
 	}
