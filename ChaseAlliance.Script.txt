@@ -38,6 +38,11 @@
 #Setting S_MapCount 3 as "[1+] Number of maps to win a match"
 #Setting S_RoundCount 3 as "[1+] Number of round to win a map"
 #Setting S_LapCount 5 as "[1+] Number of laps to win a round"
+#Setting S_Team1Name "" as "Team 1 Name"
+#Setting S_Team2Name "" as "Team 2 Name"
+#Setting S_Team1Color "" as "Team 1 Color"
+#Setting S_Team2Color "" as "Team 2 Color"
+
 
 #Setting S_Env 0 as "0 = prod, 1 = test, 2 = dev"
 
@@ -104,7 +109,9 @@ Sleep(S_MapIntroDuration);
 Log("StartMap");
 ChaseTeams::ResetTeamsRoundPoint();
 ChaseTeams::ToNet();
-GameState::Set(GameStates::C_WarmUp);
+if(!GameState::Is(GameStates::C_Pause)){
+	GameState::Set(GameStates::C_WarmUp);
+}
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
 ***
 
@@ -121,17 +128,25 @@ Settings::SetRoundCount(S_RoundCount);
 Settings::SetLapCount(S_LapCount);
 Settings::ToNet();
 ChaseTeams::ResetTeamsRelay();
+ChaseTeams::SetTeamsNamesAndColors(S_Team1Name,S_Team1Color,S_Team2Name,S_Team2Color);
 ChaseTeams::ToNet();
 if(GameState::Is(GameStates::C_WarmUp)){
 	Messages::SendStatus(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_WarmUp)^"Warm-Up",0, CUIConfig::EUISound::Warning);
 	EndTime = Now + S_WarmUpDuration;
 	EndTimeL::SetEndTime(S_WarmUpDuration);
 }
+if(GameState::Is(GameStates::C_Pause)){
+	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Pause)^"Pause",0,CUIConfig::EUISound::EndRound);
+}
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 StartTime = Now + 1500;
 PlayersL::SpawnAll(StartTime);
 MarkersL::RefreshMarkers();
+
+//idk just in case 
+UsePvPCollisions = False;
+UsePvECollisions = False;
 ***
 
 ***PlayLoop***
@@ -168,10 +183,10 @@ if(GameState::Is(GameStates::C_WarmUp) && Now > EndTime){
 ***EndRound***
 ***
 Log("EndRound");
+Messages::ClearAll();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 declare Integer WinningClan = ChaseTeams::GetWinClan();
 if(WinningClan > 0){
-	Messages::ClearAll();
 	ChaseTeams::IncrementTeamRoundPoint(WinningClan);
 	Messages::SendStatus(UIManager.UIAll,ChaseTeams::GetWinStateString(),S_EndRoundPause,CUIConfig::EUISound::Warning);
 	Log(Teams[WinningClan-1].Name^" wins the round: "^ChaseTeams::GetWinStateString(),True);
@@ -274,14 +289,12 @@ foreach (Event in Events::GetPending()) {
 		switch (Event.Name) {
 			case "Pause" : {
 				if(GameState::Is(GameStates::C_Pause)){
-					Log("Match resume!");
+					Log("Match resume!",True);
 					GameState::Set(GameStates::C_Waiting);
-					Messages::ClearAll();
 					Messages::SendStatus(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Waiting)^"Waiting for players",0, CUIConfig::EUISound::Warning);
 				}else{
+					Log("Match is Paused!",True);
 					GameState::Set(GameStates::C_Pause);
-					Messages::ClearAll();
-					Log("Match is Paused!");
 					Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Pause)^"Pause",0,CUIConfig::EUISound::EndRound);
 					StopRound();
 				}
@@ -294,6 +307,39 @@ foreach (Event in Events::GetPending()) {
 			}
 			case "EndMap": {
 				StopMap();
+			}
+		}
+	}
+}
+foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
+	switch (XmlRpcEvent.Type) {
+		case CXmlRpcEvent::EType::CallbackArray: {
+			switch (XmlRpcEvent.ParamArray1) {
+				case "Trackmania.ForceEndRound": {
+					StopRound();
+				}
+				case "Trackmania.WarmUp.ForceStopRound": {
+					if(GameState::Is(GameStates::C_WarmUp)){
+						StopRound();
+					}
+				}
+				case "Trackmania.WarmUp.ForceStop": {
+					if(GameState::Is(GameStates::C_WarmUp)){
+						StopRound();
+					}
+				}
+				case "Maniaplanet.Pause.SetActive": {
+					if(GameState::Is(GameStates::C_Pause)){
+						Log("Match resume!",True);
+						GameState::Set(GameStates::C_Waiting);
+						Messages::SendStatus(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Waiting)^"Waiting for players",0, CUIConfig::EUISound::Warning);
+					}else{
+						Log("Match is Paused!",True);
+						GameState::Set(GameStates::C_Pause);
+						Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_Pause)^"Pause",0,CUIConfig::EUISound::EndRound);
+						StopRound();
+					}
+				}
 			}
 		}
 	}

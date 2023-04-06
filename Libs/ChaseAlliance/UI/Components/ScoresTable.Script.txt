@@ -114,11 +114,6 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 		Team2PlayersBg.add((Root.GetFirstChild("team2-player"^I^"-bg") as CMlQuad));
 	}
 
-	Team1Bg.BgColor = Teams[0].ColorUI;
-	Team1Name.Value = Teams[0].Name;
-	Team2Bg.BgColor = Teams[1].ColorUI;
-	Team2Name.Value = Teams[1].Name;
-
 	return K_{{{C}}}{
 		Root = Root,
 		Team1Bg =  Team1Bg,
@@ -137,6 +132,11 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 }
 
 Void {{{C}}}_Update(K_{{{C}}} _ScoreTable) {
+
+	_ScoreTable.Team1Bg.BgColor = Teams[0].ColorUI;
+	_ScoreTable.Team1Name.Value = Teams[0].Name;
+	_ScoreTable.Team2Bg.BgColor = Teams[1].ColorUI;
+	_ScoreTable.Team2Name.Value = Teams[1].Name;
 	
 	declare Integer Team1Rounds = G_{{{ChaseTeams::C}}}[0].RoundPoints;
 	declare Integer Team2Rounds = G_{{{ChaseTeams::C}}}[1].RoundPoints;
