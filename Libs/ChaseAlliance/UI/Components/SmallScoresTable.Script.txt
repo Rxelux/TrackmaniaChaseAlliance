@@ -81,25 +81,18 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlLabel Team1Maps <=> (Root.GetFirstChild("team1-maps") as CMlLabel);
 	declare CMlLabel Team2Maps <=> (Root.GetFirstChild("team2-maps") as CMlLabel);
 
-	Team1RelaysBg.BgColor = Teams[0].ColorUI;
-	Team2RelaysBg.BgColor = Teams[1].ColorUI;
-
-	Team1Gauge.Left.BgColor = Teams[0].ColorUI;
 	Team1Gauge.Left.Opacity = 0.8;
 	Team1Gauge.Right.BgColor = {{{Colors::C_Dark}}};
 	Team1Gauge.Right.Opacity = 0.1;
 
-	Team2Gauge.Left.BgColor = Teams[1].ColorUI;
 	Team2Gauge.Left.Opacity = 0.8;
 	Team2Gauge.Right.BgColor = {{{Colors::C_Dark}}};
 	Team2Gauge.Right.Opacity = 0.1;
 
-	Team1Rounds.Left.BgColor = Teams[0].ColorUI;
 	Team1Rounds.Left.Opacity = 0.8;
 	Team1Rounds.Right.BgColor = {{{Colors::C_Dark}}};
 	Team1Rounds.Right.Opacity = 0.1;
 
-	Team2Rounds.Left.BgColor = Teams[1].ColorUI;
 	Team2Rounds.Left.Opacity = 0.8;
 	Team2Rounds.Right.BgColor = {{{Colors::C_Dark}}};
 	Team2Rounds.Right.Opacity = 0.1;
@@ -109,7 +102,9 @@ K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 		Team1Gauge = Team1Gauge,
 		Team2Gauge = Team2Gauge,
 		Team1Relays = Team1Relays,
+		Team1RelaysBg = Team1RelaysBg,
 		Team2Relays = Team2Relays,
+		Team2RelaysBg = Team2RelaysBg,
 		Team1Rounds = Team1Rounds,
 		Team2Rounds = Team2Rounds,
 		Team1Maps = Team1Maps,
@@ -127,6 +122,14 @@ Void {{{C}}}_Update(K_{{{C}}} _SScoreTable) {
 	declare Integer Team2Maps = G_{{{ChaseTeams::C}}}[1].MapPoints;
 	declare Integer RelayGap = G_{{{Settings::C}}}.RelayGap;
 	declare Integer FTRounds = G_{{{Settings::C}}}.RoundCount;
+
+	_SScoreTable.Team1RelaysBg.BgColor = Teams[0].ColorUI;
+	_SScoreTable.Team2RelaysBg.BgColor = Teams[1].ColorUI;
+
+	_SScoreTable.Team1Gauge.Left.BgColor = Teams[0].ColorUI;
+	_SScoreTable.Team2Gauge.Left.BgColor = Teams[1].ColorUI;
+	_SScoreTable.Team1Rounds.Left.BgColor = Teams[0].ColorUI;
+	_SScoreTable.Team2Rounds.Left.BgColor = Teams[1].ColorUI;
 	
 	_SScoreTable.Team1Relays.Value = ""^Team1Relays;
 	_SScoreTable.Team2Relays.Value = ""^Team2Relays;
