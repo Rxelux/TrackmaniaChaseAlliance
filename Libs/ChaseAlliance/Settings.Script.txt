@@ -133,8 +133,8 @@ Void ApplySettings(){
 	UIManager.UIAll.OverlayHideCrosshair = True;
 	UIManager.UIAll.OverlayHideGauges = True;
 	UIManager.UIAll.OverlayHideConsumables = True;
-	UIManager.UIAll.OverlayHide321Go = True;
-	UIManager.UIAll.OverlayMute321Go = True;
+	UIManager.UIAll.OverlayHide321Go = False;
+	UIManager.UIAll.OverlayMute321Go = False;
 	UIManager.UIAll.OverlayHideBackground = True;
 	UIManager.UIAll.OverlayHideChrono = True;
 	UIManager.UIAll.OverlayHideSpeedAndDist = True;
