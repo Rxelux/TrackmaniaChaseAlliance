@@ -196,7 +196,7 @@ if(WinningClan > 0){
 		StopMap();
 	}
 	ChaseTeams::ToNet();
-	Log(Teams[0].Name^": Rounds "^ChaseTeams::GetTeamRoundPoint(1)^"/"^Settings::GetRoundCount()^"\n"^Teams[1].Name^": Rounds "^ChaseTeams::GetTeamRoundPoint(2)^"/"^Settings::GetRoundCount(),True);
+	Log(Teams[0].Name^": Rounds "^ChaseTeams::GetTeamRoundPoint(1)^"/"^Settings::GetRoundCount()^"\t"^Teams[1].Name^": Rounds "^ChaseTeams::GetTeamRoundPoint(2)^"/"^Settings::GetRoundCount(),True);
 }
 
 if(GameState::Is(GameStates::C_Waiting) && ChaseTeams::AreComplete()){
@@ -226,7 +226,7 @@ if(WinningClan > 0){
 	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the map." ,S_EndMapPause,CUIConfig::EUISound::EndRound);
 	if(ChaseTeams::GetTeamMapPoint(WinningClan) >= Settings::GetMapCount()){
 		StopMatch();
-		Log(Teams[0].Name^": Maps "^ChaseTeams::GetTeamMapPoint(1)^"/"^Settings::GetMapCount()^"\n"^Teams[1].Name^": Maps "^ChaseTeams::GetTeamMapPoint(2)^"/"^Settings::GetMapCount(),True);
+		Log(Teams[0].Name^": Maps "^ChaseTeams::GetTeamMapPoint(1)^"/"^Settings::GetMapCount()^"\t"^Teams[1].Name^": Maps "^ChaseTeams::GetTeamMapPoint(2)^"/"^Settings::GetMapCount(),True);
 	}
 }
 
