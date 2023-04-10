@@ -1,0 +1,22 @@
+//#RequireContext CSmMode
+
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+
+
+Void PostPlayerCount(Integer _PlayerCount) {
+    declare CHttpRequest Req = Http.CreatePost("https://chase-flask-api.herokuapp.com/player_count/"^_PlayerCount, "");
+    wait(Req.IsCompleted);
+    Log(Req.Result);
+    Http.Destroy(Req);
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+}
