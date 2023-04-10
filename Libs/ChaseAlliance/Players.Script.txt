@@ -100,6 +100,17 @@ Void SpawnAll(Integer _When){
 	}
 }
 
+Integer GetCurrentPlayerCount(){
+	declare Integer PlayerCount = 0;
+	foreach (Player in Players) {
+		// if(Player.CurrentClan != 0){
+			PlayerCount+=1;		
+		// } 
+	}
+	// return ClansNbPlayers[0] + ClansNbPlayers[1] + ClansNbPlayers[2];
+	return PlayerCount;
+}
+
 Void PassUIEvent(CUIConfigEvent _Event){
 	if(_Event.Type != CUIConfigEvent::EType::OnLayerCustomEvent) return;
 	if(_Event.UI == Null) return;
