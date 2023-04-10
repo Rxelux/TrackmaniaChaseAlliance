@@ -4,7 +4,7 @@
 
 
 Void PostPlayerCount(Text _HttpApiURL, Integer _PlayerCount) {
-    declare CHttpRequest Req = Http.CreatePost(_HttpApiURL^"player_count/"^_PlayerCount, "");
+    declare CHttpRequest Req = Http.CreatePost(_HttpApiURL^"/player_count/"^_PlayerCount, "");
     // wait(Req.IsCompleted);
     // Log(Req.Result);
     Http.Destroy(Req);
