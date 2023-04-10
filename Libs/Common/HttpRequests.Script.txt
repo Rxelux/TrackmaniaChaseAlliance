@@ -5,8 +5,8 @@
 
 Void PostPlayerCount(Integer _PlayerCount) {
     declare CHttpRequest Req = Http.CreatePost("https://chase-flask-api.herokuapp.com/player_count/"^_PlayerCount, "");
-    wait(Req.IsCompleted);
-    Log(Req.Result);
+    // wait(Req.IsCompleted);
+    // Log(Req.Result);
     Http.Destroy(Req);
 }
 

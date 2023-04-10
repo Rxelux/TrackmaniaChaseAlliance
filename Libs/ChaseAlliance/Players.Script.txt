@@ -103,9 +103,9 @@ Void SpawnAll(Integer _When){
 Integer GetCurrentPlayerCount(){
 	declare Integer PlayerCount = 0;
 	foreach (Player in Players) {
-		// if(Player.CurrentClan != 0){
+		if(!TL::StartsWith("*fakeplayer" , Player.User.Login)){
 			PlayerCount+=1;		
-		// } 
+		} 
 	}
 	// return ClansNbPlayers[0] + ClansNbPlayers[1] + ClansNbPlayers[2];
 	return PlayerCount;

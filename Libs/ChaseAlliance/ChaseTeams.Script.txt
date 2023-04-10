@@ -4,6 +4,8 @@
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
 #Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/Common/Commands.Script.txt" as Commands
+#Include "ChaseAlliance/Libs/Common/HttpRequests.Script.txt" as HttpRequests
+#Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
@@ -169,9 +171,16 @@ Boolean AreComplete(){
 }
 
 Void PassModeEvent(CSmModeEvent _Event){
+	if (_Event.Type == CSmModeEvent::EType::OnPlayerAdded || _Event.Type == CSmModeEvent::EType::OnPlayerRemoved){
+		log("ModeEvent : PlayerCount: "^PlayersL::GetCurrentPlayerCount());
+		HttpRequests::PostPlayerCount(PlayersL::GetCurrentPlayerCount());
+	}
+
+
 	if(G_WinState >= 0) return;
 	if(GameState::Is(GameStates::C_Playing) && _Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint){
 		if(_Event.Player == Null) return;
+		
 		if(_Event.Player.CurrentClan != 1 && _Event.Player.CurrentClan != 2)return;
 		//add event to sorted event
 
