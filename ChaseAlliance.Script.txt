@@ -12,6 +12,7 @@
 #Include "ChaseAlliance/Libs/Common/EndTime.Script.txt" as EndTimeL
 #Include "ChaseAlliance/Libs/Common/FakeUserController.Script.txt" as Controller
 #Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
+#Include "ChaseAlliance/Libs/Common/HttpRequests.Script.txt" as HttpRequests
 #Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
@@ -43,6 +44,7 @@
 #Setting S_Team1Color "" as "Team 1 Color"
 #Setting S_Team2Color "" as "Team 2 Color"
 
+#Setting S_HttpApiURL "" as "Secret API URL"
 
 #Setting S_Env 0 as "0 = prod, 1 = test, 2 = dev"
 
@@ -58,6 +60,7 @@ GameState::Add(GameStates::C_EndRoundName);
 GameState::Add(GameStates::C_IntroName);
 GameState::Add(GameStates::C_OutroName);
 GameState::Add(GameStates::C_PodiumName);
+HttpRequests::Load();
 Settings::Load();
 Commands::Load();
 UsersL::Load();
@@ -273,7 +276,7 @@ foreach (Event in UIManager.PendingEvents) {
 }
 foreach (Event in PendingEvents){
 	Commands::PassModeEvent(Event);
-	ChaseTeams::PassModeEvent(Event);
+	ChaseTeams::PassModeEvent(Event, S_HttpApiURL);
 	PlayersL::PassModeEvent(Event);
 	MarkersL::PassModeEvent(Event);
 }
@@ -348,3 +351,5 @@ Controller::Yield();
 Messages::Yield();
 ChaseTeams::Yield();
 ***
+
+
