@@ -170,14 +170,7 @@ Boolean AreComplete(){
 	return IsComplete(1) && IsComplete(2);
 }
 
-Void PassModeEvent(CSmModeEvent _Event, Text _HttpApiURL){
-	if (_Event.Type == CSmModeEvent::EType::OnPlayerAdded || _Event.Type == CSmModeEvent::EType::OnPlayerRemoved){
-		// log("ModeEvent : PlayerCount: "^PlayersL::GetCurrentPlayerCount());
-		if (_HttpApiURL != ""){
-			HttpRequests::PostPlayerCount(_HttpApiURL, PlayersL::GetCurrentPlayerCount());
-		}
-	}
-
+Void PassModeEvent(CSmModeEvent _Event){
 	if(G_WinState >= 0) return;
 	if(GameState::Is(GameStates::C_Playing) && _Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint){
 		if(_Event.Player == Null) return;

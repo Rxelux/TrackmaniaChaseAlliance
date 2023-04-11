@@ -276,9 +276,10 @@ foreach (Event in UIManager.PendingEvents) {
 }
 foreach (Event in PendingEvents){
 	Commands::PassModeEvent(Event);
-	ChaseTeams::PassModeEvent(Event, S_HttpApiURL);
+	ChaseTeams::PassModeEvent(Event);
 	PlayersL::PassModeEvent(Event);
 	MarkersL::PassModeEvent(Event);
+	HttpRequests::PassModeEvent(Event, S_HttpApiURL);
 }
 foreach (EventTime => Events in Events::GetPendingSorted()) {
 	ChaseTeams::PassLibSortedEvent(EventTime,Events);
