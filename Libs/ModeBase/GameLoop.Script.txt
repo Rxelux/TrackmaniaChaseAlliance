@@ -132,6 +132,7 @@ main() {
 
 	declare _ServerModeName for This = "";
 	declare _ServerModeUpdated = False;
+	declare Boolean S_RankedModeState = True;
 	if (_ServerModeName != "" && _ServerModeName != ServerModeName) {
 		_ServerModeUpdated = True;
 	}
@@ -160,11 +161,7 @@ main() {
 			_SectionCount_Round = 0;
 
 			XmlRpc_Base::SendStartMatch_Start(_SectionCount_Match);
-			if (S_RankedModeState == 1){
-				{ +++StartMatchRanked+++ }
-			}else{
-				{ +++StartMatch+++ }
-			}
+			{ +++StartMatch+++ }
 			XmlRpc_Base::SendStartMatch_End(_SectionCount_Match);
 
 			while (MatchIsRunning()) {
@@ -201,7 +198,7 @@ main() {
 					while (RoundIsRunning()) {
 
 						Yield();
-						if (S_RankedModeState == 1){
+						if (S_RankedModeState){
 							{ +++PlayLoopRanked+++ }
 						}else{
 							{ +++PlayLoop+++ }
@@ -235,7 +232,7 @@ main() {
 			}
 
 			XmlRpc_Base::SendEndMatch_Start(_SectionCount_Match);
-			if (S_RankedModeState == 1){
+			if (S_RankedModeState){
 				{ +++EndMatchRanked+++ }
 			}else{
 				{ +++EndMatch+++ }

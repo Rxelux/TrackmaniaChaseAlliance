@@ -46,9 +46,9 @@
 #Setting S_Team2Color "" as "Team 2 Color"
 
 #Setting S_HttpApiURL "" as "Secret API URL"
-#Setting S_RankedModeState 0 as "Enable ranked mode (1 = true, 0 = false)"
-
+// #Setting S_RankedModeState 0 as "Enable ranked mode (1 = true, 0 = false)"
 #Setting S_Env 0 as "0 = prod, 1 = test, 2 = dev"
+
 
 ***StartServer***
 ***
@@ -101,7 +101,12 @@ ChaseTeams::ToNet();
 Log("StartMatchRanked");
 ChaseTeams::ResetTeamsMapPoint();
 ChaseTeams::ToNet();
-Ranked::FillChaseTeamsPlayers();
+// if (!ChaseTeams::AreComplete()){
+// 	Log("Teams incomplete, ranked game couldn't initiate	");
+// 	S_RankedModeState = False;
+// }else{
+	Ranked::FillChaseTeamsPlayers();
+// }
 ***
 
 ***BeforeLoadMap***
@@ -197,6 +202,11 @@ if(GameState::Is(GameStates::C_WarmUp) && Now > EndTime){
 ***PlayLoopRanked***
 ***
 if(GameState::Is(GameStates::C_Playing)){
+	if(!Ranked::TeamsAreConstant()){
+		Log("Round Stopped, ranked teams are not as it began with");
+		GameState::Set(GameStates::C_Waiting);
+		StopRound();
+	}
 	if(ChaseTeams::GetWinState() >= 0){
 		Log("Round Stopped, Team reached win state!");
 		StopRound();

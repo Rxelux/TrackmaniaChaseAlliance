@@ -1,5 +1,7 @@
 //#RequireContext CSmMode
 
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+
 #Include "TextLib" as TL
 #Include "ColorLib" as CL
 #Include "MathLib" as ML
@@ -7,7 +9,7 @@
 #Const C_EventSource "ChaseTeams"
 
 #Struct K_ChaseTeamsPlayers {
-	Ident[] PlayersId;
+	Text[] PlayersLogin;
 	Text[] PlayersName;
 }
 
@@ -25,26 +27,27 @@ K_ChaseTeamsPlayers GetOpposingTeam(Integer _Clan){
 Void FillChaseTeamsPlayers(){
     foreach(Player in Players){
         if(Player != Null && Player.CurrentClan == 1){
-            G_ChaseTeamsPlayers[0].PlayersId.add(Player.User.Login);
+            G_ChaseTeamsPlayers[0].PlayersLogin.add(Player.User.Login);
             G_ChaseTeamsPlayers[0].PlayersName.add(Player.User.Name);
         }
         else  if (Player != Null && Player.CurrentClan == 2){
-            G_ChaseTeamsPlayers[1].PlayersId.add(Player.User.Login);
+            G_ChaseTeamsPlayers[1].PlayersLogin.add(Player.User.Login);
             G_ChaseTeamsPlayers[1].PlayersName.add(Player.User.Name);
         }
     }
+    Log("Team 1 : "^ G_ChaseTeamsPlayers[0].PlayersName);
 }
 
 Boolean TeamsAreConstant(){
     foreach(Player in Players){
         if(Player != Null && Player.CurrentClan == 1){
             // G_ChaseTeamsPlayers[0].PlayersId.exists(Player.User.Login);
-            if (!G_ChaseTeamsPlayers[0].PlayersId.existskey(Player.User.Login)){
+            if (!G_ChaseTeamsPlayers[0].PlayersLogin.exists(Player.User.Login)){
                 return False;
             }
         }
         else  if (Player != Null && Player.CurrentClan == 2){
-            if (!G_ChaseTeamsPlayers[1].PlayersId.existskey(Player.User.Login)){
+            if (!G_ChaseTeamsPlayers[1].PlayersLogin.exists(Player.User.Login)){
                 return False;
             }
         }
