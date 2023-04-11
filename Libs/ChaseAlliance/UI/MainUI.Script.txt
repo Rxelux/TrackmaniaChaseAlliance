@@ -1,6 +1,7 @@
 //#RequireContext CSmMlScriptIngame
 #Include "ChaseAlliance/Libs/Common/Layers.Script.txt" as Layers
 #Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/ChaseAlliance/Ranked.Script.txt" as Ranked
 
 #Include "ChaseAlliance/Libs/Common/UI/Components/Radar.Script.txt" as Radar
 #Include "ChaseAlliance/Libs/Common/UI/Components/Common.Script.txt" as Common
@@ -14,6 +15,7 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/SmallScoresTable.Script.txt" as SmallScoresTable
 #Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/CpTimes.Script.txt" as CpTimes
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Ranked.Script.txt" as RankedButton
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 
 #Const C "MainUI"
@@ -32,6 +34,7 @@ Text _Model(){
 	<frameinstance modelid="{{{EndTimer::C}}}" id="end-timer" pos="156 0" data-end-color="{{{RadarBackColor}}}"/>
 	<frameinstance modelid="{{{RelayStatus::C}}}" id="relay-status" pos="0 -68"/>
 	<frameinstance modelid="{{{CpTimes::C}}}" id="cp-times" pos="80 -82"/>
+	<frameinstance modelid="{{{RankedButton::C}}}" id="ranked" pos="130 70"/>
 </framemodel>
 """;
 }
@@ -48,6 +51,7 @@ Text _Labels(){
 	declare K_{{{RelayStatus::C}}} RelayStatus = {{{RelayStatus::C}}}_Get(Page.MainFrame,"relay-status");
 	declare K_{{{SmallScoresTable::C}}} SmallScoresTable = {{{SmallScoresTable::C}}}_Get(Page.MainFrame,"scores");
 	declare K_{{{CpTimes::C}}} CpTimes = {{{CpTimes::C}}}_Get(Page.MainFrame,"cp-times");
+	declare K_{{{RankedButton::C}}} RankedButton = {{{RankedButton::C}}}_Get(Page.MainFrame,"ranked");
 
 	declare K_{{{ChaseTeams::C}}} Team;
 	declare Integer NowAtEndTimerChange = -1;
@@ -73,6 +77,7 @@ switch(G_{{{GameState::C}}}){
 		RelayStatus.Root.Show();
 		SmallScoresTable.Root.Show();
 		CpTimes.Root.Show();
+		RankedButton.Root.Show();
 	}
 	case C_{{{GameState::C}}}_Waiting :{
 		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Waiting}}};
@@ -86,6 +91,7 @@ switch(G_{{{GameState::C}}}){
 		EndTimer.Root.Show();
 		SmallScoresTable.Root.Show();
 		CpTimes.Root.Show();
+		RankedButton.Root.Show();
 	}
 	case C_{{{GameState::C}}}_WarmUp :{
 		RaceTimer.RaceTimer.TextColor = {{{Colors::C_WarmUp}}};
@@ -99,6 +105,7 @@ switch(G_{{{GameState::C}}}){
 		EndTimer.Root.Show();
 		SmallScoresTable.Root.Show();
 		CpTimes.Root.Show();
+		RankedButton.Root.Show();
 	}
 	case C_{{{GameState::C}}}_Pause :{
 		RaceTimer.RaceTimer.TextColor = {{{Colors::C_Pause}}};
@@ -111,6 +118,7 @@ switch(G_{{{GameState::C}}}){
 		EndTimer.Root.Show();
 		SmallScoresTable.Root.Show();
 		CpTimes.Root.Show();
+		RankedButton.Root.Show();
 	}
 	case C_{{{GameState::C}}}_EndRound :{
 		RelayStatus.Root.Hide();
@@ -121,6 +129,7 @@ switch(G_{{{GameState::C}}}){
 		EndTimer.Root.Show();
 		SmallScoresTable.Root.Show();
 		CpTimes.Root.Hide();
+		RankedButton.Root.Show();
 	}
 	default: {
 		RelayStatus.Root.Hide();
@@ -130,6 +139,7 @@ switch(G_{{{GameState::C}}}){
 		EndTimer.Root.Hide();
 		SmallScoresTable.Root.Hide();
 		CpTimes.Root.Hide();
+		RankedButton.Root.Hide();
 	}
 }
 ***
@@ -148,6 +158,14 @@ if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
 }
 {{{SmallScoresTable::C}}}_Update(SmallScoresTable);
 ***
+
+***{{{RankedButton::C}}}_RankedClick***
+***
+	if(!IsSpectator){
+		SendCustomEvent("{{{Ranked::C_JoinRankedGame}}}", []);
+	}
+***
+
 
 ***Yield***
 ***
@@ -184,9 +202,11 @@ Void Load() {
 	EndTimeL::Load();
 	EndTimer::Load();
 	CpTimes::Load();
+	RankedButton::Load();
 	SmallScoresTable::Load();
 	Manialink::CreateComponent(C,
 		[	
+			RankedButton::C,
 			CpTimes::C,
 			EndTimeL::C,
 			EndTimer::C,

@@ -1,0 +1,78 @@
+#Include "ChaseAlliance/Libs/Common/UI/Manialink.Script.txt" as Manialink
+#Include "ChaseAlliance/Libs/Common/UI/Consts/Align.Script.txt" as Align
+#Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
+#Include "ChaseAlliance/Libs/ChaseAlliance/UI/Components/Button.Script.txt" as Button
+#Include "TextLib" as TL
+
+#Const C "Ranked"
+
+Text _Model (){
+	return """
+<framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
+	<frameinstance modelid="{{{Button::C}}}" id="ranked-button" data-pos="0 0" data-text="{{{_("Start Ranked")}}}" data-text-size="4"/>
+</framemodel>
+""";
+}
+
+Text _Directives(){
+	return """//!
+#Struct K_{{{C}}}{
+	CMlFrame Root;
+	K_{{{Button::C}}} RankedButton;
+}
+""";
+}
+
+Text _Functions(){
+	return """//!
+
+K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
+	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
+	declare K_{{{Button::C}}} RankedButton = {{{Button::C}}}_Get(Root,"ranked-button");
+	return K_{{{C}}}{
+		Root = Root,
+		RankedButton = RankedButton
+	};
+}
+
+Void {{{C}}}_Enter(K_{{{C}}} _Ranked,Integer _StartTime){
+	{{{Button::C}}}_Enter(_Ranked.RankedButton,_StartTime);
+}
+
+Void {{{C}}}_Exit(K_{{{C}}} _Ranked,Integer _StartTime){
+	{{{Button::C}}}_Exit(_Ranked.RankedButton,_StartTime);
+}
+""";
+}
+
+Text _Labels(){
+	return """//!
+***{{{Button::C}}}_Event***
+***
+if(Event.Type == CMlScriptEvent::Type::MouseClick){
+	//check if the button event is from one of this component
+	if(Button.Root.Parent.HasClass("{{{C}}}")){
+		switch(Button.Root.ControlId){
+			case "ranked-button": {
+				+++{{{C}}}_RankedClick+++
+			}
+		}
+	}
+}
+***
+""";
+}
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	Manialink::Load();
+	Button::Load();
+	Manialink::CreateComponent(C,[Button::C],_Model(),_Directives(),_Functions(),_Labels());
+}

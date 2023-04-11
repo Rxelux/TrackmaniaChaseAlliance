@@ -6,7 +6,8 @@
 #Include "ColorLib" as CL
 #Include "MathLib" as ML
 
-#Const C_EventSource "ChaseTeams"
+// #Const C_EventSource "ChaseTeams"
+#Const C_JoinRankedGame "Ranked_JoinRankedGame"
 
 #Struct K_ChaseTeamsPlayers {
 	Text[] PlayersLogin;
@@ -38,7 +39,16 @@ Void FillChaseTeamsPlayers(){
     Log("Team 1 : "^ G_ChaseTeamsPlayers[0].PlayersName);
 }
 
-Boolean TeamsAreConstant(){
+Void _AddPlayerToRankedGame(CSmPlayer _Player){
+    if(_Player != Null ){
+        G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.add(_Player.User.Login);
+        G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersName.add(_Player.User.Name);
+    }
+    Log("Team 1 : "^ G_ChaseTeamsPlayers[0].PlayersName);
+    Log("Team 2 : "^ G_ChaseTeamsPlayers[1].PlayersName);
+}
+
+Boolean TeamsAreConsistant(){
     foreach(Player in Players){
         if(Player != Null && Player.CurrentClan == 1){
             // G_ChaseTeamsPlayers[0].PlayersId.exists(Player.User.Login);
@@ -54,14 +64,16 @@ Boolean TeamsAreConstant(){
     }
     return True;
 }
-// Void GetChaseTeamsPlayers(){
-//     foreach (PlayerId in _PlayersIdTeam1) {
-//         G_ChaseTeamsPlayers[0].add(PlayerId);
-//     }
-//     foreach (PlayerId in _PlayersIdTeam2) {
-//         G_ChaseTeamsPlayers[1].add(PlayerId);
-//     }
-// }
+
+Void PassUIEvent(CUIConfigEvent _Event){
+	if(_Event.Type != CUIConfigEvent::EType::OnLayerCustomEvent) return;
+	if(_Event.UI == Null) return;
+	
+	if(_Event.CustomEventType == C_JoinRankedGame){
+		declare Player = GetPlayer(_Event.UI);
+		_AddPlayerToRankedGame(Player);
+	}
+}
 
 declare Boolean G_Loaded;
 Void Unload() {

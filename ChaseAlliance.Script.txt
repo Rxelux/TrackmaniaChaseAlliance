@@ -202,18 +202,18 @@ if(GameState::Is(GameStates::C_WarmUp) && Now > EndTime){
 ***PlayLoopRanked***
 ***
 if(GameState::Is(GameStates::C_Playing)){
-	if(!Ranked::TeamsAreConstant()){
-		Log("Round Stopped, ranked teams are not as it began with");
-		GameState::Set(GameStates::C_Waiting);
-		StopRound();
-	}
+	// if(!Ranked::TeamsAreConsistant()){
+	// 	Log("Round Stopped, ranked teams are not as it began with");
+	// 	GameState::Set(GameStates::C_Waiting);
+	// 	StopRound();
+	// }
 	if(ChaseTeams::GetWinState() >= 0){
 		Log("Round Stopped, Team reached win state!");
 		StopRound();
 	}
 }
 if(GameState::Is(GameStates::C_Waiting)){
-	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConstant()){
+	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConsistant()){
 		Log("Round Stopped, Teams are ready!");
 		StopRound();
 	}
@@ -227,7 +227,7 @@ if(!GameState::Is(GameStates::C_Playing)){
 }
 if(GameState::Is(GameStates::C_WarmUp) && Now > EndTime){
 	Log("Warm-up stopped, Warm-up time reached!");
-	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConstant()){
+	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConsistant()){
 		GameState::Set(GameStates::C_Playing);
 		Messages::SendStatus(UIManager.UIAll,"Starting Round!",S_EndRoundPause,CUIConfig::EUISound::Warning);
 	}
@@ -339,6 +339,7 @@ foreach (Event in UIManager.PendingEvents) {
 	Commands::PassUIEvent(Event);
 	Controller::PassUIEvent(Event);
 	PlayersL::PassUIEvent(Event);
+	Ranked::PassUIEvent(Event);
 }
 foreach (Event in PendingEvents){
 	Commands::PassModeEvent(Event);
