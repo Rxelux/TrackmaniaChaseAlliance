@@ -160,7 +160,11 @@ main() {
 			_SectionCount_Round = 0;
 
 			XmlRpc_Base::SendStartMatch_Start(_SectionCount_Match);
-			{ +++StartMatch+++ }
+			if (S_RankedModeState == 1){
+				{ +++StartMatchRanked+++ }
+			}else{
+				{ +++StartMatch+++ }
+			}
 			XmlRpc_Base::SendStartMatch_End(_SectionCount_Match);
 
 			while (MatchIsRunning()) {
@@ -197,7 +201,11 @@ main() {
 					while (RoundIsRunning()) {
 
 						Yield();
-						{ +++PlayLoop+++ }
+						if (S_RankedModeState == 1){
+							{ +++PlayLoopRanked+++ }
+						}else{
+							{ +++PlayLoop+++ }
+						}
 					}
 					XmlRpc_Base::SendEndPlayLoop(_SectionCount_Round);
 
@@ -227,7 +235,11 @@ main() {
 			}
 
 			XmlRpc_Base::SendEndMatch_Start(_SectionCount_Match);
-			{ +++EndMatch+++ }
+			if (S_RankedModeState == 1){
+				{ +++EndMatchRanked+++ }
+			}else{
+				{ +++EndMatch+++ }
+			}
 			XmlRpc_Base::SendEndMatch_End(_SectionCount_Match);
 
 			XmlRpc_Base::SendUnloadingMap_Start(Map);

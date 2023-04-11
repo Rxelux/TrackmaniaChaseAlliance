@@ -1,0 +1,82 @@
+//#RequireContext CSmMode
+
+#Include "TextLib" as TL
+#Include "ColorLib" as CL
+#Include "MathLib" as ML
+
+#Const C_EventSource "ChaseTeams"
+
+#Struct K_ChaseTeamsPlayers {
+	Ident[] PlayersId;
+	Text[] PlayersName;
+}
+
+declare K_ChaseTeamsPlayers[] G_ChaseTeamsPlayers;
+
+K_ChaseTeamsPlayers GetTeam(Integer _Clan){
+	return G_ChaseTeamsPlayers[_Clan-1];
+}
+
+K_ChaseTeamsPlayers GetOpposingTeam(Integer _Clan){
+	declare Integer[] LUT = [1,0];
+	return G_ChaseTeamsPlayers[LUT[_Clan-1]];
+}
+
+Void FillChaseTeamsPlayers(){
+    foreach(Player in Players){
+        if(Player != Null && Player.CurrentClan == 1){
+            G_ChaseTeamsPlayers[0].PlayersId.add(Player.User.Login);
+            G_ChaseTeamsPlayers[0].PlayersName.add(Player.User.Name);
+        }
+        else  if (Player != Null && Player.CurrentClan == 2){
+            G_ChaseTeamsPlayers[1].PlayersId.add(Player.User.Login);
+            G_ChaseTeamsPlayers[1].PlayersName.add(Player.User.Name);
+        }
+    }
+}
+
+Boolean TeamsAreConstant(){
+    foreach(Player in Players){
+        if(Player != Null && Player.CurrentClan == 1){
+            // G_ChaseTeamsPlayers[0].PlayersId.exists(Player.User.Login);
+            if (!G_ChaseTeamsPlayers[0].PlayersId.existskey(Player.User.Login)){
+                return False;
+            }
+        }
+        else  if (Player != Null && Player.CurrentClan == 2){
+            if (!G_ChaseTeamsPlayers[1].PlayersId.existskey(Player.User.Login)){
+                return False;
+            }
+        }
+    }
+    return True;
+}
+// Void GetChaseTeamsPlayers(){
+//     foreach (PlayerId in _PlayersIdTeam1) {
+//         G_ChaseTeamsPlayers[0].add(PlayerId);
+//     }
+//     foreach (PlayerId in _PlayersIdTeam2) {
+//         G_ChaseTeamsPlayers[1].add(PlayerId);
+//     }
+// }
+
+declare Boolean G_Loaded;
+Void Unload() {
+	G_Loaded = False;
+    G_ChaseTeamsPlayers.add(K_ChaseTeamsPlayers{});
+	G_ChaseTeamsPlayers.add(K_ChaseTeamsPlayers{});
+}
+
+Void Load() {
+	if(G_Loaded)return;
+	Unload();
+	G_Loaded = True;
+	// Messages::Load();
+	// Events::Load();
+	// GameState::Load();
+	// Commands::Load();
+}
+
+
+
+

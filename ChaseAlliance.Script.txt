@@ -14,6 +14,7 @@
 #Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/Common/HttpRequests.Script.txt" as HttpRequests
 #Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
+#Include "ChaseAlliance/Libs/ChaseAlliance/Ranked.Script.txt" as Ranked
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
 #Include "ChaseAlliance/Libs/ChaseAlliance/Markers.Script.txt" as MarkersL
@@ -45,6 +46,7 @@
 #Setting S_Team2Color "" as "Team 2 Color"
 
 #Setting S_HttpApiURL "" as "Secret API URL"
+#Setting S_RankedModeState 0 as "Enable ranked mode (1 = true, 0 = false)"
 
 #Setting S_Env 0 as "0 = prod, 1 = test, 2 = dev"
 
@@ -61,6 +63,7 @@ GameState::Add(GameStates::C_IntroName);
 GameState::Add(GameStates::C_OutroName);
 GameState::Add(GameStates::C_PodiumName);
 HttpRequests::Load();
+Ranked::Load();
 Settings::Load();
 Commands::Load();
 UsersL::Load();
@@ -91,6 +94,14 @@ Log("StartScript");
 Log("StartMatch");
 ChaseTeams::ResetTeamsMapPoint();
 ChaseTeams::ToNet();
+***
+
+***StartMatchRanked***
+***
+Log("StartMatchRanked");
+ChaseTeams::ResetTeamsMapPoint();
+ChaseTeams::ToNet();
+Ranked::FillChaseTeamsPlayers();
 ***
 
 ***BeforeLoadMap***
@@ -183,6 +194,37 @@ if(GameState::Is(GameStates::C_WarmUp) && Now > EndTime){
 }
 ***
 
+***PlayLoopRanked***
+***
+if(GameState::Is(GameStates::C_Playing)){
+	if(ChaseTeams::GetWinState() >= 0){
+		Log("Round Stopped, Team reached win state!");
+		StopRound();
+	}
+}
+if(GameState::Is(GameStates::C_Waiting)){
+	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConstant()){
+		Log("Round Stopped, Teams are ready!");
+		StopRound();
+	}
+}
+if(!GameState::Is(GameStates::C_Playing)){
+	foreach(Player in Players){
+		if(Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned){
+			PlayersL::Spawn(Player,Now+1500);
+		}
+	}
+}
+if(GameState::Is(GameStates::C_WarmUp) && Now > EndTime){
+	Log("Warm-up stopped, Warm-up time reached!");
+	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConstant()){
+		GameState::Set(GameStates::C_Playing);
+		Messages::SendStatus(UIManager.UIAll,"Starting Round!",S_EndRoundPause,CUIConfig::EUISound::Warning);
+	}
+	StopRound();
+}
+***
+
 ***EndRound***
 ***
 Log("EndRound");
@@ -241,6 +283,20 @@ Sleep(S_EndMapPause);
 ***EndMatch***
 ***
 Log("EndMatch");
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
+declare Integer WinningClan = ChaseTeams::GetWinClan();
+if(WinningClan > 0){
+	Log(Teams[WinningClan-1].Name^" wins the match.",True);
+	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the match." ,S_EndMatchPause,CUIConfig::EUISound::EndMatch);
+}
+GameState::Set(GameStates::C_Podium);
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
+Sleep(S_EndMatchPause);
+***
+
+***EndMatchRanked***
+***
+Log("EndMatchRanked");
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 declare Integer WinningClan = ChaseTeams::GetWinClan();
 if(WinningClan > 0){
