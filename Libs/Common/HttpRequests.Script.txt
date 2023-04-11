@@ -1,7 +1,7 @@
 //#RequireContext CSmMode
 
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
-
+#Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
 
 Void PostPlayerCount(Text _HttpApiURL, Integer _PlayerCount) {
     declare CHttpRequest Req = Http.CreatePost(_HttpApiURL^"/player_count/"^_PlayerCount, "");
@@ -14,7 +14,7 @@ Void PassModeEvent(CSmModeEvent _Event, Text _HttpApiURL){
 	if (_Event.Type == CSmModeEvent::EType::OnPlayerAdded || _Event.Type == CSmModeEvent::EType::OnPlayerRemoved){
 		// log("ModeEvent : PlayerCount: "^PlayersL::GetCurrentPlayerCount());
 		if (_HttpApiURL != ""){
-			HttpRequests::PostPlayerCount(_HttpApiURL, PlayersL::GetCurrentPlayerCount());
+			PostPlayerCount(_HttpApiURL, PlayersL::GetCurrentPlayerCount());
 		}
 	}
 }
