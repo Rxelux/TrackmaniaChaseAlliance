@@ -13,6 +13,7 @@ Text _Directives(){
 	Integer LapCount;
 	Integer MapCount;
 	Integer RoundCount;
+	Integer RankedMode;
 }
 """;
 }

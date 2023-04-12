@@ -55,6 +55,8 @@ Void _Send(CUIConfig _UIConfig,Text _Message,Integer _Duration,CUIConfig::EUISou
 	}
 }
 
+
+
 Void SendBig(CUIConfig _UIConfig,Text _Message,Integer _Duration,CUIConfig::EUISound _Sound){
 	if(_UIConfig == Null)return;
 	_Send(_UIConfig,_Message,_Duration,_Sound,True);

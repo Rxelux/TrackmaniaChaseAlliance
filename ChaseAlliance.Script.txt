@@ -46,7 +46,7 @@
 #Setting S_Team2Color "" as "Team 2 Color"
 
 #Setting S_HttpApiURL "" as "Secret API URL"
-// #Setting S_RankedModeState 0 as "Enable ranked mode (1 = true, 0 = false)"
+#Setting S_RankedMode 0 as "Enable ranked mode (1 = true, 0 = false)"
 #Setting S_Env 0 as "0 = prod, 1 = test, 2 = dev"
 
 
@@ -101,12 +101,6 @@ ChaseTeams::ToNet();
 Log("StartMatchRanked");
 ChaseTeams::ResetTeamsMapPoint();
 ChaseTeams::ToNet();
-// if (!ChaseTeams::AreComplete()){
-// 	Log("Teams incomplete, ranked game couldn't initiate	");
-// 	S_RankedModeState = False;
-// }else{
-	Ranked::FillChaseTeamsPlayers();
-// }
 ***
 
 ***BeforeLoadMap***
@@ -145,6 +139,7 @@ Settings::SetRelaySortDelay(S_RelaySortDelay);
 Settings::SetMapCount(S_MapCount);
 Settings::SetRoundCount(S_RoundCount);
 Settings::SetLapCount(S_LapCount);
+Settings::SetRankedMode(S_RankedMode);
 Settings::ToNet();
 ChaseTeams::ResetTeamsRelay();
 ChaseTeams::SetTeamsNamesAndColors(S_Team1Name,S_Team1Color,S_Team2Name,S_Team2Color);
@@ -202,19 +197,21 @@ if(GameState::Is(GameStates::C_WarmUp) && Now > EndTime){
 ***PlayLoopRanked***
 ***
 if(GameState::Is(GameStates::C_Playing)){
-	// if(!Ranked::TeamsAreConsistant()){
-	// 	Log("Round Stopped, ranked teams are not as it began with");
-	// 	GameState::Set(GameStates::C_Waiting);
-	// 	StopRound();
-	// }
+	if(!Ranked::TeamsAreConsistant()){
+		Log("Round Stopped, ranked teams are not as it began with");
+		GameState::Set(GameStates::C_Waiting);
+		StopRound();
+	}
 	if(ChaseTeams::GetWinState() >= 0){
 		Log("Round Stopped, Team reached win state!");
 		StopRound();
 	}
 }
 if(GameState::Is(GameStates::C_Waiting)){
-	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConsistant()){
-		Log("Round Stopped, Teams are ready!");
+	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConsistant() && Ranked::TeamsAreReady()){
+		Log("Round Stopped, Ranked Teams are ready!");
+		Settings::SetRankedMode(1);
+		Settings::SetRelayerCount(Ranked::RankedPlayerCount()/2);
 		StopRound();
 	}
 }
@@ -227,7 +224,9 @@ if(!GameState::Is(GameStates::C_Playing)){
 }
 if(GameState::Is(GameStates::C_WarmUp) && Now > EndTime){
 	Log("Warm-up stopped, Warm-up time reached!");
-	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConsistant()){
+	if(ChaseTeams::AreComplete() && Ranked::TeamsAreConsistant() && Ranked::TeamsAreReady()){
+		Settings::SetRankedMode(1);
+		Settings::SetRelayerCount(Ranked::RankedPlayerCount()/2);
 		GameState::Set(GameStates::C_Playing);
 		Messages::SendStatus(UIManager.UIAll,"Starting Round!",S_EndRoundPause,CUIConfig::EUISound::Warning);
 	}

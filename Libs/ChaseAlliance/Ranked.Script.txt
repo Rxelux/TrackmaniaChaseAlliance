@@ -1,6 +1,7 @@
 //#RequireContext CSmMode
 
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+#Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 
 #Include "TextLib" as TL
 #Include "ColorLib" as CL
@@ -8,16 +9,18 @@
 
 // #Const C_EventSource "ChaseTeams"
 #Const C_JoinRankedGame "Ranked_JoinRankedGame"
+#Const C_StartRankedGame "Ranked_StartRankedGame"
 
 #Struct K_ChaseTeamsPlayers {
 	Text[] PlayersLogin;
 	Text[] PlayersName;
+    Boolean[] AskToStart;
 }
 
 declare K_ChaseTeamsPlayers[] G_ChaseTeamsPlayers;
 
 K_ChaseTeamsPlayers GetTeam(Integer _Clan){
-	return G_ChaseTeamsPlayers[_Clan-1];
+    return G_ChaseTeamsPlayers[_Clan-1];
 }
 
 K_ChaseTeamsPlayers GetOpposingTeam(Integer _Clan){
@@ -25,44 +28,93 @@ K_ChaseTeamsPlayers GetOpposingTeam(Integer _Clan){
 	return G_ChaseTeamsPlayers[LUT[_Clan-1]];
 }
 
-Void FillChaseTeamsPlayers(){
-    foreach(Player in Players){
-        if(Player != Null && Player.CurrentClan == 1){
-            G_ChaseTeamsPlayers[0].PlayersLogin.add(Player.User.Login);
-            G_ChaseTeamsPlayers[0].PlayersName.add(Player.User.Name);
-        }
-        else  if (Player != Null && Player.CurrentClan == 2){
-            G_ChaseTeamsPlayers[1].PlayersLogin.add(Player.User.Login);
-            G_ChaseTeamsPlayers[1].PlayersName.add(Player.User.Name);
-        }
-    }
-    Log("Team 1 : "^ G_ChaseTeamsPlayers[0].PlayersName);
+Integer RankedPlayerCount(){
+    return G_ChaseTeamsPlayers[0].PlayersLogin.count + G_ChaseTeamsPlayers[1].PlayersLogin.count;
 }
 
+
+Integer RankedReadyPlayerCount(){
+    declare Integer _RankedReadyPlayerCount = 0;
+    foreach (AskToStart in G_ChaseTeamsPlayers[0].AskToStart) {
+        if (AskToStart) _RankedReadyPlayerCount += 1;
+    }
+    foreach (AskToStart in G_ChaseTeamsPlayers[1].AskToStart) {
+        if (AskToStart) _RankedReadyPlayerCount += 1;
+    }
+    return _RankedReadyPlayerCount;
+}
+
+
+// Void FillChaseTeamsPlayers(){
+//     foreach(Player in Players){
+//         if(Player != Null && Player.CurrentClan == 1){
+//             G_ChaseTeamsPlayers[0].PlayersLogin.add(Player.User.Login);
+//             G_ChaseTeamsPlayers[0].PlayersName.add(Player.User.Name);
+//         }
+//         else  if (Player != Null && Player.CurrentClan == 2){
+//             G_ChaseTeamsPlayers[1].PlayersLogin.add(Player.User.Login);
+//             G_ChaseTeamsPlayers[1].PlayersName.add(Player.User.Name);
+//         }
+//     }
+//     Log("Team 1 : "^ G_ChaseTeamsPlayers[0].PlayersName);
+// }
+
 Void _AddPlayerToRankedGame(CSmPlayer _Player){
-    if(_Player != Null ){
-        G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.add(_Player.User.Login);
-        G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersName.add(_Player.User.Name);
+    if (_Player != Null){
+        if (!G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.exists(_Player.User.Login)){
+            G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.add(_Player.User.Login);
+            G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersName.add(_Player.User.Name);
+            G_ChaseTeamsPlayers[_Player.CurrentClan-1].AskToStart.add(False);
+            foreach (Player in Players) {
+                declare CUIConfig UI = UIManager.GetUI(Player);
+	            if(UI != Null) UI.SendChat(_Player.User.Name^" in $"^TL::ColorToText(Teams[_Player.CurrentClan-1].ColorUI)^Teams[_Player.CurrentClan-1].Name^"$z$s wants to start a ranked game! ");
+            }
+        }else{
+            declare CUIConfig UI = UIManager.GetUI(_Player);
+	        if(UI != Null) UI.SendChat("You're already in the ranked game in $"^TL::ColorToText(Teams[_Player.CurrentClan-1].ColorUI)^Teams[_Player.CurrentClan-1].Name);
+        }
     }
     Log("Team 1 : "^ G_ChaseTeamsPlayers[0].PlayersName);
     Log("Team 2 : "^ G_ChaseTeamsPlayers[1].PlayersName);
 }
 
+Void _AddPlayerAskToStart(CSmPlayer _Player){
+    if (_Player != Null){
+        G_ChaseTeamsPlayers[_Player.CurrentClan-1].AskToStart[G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.keyof(_Player.User.Login)] = True;
+        declare CUIConfig UI = UIManager.GetUI(_Player);
+        UIManager.UIAll.SendChat(_Player.User.Name^" in $"^TL::ColorToText(Teams[_Player.CurrentClan-1].ColorUI)^Teams[_Player.CurrentClan-1].Name^"$z$s is ready "^RankedReadyPlayerCount()^"/"^RankedPlayerCount());
+
+        // foreach (Player in Players) {
+        //     declare CUIConfig UI = UIManager.GetUI(Player);
+        //     if(UI != Null) UI.SendChat(_Player.User.Name^" in $"^TL::ColorToText(Teams[_Player.CurrentClan-1].ColorUI)^Teams[_Player.CurrentClan-1].Name^"$z$s is ready "^RankedReadyPlayerCount()^"/"^RankedPlayerCount());
+        // }
+        Log("Team 1 : "^ G_ChaseTeamsPlayers[0].AskToStart);
+        Log("Team 2 : "^ G_ChaseTeamsPlayers[1].AskToStart);
+    }
+}
+
 Boolean TeamsAreConsistant(){
+    declare Integer ActivePlayerCount = 0;
     foreach(Player in Players){
         if(Player != Null && Player.CurrentClan == 1){
-            // G_ChaseTeamsPlayers[0].PlayersId.exists(Player.User.Login);
+            ActivePlayerCount += 1;
             if (!G_ChaseTeamsPlayers[0].PlayersLogin.exists(Player.User.Login)){
                 return False;
             }
         }
         else  if (Player != Null && Player.CurrentClan == 2){
+            ActivePlayerCount += 1;
             if (!G_ChaseTeamsPlayers[1].PlayersLogin.exists(Player.User.Login)){
                 return False;
             }
         }
     }
-    return True;
+    return G_ChaseTeamsPlayers[0].PlayersLogin.count + G_ChaseTeamsPlayers[1].PlayersLogin.count == ActivePlayerCount;
+}
+
+Boolean TeamsAreReady(){
+    if (G_ChaseTeamsPlayers[0].PlayersLogin.count < 2 || G_ChaseTeamsPlayers[1].PlayersLogin.count < 2) return False;   
+    return (G_ChaseTeamsPlayers[0].AskToStart.exists(False) || G_ChaseTeamsPlayers[1].AskToStart.exists(False)) && G_ChaseTeamsPlayers[0].AskToStart.count == G_ChaseTeamsPlayers[1].AskToStart.count;
 }
 
 Void PassUIEvent(CUIConfigEvent _Event){
@@ -72,6 +124,10 @@ Void PassUIEvent(CUIConfigEvent _Event){
 	if(_Event.CustomEventType == C_JoinRankedGame){
 		declare Player = GetPlayer(_Event.UI);
 		_AddPlayerToRankedGame(Player);
+	}
+	if(_Event.CustomEventType == C_StartRankedGame){
+		declare Player = GetPlayer(_Event.UI);
+		_AddPlayerAskToStart(Player);
 	}
 }
 

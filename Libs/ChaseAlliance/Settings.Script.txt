@@ -18,6 +18,7 @@
 	Integer LapCount;
 	Integer MapCount;
 	Integer RoundCount;
+	Integer RankedMode;
 }
 
 declare K_Settings G_Settings;
@@ -85,6 +86,17 @@ Void SetRoundCount(Integer _Value){
 
 Integer GetRoundCount(){
 	return G_Settings.RoundCount;
+}
+
+Void SetRankedMode(Integer _State){
+	if(G_Settings.RankedMode != _State){
+		G_Settings.RankedMode = _State;
+		UIManager.UIAll.SendChat("$"^TL::ColorToText(Colors::C_WarmUp)^"RankedMode changed to "^G_Settings.RankedMode);
+	}
+}
+
+Integer GetRankedMode(){
+	return G_Settings.RankedMode;
 }
 
 Void SetMapCount(Integer _Value){
@@ -219,5 +231,6 @@ Void Load() {
 	SetLapCount(5);
 	SetRoundCount(3);
 	SetMapCount(3);
+	SetRankedMode(0);
 	ToNet();
 }
