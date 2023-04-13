@@ -132,6 +132,8 @@ main() {
 
 	declare _ServerModeName for This = "";
 	declare _ServerModeUpdated = False;
+	declare _RankedModeHasStarted = False;
+	declare _RankedModeOngoing = False;
 	if (_ServerModeName != "" && _ServerModeName != ServerModeName) {
 		_ServerModeUpdated = True;
 	}

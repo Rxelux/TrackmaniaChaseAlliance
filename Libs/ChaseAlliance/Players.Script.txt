@@ -9,6 +9,7 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
 
+
 #Include "TextLib" as TL
 
 #Const C_ChangeClan "Players_ChangeClan"
@@ -126,7 +127,7 @@ Void PassUIEvent(CUIConfigEvent _Event){
 			_SetClan(Player,Clan);
 		}else{
 			declare CUIConfig UI = UIManager.GetUI(Player);
-			if(UI != Null) UI.SendChat("You can't change team while in a ranked game");
+			if(UI != Null) UI.SendChat("You cannot change team while in a ranked game");
 		}
 
 		
@@ -137,7 +138,7 @@ Void PassUIEvent(CUIConfigEvent _Event){
 			_SetSpectator(Player);
 		}else{
 			declare CUIConfig UI = UIManager.GetUI(Player);
-			if(UI != Null) UI.SendChat("You can't go in spectator while in a ranked game");
+			if(UI != Null) UI.SendChat("You cannot go in spectator while in a ranked game");
 		}
 	}
 	if(_Event.CustomEventType == C_ChangeToPlayer){

@@ -9,9 +9,9 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
-	<frameinstance modelid="{{{Button::C}}}" id="join-ranked" data-pos="0 13" data-text="{{{_("Join Ranked")}}}" data-text-size="4"/>
-	<frameinstance modelid="{{{Button::C}}}" id="leave-ranked" data-pos="0 0" data-text="{{{_("Leave Ranked")}}}" data-text-size="4"/>
-	<frameinstance modelid="{{{Button::C}}}" id="start-ranked" data-pos="0 -13" data-text="{{{_("Ready")}}}" data-text-size="4"/>
+	<frameinstance modelid="{{{Button::C}}}" id="join-leave-ranked" data-pos="0 7" data-size="45 12" data-grow="0 0" data-text="{{{_("Join Ranked")}}}" data-text-size="3"/>
+	<frameinstance hidden="1" modelid="{{{Button::C}}}" id="ready-ranked" data-pos="2.5 -7" data-size="40 12" data-grow="0 0" data-text="{{{_("Ready")}}}" data-text-size="3"/>
+	<frameinstance  modelid="{{{Button::C}}}" id="all-ranked" data-pos="0 -20" data-size="40 12" data-grow="0 0" data-text="{{{_("Ranked All")}}}" data-text-size="3"/>
 </framemodel>
 """;
 }
@@ -20,9 +20,9 @@ Text _Directives(){
 	return """//!
 #Struct K_{{{C}}}{
 	CMlFrame Root;
-	K_{{{Button::C}}} JoinRanked;
-	K_{{{Button::C}}} LeaveRanked;
-	K_{{{Button::C}}} StartRanked;
+	K_{{{Button::C}}} JoinOrLeaveRanked;
+	K_{{{Button::C}}} ReadyRanked;
+	K_{{{Button::C}}} PutAllRanked;
 }
 """;
 }
@@ -32,27 +32,27 @@ Text _Functions(){
 
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
-	declare K_{{{Button::C}}} JoinRanked = {{{Button::C}}}_Get(Root,"join-ranked");
-	declare K_{{{Button::C}}} LeaveRanked = {{{Button::C}}}_Get(Root,"leave-ranked");
-	declare K_{{{Button::C}}} StartRanked = {{{Button::C}}}_Get(Root,"start-ranked");
+	declare K_{{{Button::C}}} JoinOrLeaveRanked = {{{Button::C}}}_Get(Root,"join-leave-ranked");
+	declare K_{{{Button::C}}} ReadyRanked = {{{Button::C}}}_Get(Root,"ready-ranked");
+	declare K_{{{Button::C}}} PutAllRanked = {{{Button::C}}}_Get(Root,"all-ranked");
 	return K_{{{C}}}{
 		Root = Root,
-		JoinRanked = JoinRanked,
-		LeaveRanked = LeaveRanked,
-		StartRanked = StartRanked
+		JoinOrLeaveRanked = JoinOrLeaveRanked,
+		ReadyRanked = ReadyRanked,
+		PutAllRanked = PutAllRanked
 	};
 }
 
 Void {{{C}}}_Enter(K_{{{C}}} _Ranked,Integer _StartTime){
-	{{{Button::C}}}_Enter(_Ranked.JoinRanked,_StartTime);
-	{{{Button::C}}}_Enter(_Ranked.LeaveRanked,_StartTime+20);
-	{{{Button::C}}}_Enter(_Ranked.StartRanked,_StartTime+40);
+	{{{Button::C}}}_Enter(_Ranked.JoinOrLeaveRanked,_StartTime);
+	{{{Button::C}}}_Enter(_Ranked.ReadyRanked,_StartTime+20);
+	{{{Button::C}}}_Enter(_Ranked.PutAllRanked,_StartTime+40);
 }
 
 Void {{{C}}}_Exit(K_{{{C}}} _Ranked,Integer _StartTime){
-	{{{Button::C}}}_Exit(_Ranked.JoinRanked,_StartTime);
-	{{{Button::C}}}_Exit(_Ranked.LeaveRanked,_StartTime+20);
-	{{{Button::C}}}_Exit(_Ranked.StartRanked,_StartTime+40);
+	{{{Button::C}}}_Exit(_Ranked.JoinOrLeaveRanked,_StartTime);
+	{{{Button::C}}}_Exit(_Ranked.ReadyRanked,_StartTime+20);
+	{{{Button::C}}}_Exit(_Ranked.PutAllRanked,_StartTime+40);
 }
 """;
 }
@@ -65,14 +65,18 @@ if(Event.Type == CMlScriptEvent::Type::MouseClick){
 	//check if the button event is from one of this component
 	if(Button.Root.Parent.HasClass("{{{C}}}")){
 		switch(Button.Root.ControlId){
-			case "join-ranked": {
-				+++{{{C}}}_JoinRankedClick+++
+			case "join-leave-ranked": {
+				if (!IsRankedPlayer) IsRankedPlayer = True;
+				else IsRankedPlayer = False;
+				+++{{{C}}}_JoinOrLeaveRankedClick+++
 			}
-			case "leave-ranked": {
-				+++{{{C}}}_LeaveRankedClick+++
+			case "ready-ranked": {
+				if (!IsReadyRanked) IsReadyRanked = True;
+				else IsReadyRanked = False;
+				+++{{{C}}}_ReadyRankedClick+++
 			}
-			case "start-ranked": {
-				+++{{{C}}}_StartRankedClick+++
+			case "all-ranked": {
+				+++{{{C}}}_AddBotsRankedClick+++
 			}
 		}
 	}
