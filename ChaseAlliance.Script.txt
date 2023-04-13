@@ -315,6 +315,10 @@ if(WinningClan > 0){
 GameState::Set(GameStates::C_Podium);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
 Sleep(S_EndMatchPause);
+Settings::SetRankedMode(0);
+Settings::SetRelayerCount(2);
+Ranked::_ClearAll();
+// TODO: POST html results
 ***
 
 ***BeforeUnloadMap***

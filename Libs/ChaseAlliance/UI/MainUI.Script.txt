@@ -142,6 +142,9 @@ switch(G_{{{GameState::C}}}){
 		RankedUI.Root.Hide();
 	}
 }
+if (G_{{{Settings::C}}}.RankedMode == 1){
+	RankedUI.Root.Hide();
+}
 ***
 
 ***GUIPlayer_Change***
@@ -163,6 +166,14 @@ if({{{ChaseTeams::C}}}_CheckPlayer(GUIPlayer)){
 ***
 	if(!IsSpectator){
 		SendCustomEvent("{{{Ranked::C_JoinRankedGame}}}", []);
+	}
+***
+
+
+***{{{RankedUI::C}}}_LeaveRankedClick***
+***
+	if(!IsSpectator){
+		SendCustomEvent("{{{Ranked::C_LeaveRankedGame}}}", []);
 	}
 ***
 

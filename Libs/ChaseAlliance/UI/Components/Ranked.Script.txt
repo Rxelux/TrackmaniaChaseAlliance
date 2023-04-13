@@ -9,8 +9,9 @@
 Text _Model (){
 	return """
 <framemodel id="{{{C}}}" class="{{{C}}}" {{{Align::CC}}}>
-	<frameinstance modelid="{{{Button::C}}}" id="join-ranked" data-pos="0 8" data-text="{{{_("Join Ranked")}}}" data-text-size="4"/>
-	<frameinstance modelid="{{{Button::C}}}" id="start-ranked" data-pos="0 -8" data-text="{{{_("Ready")}}}" data-text-size="4"/>
+	<frameinstance modelid="{{{Button::C}}}" id="join-ranked" data-pos="0 13" data-text="{{{_("Join Ranked")}}}" data-text-size="4"/>
+	<frameinstance modelid="{{{Button::C}}}" id="leave-ranked" data-pos="0 0" data-text="{{{_("Leave Ranked")}}}" data-text-size="4"/>
+	<frameinstance modelid="{{{Button::C}}}" id="start-ranked" data-pos="0 -13" data-text="{{{_("Ready")}}}" data-text-size="4"/>
 </framemodel>
 """;
 }
@@ -20,6 +21,7 @@ Text _Directives(){
 #Struct K_{{{C}}}{
 	CMlFrame Root;
 	K_{{{Button::C}}} JoinRanked;
+	K_{{{Button::C}}} LeaveRanked;
 	K_{{{Button::C}}} StartRanked;
 }
 """;
@@ -31,22 +33,26 @@ Text _Functions(){
 K_{{{C}}} {{{C}}}_Get(CMlFrame _Parent,Text _Id) {
 	declare CMlFrame Root <=> (_Parent.GetFirstChild(_Id) as CMlFrame);
 	declare K_{{{Button::C}}} JoinRanked = {{{Button::C}}}_Get(Root,"join-ranked");
+	declare K_{{{Button::C}}} LeaveRanked = {{{Button::C}}}_Get(Root,"leave-ranked");
 	declare K_{{{Button::C}}} StartRanked = {{{Button::C}}}_Get(Root,"start-ranked");
 	return K_{{{C}}}{
 		Root = Root,
 		JoinRanked = JoinRanked,
+		LeaveRanked = LeaveRanked,
 		StartRanked = StartRanked
 	};
 }
 
 Void {{{C}}}_Enter(K_{{{C}}} _Ranked,Integer _StartTime){
 	{{{Button::C}}}_Enter(_Ranked.JoinRanked,_StartTime);
-	{{{Button::C}}}_Enter(_Ranked.StartRanked,_StartTime+20);
+	{{{Button::C}}}_Enter(_Ranked.LeaveRanked,_StartTime+20);
+	{{{Button::C}}}_Enter(_Ranked.StartRanked,_StartTime+40);
 }
 
 Void {{{C}}}_Exit(K_{{{C}}} _Ranked,Integer _StartTime){
 	{{{Button::C}}}_Exit(_Ranked.JoinRanked,_StartTime);
-	{{{Button::C}}}_Exit(_Ranked.StartRanked,_StartTime+20);
+	{{{Button::C}}}_Exit(_Ranked.LeaveRanked,_StartTime+20);
+	{{{Button::C}}}_Exit(_Ranked.StartRanked,_StartTime+40);
 }
 """;
 }
@@ -61,6 +67,9 @@ if(Event.Type == CMlScriptEvent::Type::MouseClick){
 		switch(Button.Root.ControlId){
 			case "join-ranked": {
 				+++{{{C}}}_JoinRankedClick+++
+			}
+			case "leave-ranked": {
+				+++{{{C}}}_LeaveRankedClick+++
 			}
 			case "start-ranked": {
 				+++{{{C}}}_StartRankedClick+++

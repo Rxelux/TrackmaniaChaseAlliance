@@ -5,6 +5,7 @@
 #Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
+#Include "ChaseAlliance/Libs/ChaseAlliance/Ranked.Script.txt" as Ranked
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
 
@@ -117,20 +118,38 @@ Void PassUIEvent(CUIConfigEvent _Event){
 	
 	if(_Event.CustomEventType == C_ChangeClan){
 		declare Player = GetPlayer(_Event.UI);
-		declare Integer Clan;
-		if(Player.CurrentClan == 0) Clan = Player.RequestedClan;
-		if(Player.CurrentClan == 1) Clan = 2;
-		if(Player.CurrentClan == 2) Clan = 1;
-		_SetClan(Player,Clan);
+		if (!Ranked::PlayerIsInRankedGame(Player)){
+			declare Integer Clan;
+			if(Player.CurrentClan == 0) Clan = Player.RequestedClan;
+			if(Player.CurrentClan == 1) Clan = 2;
+			if(Player.CurrentClan == 2) Clan = 1;
+			_SetClan(Player,Clan);
+		}else{
+			declare CUIConfig UI = UIManager.GetUI(Player);
+			if(UI != Null) UI.SendChat("You can't change team while in a ranked game");
+		}
+
+		
 	}
 	if(_Event.CustomEventType == C_ChangeToSpec){
 		declare Player = GetPlayer(_Event.UI);
-		_SetSpectator(Player);
+		if (!Ranked::PlayerIsInRankedGame(Player)){
+			_SetSpectator(Player);
+		}else{
+			declare CUIConfig UI = UIManager.GetUI(Player);
+			if(UI != Null) UI.SendChat("You can't go in spectator while in a ranked game");
+		}
 	}
 	if(_Event.CustomEventType == C_ChangeToPlayer){
 		declare Player = GetPlayer(_Event.UI);
-		ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::PlayerSelectable);
-		_SetClan(Player,Player.RequestedClan);
+		if (!Ranked::PlayerIsInRankedGame(Player) || Ranked::PlayerIsInRankedGame(Player) && Ranked::PlayerIsInRankedGame(Player)){
+			ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::PlayerSelectable);
+			_SetClan(Player,Player.RequestedClan);
+		}else{
+			declare CUIConfig UI = UIManager.GetUI(Player);
+			if(UI != Null) UI.SendChat("Wait for the ranked game to end before joining a team");
+		}
+		
 	}
 }
 
