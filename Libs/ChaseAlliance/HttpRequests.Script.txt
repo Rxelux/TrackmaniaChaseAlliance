@@ -5,12 +5,13 @@
 
 Void PostPlayerCount(Text _HttpApiURL, Integer _PlayerCount) {
     declare CHttpRequest Req = Http.CreatePost(_HttpApiURL^"/player_count/"^_PlayerCount, "");
-    // wait(Req.IsCompleted);
+    // wait(Req.IsCompleted); // Yield issue if uncomment I don't know how to solve this, Knackii.
     // Log(Req.Result);
     Http.Destroy(Req);
 }
 
 Void PassModeEvent(CSmModeEvent _Event, Text _HttpApiURL){
+	if(_Event == Null) return;
 	if (_Event.Type == CSmModeEvent::EType::OnPlayerAdded || _Event.Type == CSmModeEvent::EType::OnPlayerRemoved){
 		// log("ModeEvent : PlayerCount: "^PlayersL::GetCurrentPlayerCount());
 		if (_HttpApiURL != ""){
