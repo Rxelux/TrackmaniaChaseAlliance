@@ -26,6 +26,7 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
 
 #Include "TextLib" as TL
+#Include "TimeLib" as TiL
 
 #Setting S_EndRoundPause 15000 as "Pause in ms after a round"
 #Setting S_EndMapPause 20000 as "Pause in ms after a map"
@@ -63,6 +64,7 @@ GameState::Add(GameStates::C_IntroName);
 GameState::Add(GameStates::C_OutroName);
 GameState::Add(GameStates::C_PodiumName);
 HttpRequests::Load();
+HttpRequests::Init(S_HttpApiURL);
 Ranked::Load();
 Settings::Load();
 Commands::Load();
@@ -87,6 +89,7 @@ Env::SetEnv(S_Env);
 ***StartScript***
 ***
 Log("StartScript");
+HttpRequests::Init(S_HttpApiURL);
 ***
 
 ***StartMatch***
@@ -94,6 +97,7 @@ Log("StartScript");
 Log("StartMatch");
 ChaseTeams::ResetTeamsMapPoint();
 ChaseTeams::ToNet();
+HttpRequests::Init(S_HttpApiURL);
 ***
 
 ***StartMatchRanked***
@@ -331,9 +335,11 @@ if (_RankedModeHasStarted){
 	_RankedModeOngoing = True;
 }else if (_RankedModeOngoing){
 	Log("EndMatchRanked");
-	HttpRequests::PostRankedResults(S_HttpApiURL, Ranked::GetTeam(WinningClan),Ranked::GetOpposingTeam(WinningClan));
-	declare Text PlayersPointsChange = HttpRequests::GetRankedPointsChange(S_HttpApiURL, Ranked::GetTeam(WinningClan),Ranked::GetOpposingTeam(WinningClan));
-	UIManager.UIAll.SendChat(PlayersPointsChange);
+	declare Text CurrentTime = TiL::GetCurrent();
+
+	declare Text PlayersPointsChange = HttpRequests::PostRankedResults(S_HttpApiURL, CurrentTime, Ranked::GetTeam(WinningClan).PlayersLogin, Ranked::GetTeam(WinningClan).PlayersName, Ranked::GetOpposingTeam(WinningClan).PlayersLogin, Ranked::GetOpposingTeam(WinningClan).PlayersName);
+	// declare Text PlayersPointsChange = HttpRequests::GetRankedPointsChange(S_HttpApiURL, Ranked::GetTeam(WinningClan),Ranked::GetOpposingTeam(WinningClan));
+	UIManager.UIAll.SendChat("Ranked game finished, Final Results :"^PlayersPointsChange);
 	Settings::SetRankedMode(0);
 	Settings::SetRelayerCount(S_RelayerCount);
 	Ranked::_ClearAll();

@@ -9,7 +9,6 @@
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
 
-
 #Include "TextLib" as TL
 
 #Const C_ChangeClan "Players_ChangeClan"

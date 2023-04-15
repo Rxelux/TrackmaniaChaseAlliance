@@ -1,9 +1,9 @@
 //#RequireContext CSmMode
 
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+#Include "ChaseAlliance/Libs/ChaseAlliance/HttpRequests.Script.txt" as HttpRequests
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
-// #Include "ChaseAlliance/Libs/ChaseAlliance/HttpRequests.Script.txt" as HttpRequests
 
 #Include "TextLib" as TL
 #Include "ColorLib" as CL
@@ -51,7 +51,12 @@ Void _AddPlayerToRankedGame(CSmPlayer _Player){
     if (_Player != Null){
         if (!G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.exists(_Player.User.Login)){
             G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.add(_Player.User.Login);
-            G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersName.add(_Player.User.Name);
+            if (TL::StartsWith("FakeUser#" , _Player.User.Name)){
+                G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersName.add("FakePlayer");
+            }
+            else{
+                G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersName.add(_Player.User.Name);
+            }
             G_ChaseTeamsPlayers[_Player.CurrentClan-1].AskToStart.add(False);
             declare Integer RankedPlayerCount = RankedPlayerCount();
             if (RankedPlayerCount == 1){
@@ -120,7 +125,7 @@ Void _AddPlayerAskToStart(CSmPlayer _Player){
             UIManager.UIAll.SendChat("$"^TL::ColorToText(Teams[_Player.CurrentClan-1].ColorUI)^_Player.User.Name^"$z$s is ready "^RankedReadyPlayerCount()^"/"^RankedPlayerCount());
             if (TeamsAreReady()){
                 UIManager.UIAll.SendChat("All players are Ready, ranked game is starting! Good Luck Have Fun "^RankedPlayersWithColor()^"$z$s!");
-                // UIManager.UIAll.SendChat(HttpRequests::GetRankedPlayersStats(G_ChaseTeamsPlayers[0].PlayersLogin, G_ChaseTeamsPlayers[1].PlayersLogin));
+                UIManager.UIAll.SendChat(HttpRequests::GetRankedPlayersStats(G_ChaseTeamsPlayers[0].PlayersLogin,G_ChaseTeamsPlayers[0].PlayersName, G_ChaseTeamsPlayers[1].PlayersLogin, G_ChaseTeamsPlayers[1].PlayersName));
             }
         }else{
             declare CUIConfig UI = UIManager.GetUI(_Player);
@@ -183,6 +188,7 @@ Boolean TeamsAreConsistant(){
 Void PassUIEvent(CUIConfigEvent _Event){
 	if(_Event.Type != CUIConfigEvent::EType::OnLayerCustomEvent) return;
 	if(_Event.UI == Null) return;
+    if (_Event == Null) return;
 	
 	if(_Event.CustomEventType == C_JoinOrLeaveRankedGame){
 		declare Player = GetPlayer(_Event.UI);
