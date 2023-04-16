@@ -47,7 +47,7 @@
 #Setting S_Team2Color "" as "Team 2 Color"
 
 #Setting S_HttpApiURL "" as "Secret API URL"
-#Setting S_RankedMode 0 as "Enable ranked mode (1 = true, 0 = false)"
+#Setting S_RankedMode -1 as "Enable ranked mode (1 = true, 0 = false, -1 = no api url, no ui)"
 #Setting S_Env 0 as "0 = prod, 1 = test, 2 = dev"
 
 
@@ -89,7 +89,6 @@ Env::SetEnv(S_Env);
 ***StartScript***
 ***
 Log("StartScript");
-HttpRequests::Init(S_HttpApiURL);
 ***
 
 ***StartMatch***
@@ -97,7 +96,6 @@ HttpRequests::Init(S_HttpApiURL);
 Log("StartMatch");
 ChaseTeams::ResetTeamsMapPoint();
 ChaseTeams::ToNet();
-HttpRequests::Init(S_HttpApiURL);
 ***
 
 ***StartMatchRanked***
@@ -136,6 +134,7 @@ UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
 ***
 Log("StartRound");
 //ValidateSettings
+HttpRequests::Init(S_HttpApiURL);
 Env::SetEnv(S_Env);
 if (!_RankedModeOngoing){
 	Settings::SetRelayerCount(S_RelayerCount);
@@ -318,16 +317,12 @@ Sleep(S_EndMatchPause);
 
 ***EndMatchRanked***
 ***
-
-UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 declare Integer WinningClan = ChaseTeams::GetWinClan();
 if(WinningClan > 0){
 	Log(Teams[WinningClan-1].Name^" wins the match.",True);
 	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the match." ,S_EndMatchPause,CUIConfig::EUISound::EndMatch);
 }
-GameState::Set(GameStates::C_Podium);
-UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
-Sleep(S_EndMatchPause);
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 if (_RankedModeHasStarted){
 	Log("EndMatchPrepareRanked");
 	Settings::SetRankedMode(1);
@@ -340,11 +335,14 @@ if (_RankedModeHasStarted){
 	declare Text PlayersPointsChange = HttpRequests::PostRankedResults(S_HttpApiURL, CurrentTime, Ranked::GetTeam(WinningClan).PlayersLogin, Ranked::GetTeam(WinningClan).PlayersName, Ranked::GetOpposingTeam(WinningClan).PlayersLogin, Ranked::GetOpposingTeam(WinningClan).PlayersName);
 	// declare Text PlayersPointsChange = HttpRequests::GetRankedPointsChange(S_HttpApiURL, Ranked::GetTeam(WinningClan),Ranked::GetOpposingTeam(WinningClan));
 	UIManager.UIAll.SendChat("Ranked game finished, Final Results :"^PlayersPointsChange);
-	Settings::SetRankedMode(0);
+	Settings::SetRankedMode(S_RankedMode);
 	Settings::SetRelayerCount(S_RelayerCount);
 	Ranked::_ClearAll();
 	_RankedModeOngoing = False;
 }
+GameState::Set(GameStates::C_Podium);
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
+Sleep(S_EndMatchPause);
 ***
 
 ***BeforeUnloadMap***
@@ -376,6 +374,7 @@ foreach (Event in PendingEvents){
 	PlayersL::PassModeEvent(Event);
 	MarkersL::PassModeEvent(Event);
 	HttpRequests::PassModeEvent(Event, S_HttpApiURL);
+	Yield();
 }
 foreach (EventTime => Events in Events::GetPendingSorted()) {
 	ChaseTeams::PassLibSortedEvent(EventTime,Events);

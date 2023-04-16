@@ -142,7 +142,7 @@ Void PassUIEvent(CUIConfigEvent _Event){
 	}
 	if(_Event.CustomEventType == C_ChangeToPlayer){
 		declare Player = GetPlayer(_Event.UI);
-		if (!Ranked::PlayerIsInRankedGame(Player) || Ranked::PlayerIsInRankedGame(Player) && Ranked::PlayerIsInRankedGame(Player)){
+		if (!Ranked::PlayerIsInRankedGame(Player) && Settings::GetRankedMode() <= 0 || Ranked::PlayerIsInRankedGame(Player)){
 			ServerAdmin.ForceSpectator(Player.User, CServerAdmin::ESpecMode::PlayerSelectable);
 			_SetClan(Player,Player.RequestedClan);
 		}else{

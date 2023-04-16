@@ -3,12 +3,48 @@
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
 // #Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
 // #Include "ChaseAlliance/Libs/ChaseAlliance/Ranked.Script.txt" as Ranked
+#Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
+
 
 #Include "TextLib" as TL
+
+#Struct PostPlayerCountStruct {
+	Text METHOD;
+	Text Message;
+}
+
+#Struct GetPointsStruct {
+	Text METHOD;
+	Integer[] PlayerPoints;
+}
+
+#Struct PostNewMatch {
+	Text METHOD;
+	Text Message;
+	Integer[] PlayersPointsDif;
+}
+
+#Struct GetRankedLadder {
+	Integer ranked_player_count;
+	Text players;
+	// Integer[][] players;
+	// Integer[] PlayersPointsDif;
+}
+
+#Struct K_Player {
+	Text Login;
+	Text Nickname;
+	Integer Score;
+ }
+
+
 
 declare Text SecretAPIUrl;
 
 Void Init(Text _SecretAPIUrl) {
+	// if (_SecretAPIUrl != ""){
+	// 	Settings::SetRankedMode(0);
+	// }
 	SecretAPIUrl = _SecretAPIUrl;
 }
 
@@ -26,15 +62,20 @@ Integer GetCurrentPlayerCount(){
 Void PostPlayerCount(Text _HttpApiURL, Integer _PlayerCount) {
     declare CHttpRequest Req = Http.CreatePost(_HttpApiURL^"/player_count/"^_PlayerCount, "");
     // wait(Req.IsCompleted);
+	declare PostPlayerCountStruct MyPostPlayerCountStruct;
+	MyPostPlayerCountStruct.fromjson(Req.Result);
+    Log(MyPostPlayerCountStruct.Message);
     // Log(Req.Result);
-    Http.Destroy(Req);
-}
+    // Http.Destroy(Req);
+} 
+  
+
 
 Text GetRankedPlayersStats(Text[] _PlayersLoginTeam1, Text[] _PlayersNameTeam1, Text[] _PlayersLoginTeam2, Text[] _PlayersNameTeam2) {
 	// TODO: Get ranked players stats
 	declare Text UrlOptions;
 	if (_PlayersLoginTeam1.count == 2){
-		UrlOptions = _PlayersLoginTeam1[0]^"/"^_PlayersNameTeam1[0]^"/"^_PlayersLoginTeam1[1]^"/"^_PlayersNameTeam1[1]^"/null/null/"^_PlayersLoginTeam2[0]^"/"^_PlayersNameTeam2[0]^"/"^_PlayersLoginTeam2[1]^"/"^_PlayersNameTeam2[1]^"/null/null/";
+		UrlOptions = _PlayersLoginTeam1[0]^"/"^_PlayersNameTeam1[0]^"/"^_PlayersLoginTeam1[1]^"/"^_PlayersNameTeam1[1]^"/null/null/"^_PlayersLoginTeam2[0]^"/"^_PlayersNameTeam2[0]^"/"^_PlayersLoginTeam2[1]^"/"^_PlayersNameTeam2[1]^"/null/null";
 	}
 	else{
 		UrlOptions = _PlayersLoginTeam1[0]^"/"^_PlayersNameTeam1[0]^"/"^_PlayersLoginTeam1[1]^"/"^_PlayersNameTeam1[1]^"/"^_PlayersLoginTeam1[2]^"/"^_PlayersNameTeam1[2]^"/"^_PlayersLoginTeam2[0]^"/"^_PlayersNameTeam2[0]^"/"^_PlayersLoginTeam2[1]^"/"^_PlayersNameTeam2[1]^"/"^_PlayersLoginTeam2[2]^"/"^_PlayersNameTeam2[2];
@@ -42,14 +83,36 @@ Text GetRankedPlayersStats(Text[] _PlayersLoginTeam1, Text[] _PlayersNameTeam1, 
 	Log("getURL : "^SecretAPIUrl^"/ranked/get_points/"^UrlOptions);
 	declare CHttpRequest Req = Http.CreateGet(SecretAPIUrl^"/ranked/get_points/"^UrlOptions);
 	wait(Req.IsCompleted);
-	Log(Req.Result);
+	declare Text result = Req.Result;
+	Log(result);
+	declare GetPointsStruct MyGetPointsStruct;
+	MyGetPointsStruct.fromjson(result);
+	Log(MyGetPointsStruct.METHOD);
+
+	// declare Text[] results;
+	// results = TL::Split("PlayerPoints\":[", result);
+	// Log(""^results.count);
+	// Log(results[1]);
+	// results = TL::Split("}", results[1]);
+	// Log(results[0]);
+	// results = TL::Split(",", results[0]);
+	// Log(results.count);
+
+
 	Http.Destroy(Req);
 	return "qaaaa";
 }
 
 Text PostRankedResults(Text _HttpApiURL, Text _EndMatchTime, Text[] _PlayersLoginWinningTeam, Text[] _PlayersNameWinningTeam, Text[] _PlayersLoginLoosingTeam, Text[] _PlayersNameLoosingTeam) {
 	// TODO: Post ranked results
-	declare Text UrlOptions = _EndMatchTime^"/"^_PlayersLoginWinningTeam[0]^"/"^_PlayersNameWinningTeam[0]^"/"^_PlayersLoginWinningTeam[1]^"/"^_PlayersNameWinningTeam[1]^"/"^_PlayersLoginWinningTeam[2]^"/"^_PlayersNameWinningTeam[2]^"/"^_PlayersLoginLoosingTeam[0]^"/"^_PlayersNameLoosingTeam[0]^"/"^_PlayersLoginLoosingTeam[1]^"/"^_PlayersNameLoosingTeam[1]^"/"^_PlayersLoginLoosingTeam[2]^"/"^_PlayersNameLoosingTeam[2];
+	declare Text UrlOptions;
+	if (_PlayersLoginWinningTeam.count == 2){
+		UrlOptions = _EndMatchTime^"/"^_PlayersLoginWinningTeam[0]^"/"^_PlayersNameWinningTeam[0]^"/"^_PlayersLoginWinningTeam[1]^"/"^_PlayersNameWinningTeam[1]^"/null/null/"^_PlayersLoginLoosingTeam[0]^"/"^_PlayersNameLoosingTeam[0]^"/"^_PlayersLoginLoosingTeam[1]^"/"^_PlayersNameLoosingTeam[1]^"/null/null";
+	}
+	else{
+		UrlOptions = _EndMatchTime^"/"^_PlayersLoginWinningTeam[0]^"/"^_PlayersNameWinningTeam[0]^"/"^_PlayersLoginWinningTeam[1]^"/"^_PlayersNameWinningTeam[1]^"/"^_PlayersLoginWinningTeam[2]^"/"^_PlayersNameWinningTeam[2]^"/"^_PlayersLoginLoosingTeam[0]^"/"^_PlayersNameLoosingTeam[0]^"/"^_PlayersLoginLoosingTeam[1]^"/"^_PlayersNameLoosingTeam[1]^"/"^_PlayersLoginLoosingTeam[2]^"/"^_PlayersNameLoosingTeam[2];
+	}
+
 	declare CHttpRequest Req = Http.CreatePost(_HttpApiURL^"/ranked/new_game/"^UrlOptions, "");
 	wait(Req.IsCompleted);
 	Log(Req.Result);
@@ -61,6 +124,7 @@ Void PassModeEvent(CSmModeEvent _Event, Text _HttpApiURL){
 	if (_Event.Type == CSmModeEvent::EType::OnPlayerAdded || _Event.Type == CSmModeEvent::EType::OnPlayerRemoved){
 		if (_HttpApiURL != ""){
 			PostPlayerCount(_HttpApiURL, GetCurrentPlayerCount());
+			// yield;
 		}
 	}
 }

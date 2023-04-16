@@ -144,7 +144,7 @@ switch(G_{{{GameState::C}}}){
 		RankedUI.Root.Hide();
 	}
 }
-if (G_{{{Settings::C}}}.RankedMode == 1){
+if (G_{{{Settings::C}}}.RankedMode == 1 || G_{{{Settings::C}}}.RankedMode == -1){
 	RankedUI.Root.Hide();
 }
 ***

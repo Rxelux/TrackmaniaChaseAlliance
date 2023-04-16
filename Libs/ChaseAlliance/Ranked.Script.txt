@@ -1,15 +1,13 @@
 //#RequireContext CSmMode
 
 #Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+// #Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
 #Include "ChaseAlliance/Libs/ChaseAlliance/HttpRequests.Script.txt" as HttpRequests
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 
 #Include "TextLib" as TL
-#Include "ColorLib" as CL
-#Include "MathLib" as ML
 
-// #Const C_EventSource "ChaseTeams"
 #Const C_JoinOrLeaveRankedGame "Ranked_JoinOrLeaveRankedGame"
 #Const C_ReadyRankedGame "Ranked_ReadyRankedGame"
 #Const C_AddBotsRankedGame "Ranked_AddBotsRankedGame"
@@ -31,10 +29,12 @@ K_ChaseTeamsPlayers GetOpposingTeam(Integer _Clan){
 	return G_ChaseTeamsPlayers[LUT[_Clan-1]];
 }
 
-Integer RankedPlayerCount(){
-    return G_ChaseTeamsPlayers[0].PlayersLogin.count + G_ChaseTeamsPlayers[1].PlayersLogin.count;
+Void _SetSpectator(CSmPlayer _Player){
+	if(_Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned){
+		UnspawnPlayer(_Player);
+	}
+	ServerAdmin.ForceSpectator(_Player.User, CServerAdmin::ESpecMode::SpectatorSelectable);
 }
-
 
 Integer RankedReadyPlayerCount(){
     declare Integer _RankedReadyPlayerCount = 0;
@@ -45,6 +45,10 @@ Integer RankedReadyPlayerCount(){
         if (AskToStart) _RankedReadyPlayerCount += 1;
     }
     return _RankedReadyPlayerCount;
+}
+
+Integer RankedPlayerCount(){
+    return G_ChaseTeamsPlayers[0].PlayersLogin.count + G_ChaseTeamsPlayers[1].PlayersLogin.count;
 }
 
 Void _AddPlayerToRankedGame(CSmPlayer _Player){
@@ -73,18 +77,28 @@ Void _AddPlayerToRankedGame(CSmPlayer _Player){
     Log("Team 2 : "^ G_ChaseTeamsPlayers[1].PlayersName);
 }
 
+Boolean TeamIsFull(Integer _TeamId){
+    return (G_ChaseTeamsPlayers[_TeamId].PlayersLogin.count == 3);
+}
+
 Void _RemovePlayerFromRankedGame(CSmPlayer _Player){
     if (_Player != Null){
-        if (G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.exists(_Player.User.Login)){
-            if (G_ChaseTeamsPlayers[_Player.CurrentClan-1].AskToStart[G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.keyof(_Player.User.Login)] == False){
-                G_ChaseTeamsPlayers[_Player.CurrentClan-1].AskToStart.remove(False);
-            }else{
-                G_ChaseTeamsPlayers[_Player.CurrentClan-1].AskToStart.remove(True);
-            }
-            G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.remove(_Player.User.Login);
-            G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersName.remove(_Player.User.Name);
-            
-            UIManager.UIAll.SendChat("$"^TL::ColorToText(Teams[_Player.CurrentClan-1].ColorUI)^_Player.User.Name^"$z$s left the ranked game!");
+        if (!TeamIsFull(_Player.CurrentClan-1)){
+            if (G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.exists(_Player.User.Login)){
+                if (G_ChaseTeamsPlayers[_Player.CurrentClan-1].AskToStart[G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.keyof(_Player.User.Login)] == False){
+                    G_ChaseTeamsPlayers[_Player.CurrentClan-1].AskToStart.remove(False);
+                }else{
+                    G_ChaseTeamsPlayers[_Player.CurrentClan-1].AskToStart.remove(True);
+                }
+                G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersLogin.remove(_Player.User.Login);
+                G_ChaseTeamsPlayers[_Player.CurrentClan-1].PlayersName.remove(_Player.User.Name);
+                
+                UIManager.UIAll.SendChat("$"^TL::ColorToText(Teams[_Player.CurrentClan-1].ColorUI)^_Player.User.Name^"$z$s left the ranked game!");
+        }else{
+            declare CUIConfig UI = UIManager.GetUI(_Player);
+            if(UI != Null) UI.SendChat("Ranked mode only support teams of <= 3 players for now");
+        }
+
         }else{
             declare CUIConfig UI = UIManager.GetUI(_Player);
 	        if(UI != Null) UI.SendChat("You haven't joined a ranked game yet");
@@ -126,6 +140,11 @@ Void _AddPlayerAskToStart(CSmPlayer _Player){
             if (TeamsAreReady()){
                 UIManager.UIAll.SendChat("All players are Ready, ranked game is starting! Good Luck Have Fun "^RankedPlayersWithColor()^"$z$s!");
                 UIManager.UIAll.SendChat(HttpRequests::GetRankedPlayersStats(G_ChaseTeamsPlayers[0].PlayersLogin,G_ChaseTeamsPlayers[0].PlayersName, G_ChaseTeamsPlayers[1].PlayersLogin, G_ChaseTeamsPlayers[1].PlayersName));
+                foreach (Player in Players){
+                    if (Player != Null && !PlayerIsInRankedGame(Player)){
+                        _SetSpectator(Player);
+                    }
+                }
             }
         }else{
             declare CUIConfig UI = UIManager.GetUI(_Player);
@@ -186,9 +205,9 @@ Boolean TeamsAreConsistant(){
 }
 
 Void PassUIEvent(CUIConfigEvent _Event){
-	if(_Event.Type != CUIConfigEvent::EType::OnLayerCustomEvent) return;
-	if(_Event.UI == Null) return;
     if (_Event == Null) return;
+    if(_Event.Type != CUIConfigEvent::EType::OnLayerCustomEvent) return;
+	if( _Event.UI == Null) return;
 	
 	if(_Event.CustomEventType == C_JoinOrLeaveRankedGame){
 		declare Player = GetPlayer(_Event.UI);
@@ -203,6 +222,26 @@ Void PassUIEvent(CUIConfigEvent _Event){
 		_AddBotsToRanked(Player);
 	}
 }
+
+Void PassModeEvent(CSmModeEvent _Event, Text _HttpApiURL){
+	if (_Event.Type == CSmModeEvent::EType::OnPlayerRemoved){
+        if(_Event.Player == Null) return;
+        declare CSmPlayer Player = _Event.Player;
+		if (Settings::GetRankedMode() == 1 && PlayerIsInRankedGame(Player)){
+            _RemovePlayerFromRankedGame(Player);
+        }
+	}
+    if (_Event.Type == CSmModeEvent::EType::OnPlayerAdded){
+        if(_Event.Player == Null) return;
+        declare CSmPlayer Player = _Event.Player;
+		if (Settings::GetRankedMode() == 1 && !PlayerIsInRankedGame(Player)){
+            _SetSpectator(Player);
+            declare CUIConfig UI = UIManager.GetUI(Player);
+            if(UI != Null) UI.SendChat("A ranked game is in progress, please wait for it to finish before joining");
+        }
+	}
+}
+
 
 declare Boolean G_Loaded;
 Void Unload() {

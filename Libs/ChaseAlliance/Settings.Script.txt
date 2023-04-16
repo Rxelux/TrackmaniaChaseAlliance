@@ -232,6 +232,6 @@ Void Load() {
 	SetLapCount(5);
 	SetRoundCount(3);
 	SetMapCount(3);
-	SetRankedMode(0);
+	SetRankedMode(-1);
 	ToNet();
 }
