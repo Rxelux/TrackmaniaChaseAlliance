@@ -172,6 +172,7 @@ Void PassModeEvent(CSmModeEvent _Event){
 	if(G_WinState >= 0) return;
 	if(GameState::Is(GameStates::C_Playing) && _Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint){
 		if(_Event.Player == Null) return;
+		
 		if(_Event.Player.CurrentClan != 1 && _Event.Player.CurrentClan != 2)return;
 		//add event to sorted event
 
