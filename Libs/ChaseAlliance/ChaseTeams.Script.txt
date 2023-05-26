@@ -4,8 +4,6 @@
 #Include "ChaseAlliance/Libs/Common/Events.Script.txt" as Events
 #Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/Common/Commands.Script.txt" as Commands
-#Include "ChaseAlliance/Libs/ChaseAlliance/HttpRequests.Script.txt" as HttpRequests
-#Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/Colors.Script.txt" as Colors
 #Include "ChaseAlliance/Libs/ChaseAlliance/Consts/GameStates.Script.txt" as GameStates
@@ -420,7 +418,3 @@ Void Load() {
 	GameState::Load();
 	Commands::Load();
 }
-
-
-
-
