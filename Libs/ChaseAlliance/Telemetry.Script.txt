@@ -1,0 +1,193 @@
+//#RequireContext CSmMode
+
+#Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
+#Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
+#Include "ChaseAlliance/Libs/Common/Log.Script.txt"
+
+
+#Const C_WinNames ["CP_DIFFERENCE","FIRST_TO_FINISH","FORFEIT"]
+
+#Struct K_Config {
+	Integer bestOfMaps;
+	Integer bestOfRounds;
+	Integer lapCount;
+	Integer playersPerTeam;
+	Integer checkpointDifferenceThreshold;
+}
+
+#Struct K_RoundResult {
+	Integer winnerIndex;
+	Integer[] checkpointScores;
+	Text winningRule;
+}
+
+#Struct K_MapResult {
+	Text name;
+	Integer winnerIndex;
+	Integer[] roundScores;
+	K_RoundResult[] rounds;
+}
+
+#Struct K_MatchResult {
+	Text matchId;
+	K_Config configuration;
+	Text[] teams;
+	Integer winnerIndex;
+	Integer[] mapScores;
+	K_MapResult[] maps;
+}
+
+declare K_MatchResult G_MatchResult;
+
+declare CHttpRequest G_Request;
+
+declare Text G_EndPoint;
+declare Text G_Auth;
+Void _SendToEndPoint(){
+
+	if(G_EndPoint == "") return;
+	Log("""Sending following match results to endpoint {{{G_EndPoint^"/"^G_MatchResult.matchId}}}""",True);
+	Log(""^G_MatchResult.tojson(),True);
+	declare Text Header = "";
+	if(G_Auth == ""){
+		Header = """Content-Type: application/json
+Accept: application/xml""";
+	}else{
+		Header = """Content-Type: application/json
+Accept: application/xml
+Authorization: {{{G_Auth}}}""";
+	}
+	Log(Header,True);
+	G_Request = Http.CreatePost(G_EndPoint^"/"^G_MatchResult.matchId, G_MatchResult.tojson(),Header);
+}
+
+Void SendToEndPointUpdate(){
+	if(G_Request != Null && G_Request.IsCompleted){
+		declare Boolean RequestSuccess = G_Request.IsCompleted && G_Request.StatusCode >= 200 && G_Request.StatusCode < 300;
+		if (RequestSuccess) {
+			Log("Results sent successfully!",True);
+		} else{
+			Log("Results could not be sent! Please check the server log for match results and error message.",True);
+			if (G_Request.IsCompleted) {
+				Log("""Results could not be sent. Status code: {{{ G_Request.StatusCode }}}. Response: {{{ G_Request.Result }}}""",True);
+			} else { // StatusCode not 2xx
+				Log("""Results could not be sent. Request timed out!""",True);
+			}
+		}
+		Http.Destroy(G_Request);
+		G_Request = Null;
+	}
+}
+
+Void InitMatchResult(Text _MatchId,Text _EndPoint, Text _Auth){
+	G_EndPoint = _EndPoint;
+	G_Auth = _Auth;
+	G_MatchResult = K_MatchResult{
+		matchId = _MatchId,
+		configuration = K_Config{
+			bestOfMaps = 2*Settings::GetMapCount() - 1,
+			bestOfRounds = 2*Settings::GetRoundCount() - 1,
+			lapCount = Settings::GetLapCount(),
+			playersPerTeam = Settings::GetRelayerCount(),
+			checkpointDifferenceThreshold = Settings::GetRelayGap()
+		},
+		winnerIndex = -1,
+		teams = [Teams[0].Name,Teams[1].Name],
+		mapScores = [0,0],
+		maps = []
+	};
+	_SendToEndPoint();
+}
+
+Void InitMapResult(){
+	
+	declare mc = G_MatchResult.maps.count - 1;
+	//if no map exsist yet add one
+	if(mc < 0){
+		G_MatchResult.maps.add(K_MapResult{
+			name = Map.MapName,
+			winnerIndex = -1,
+			roundScores = [0,0],
+			rounds = []
+		});
+
+	//else check if previous map was resolved
+		//if not replace it 
+	}else if(G_MatchResult.maps[mc].winnerIndex == -1){
+		G_MatchResult.maps[mc] = K_MapResult{
+			name = Map.MapName,
+			winnerIndex = -1,
+			roundScores = [0,0],
+			rounds = []
+		};
+		
+	//else add a new one
+	}else{
+		G_MatchResult.maps.add(K_MapResult{
+			name = Map.MapName,
+			winnerIndex = -1,
+			roundScores = [0,0],
+			rounds = []
+		});
+	}
+	
+}
+
+Void InitRoundResult(){
+	declare mc = G_MatchResult.maps.count - 1;
+	if(mc < 0) return;
+
+	declare rc = G_MatchResult.maps[mc].rounds.count - 1;
+
+	//if no round exsist yet add one
+	if(rc < 0){
+		G_MatchResult.maps[mc].rounds.add(K_RoundResult{
+				winnerIndex = -1,
+				checkpointScores = [0,0]
+			}
+		);
+
+	//else check if previous round was resolved
+		//if not replace it 
+	}else if(G_MatchResult.maps[mc].rounds[rc].winnerIndex == -1){
+		G_MatchResult.maps[mc].rounds[rc] = K_RoundResult{
+			winnerIndex = -1,
+			checkpointScores = [0,0]
+		};
+		
+	//else add a new one
+	}else{
+		G_MatchResult.maps[mc].rounds.add(K_RoundResult{
+			winnerIndex = -1,
+			checkpointScores = [0,0]
+		});
+	}
+}
+
+Void UpdateRoundResult(Integer _WinningClan){
+	if(_WinningClan == -1) return;
+	declare mc = G_MatchResult.maps.count - 1;
+	if(mc < 0) return;
+	declare rc = G_MatchResult.maps[mc].rounds.count - 1;
+	if(rc < 0) return;
+	G_MatchResult.maps[mc].rounds[rc].winnerIndex = _WinningClan - 1;
+	G_MatchResult.maps[mc].rounds[rc].checkpointScores = [ChaseTeams::GetTeamRelayPoint(1),ChaseTeams::GetTeamRelayPoint(2)];
+	G_MatchResult.maps[mc].rounds[rc].winningRule = C_WinNames[ChaseTeams::GetWinState()];
+	G_MatchResult.maps[mc].roundScores = [ChaseTeams::GetTeamRoundPoint(1),ChaseTeams::GetTeamRoundPoint(2)];
+	_SendToEndPoint();
+}
+
+Void UpdateMapResult(Integer _WinningClan){
+	if(_WinningClan == -1) return;
+	declare mc = G_MatchResult.maps.count - 1;
+	if(mc < 0) return;
+	G_MatchResult.maps[mc].winnerIndex = _WinningClan -1; 
+	G_MatchResult.mapScores = [ChaseTeams::GetTeamMapPoint(1),ChaseTeams::GetTeamMapPoint(2)];
+	_SendToEndPoint();
+}
+
+Void UpdateMatchResult(Integer _WinningClan){
+	if(_WinningClan == -1) return;
+	G_MatchResult.winnerIndex = _WinningClan - 1;
+	_SendToEndPoint();
+}

@@ -1,17 +1,10 @@
 {
 	"folders": [
 		{
-			"name": "ChaseAlliance",
-			"path": "."
+			"path": "./"
 		},
 		{
-			"name": "DedicatedServer",
-			"path": "../.."
-		},
-		{
-			"name": "Scripts",
-			"path": "../../../../../../OpenplanetNext/Extract/GameData/Scripts"
+			"path": "../../../../../../OpenplanetNext/Extract/Titles/Trackmania/Scripts"
 		}
-	],
-	"settings": {}
+	]
 }

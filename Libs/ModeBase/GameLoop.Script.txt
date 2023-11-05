@@ -1,7 +1,7 @@
 #RequireContext CSmMode
 
-#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt" as XmlRpc
-#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt" as XmlRpc_Base
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2.Script.txt" as XmlRpc
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2_Base.Script.txt" as XmlRpc_Base
 
 #Const C_LoopLevel_Server 0
 #Const C_LoopLevel_Match 1
@@ -137,6 +137,8 @@ main() {
 	}
 	_ServerModeName = ServerModeName;
 
+	{ +++LoadLibraries+++ }
+
 	while (ServerIsRunning()) {
 
 		_SectionCount_Match = 0;
@@ -159,9 +161,9 @@ main() {
 			_SectionCount_Map = 0;
 			_SectionCount_Round = 0;
 
-			XmlRpc_Base::SendStartMatch_Start(_SectionCount_Match);
+			XmlRpc_Base::SendStartMatch_Start(<_SectionCount_Match,_SectionCount_Match>);
 			{ +++StartMatch+++ }
-			XmlRpc_Base::SendStartMatch_End(_SectionCount_Match);
+			XmlRpc_Base::SendStartMatch_End(<_SectionCount_Match,_SectionCount_Match>);
 
 			while (MatchIsRunning()) {
 
@@ -180,35 +182,41 @@ main() {
 				{ +++AfterLoadMap+++ }
 				XmlRpc_Base::SendLoadingMap_End(Map, _MapRestarted);
 
-				XmlRpc_Base::SendStartMap_Start(_SectionCount_Map, Map, _MapRestarted);
+				XmlRpc_Base::SendStartMap_Start(<_SectionCount_Map,_SectionCount_Map>, Map, _MapRestarted);
 				{ +++StartMap+++ }
-				XmlRpc_Base::SendStartMap_End(_SectionCount_Map, Map, _MapRestarted);
+				XmlRpc_Base::SendStartMap_End(<_SectionCount_Map,_SectionCount_Map>, Map, _MapRestarted);
 
 				while (MapIsRunning()) {
 
 					_RunSection_Round = True;
 					_SectionCount_Round += 1;
 
-					XmlRpc_Base::SendStartRound_Start(_SectionCount_Round);
+					XmlRpc_Base::SendStartRound_Start(<_SectionCount_Round,_SectionCount_Round>);
 					{ +++StartRound+++ }
-					XmlRpc_Base::SendStartRound_End(_SectionCount_Round);
+					XmlRpc_Base::SendStartRound_End(<_SectionCount_Round,_SectionCount_Round>);
 
-					XmlRpc_Base::SendStartPlayLoop(_SectionCount_Round);
+					XmlRpc_Base::SendStartTurn_Start(<1,1>);
+					XmlRpc_Base::SendStartTurn_End(<1,1>);
+
+					XmlRpc_Base::SendStartPlayLoop(<1,1>);
 					while (RoundIsRunning()) {
 
 						Yield();
 						{ +++PlayLoop+++ }
 					}
-					XmlRpc_Base::SendEndPlayLoop(_SectionCount_Round);
+					XmlRpc_Base::SendEndPlayLoop(<1,1>);
 
-					XmlRpc_Base::SendEndRound_Start(_SectionCount_Round);
+					XmlRpc_Base::SendEndTurn_Start(<1,1>);
+					XmlRpc_Base::SendEndTurn_End(<1,1>);
+
+					XmlRpc_Base::SendEndRound_Start(<_SectionCount_Round,_SectionCount_Round>);
 					{ +++EndRound+++ }
-					XmlRpc_Base::SendEndRound_End(_SectionCount_Round);
+					XmlRpc_Base::SendEndRound_End(<_SectionCount_Round,_SectionCount_Round>);
 				}
 
-				XmlRpc_Base::SendEndMap_Start(_SectionCount_Map, Map);
+				XmlRpc_Base::SendEndMap_Start(<_SectionCount_Map,_SectionCount_Map>, Map);
 				{ +++EndMap+++ }
-				XmlRpc_Base::SendEndMap_End(_SectionCount_Map, Map);
+				XmlRpc_Base::SendEndMap_End(<_SectionCount_Map,_SectionCount_Map>, Map);
 
 				if(MatchIsRunning()){
 					XmlRpc_Base::SendUnloadingMap_Start(Map);
@@ -226,9 +234,9 @@ main() {
 				}
 			}
 
-			XmlRpc_Base::SendEndMatch_Start(_SectionCount_Match);
+			XmlRpc_Base::SendEndMatch_Start(<_SectionCount_Match,_SectionCount_Match>);
 			{ +++EndMatch+++ }
-			XmlRpc_Base::SendEndMatch_End(_SectionCount_Match);
+			XmlRpc_Base::SendEndMatch_End(<_SectionCount_Match,_SectionCount_Match>);
 
 			XmlRpc_Base::SendUnloadingMap_Start(Map);
 			{ +++BeforeUnloadMap+++ }
@@ -249,6 +257,8 @@ main() {
 
 		_PersistentServerRestarted = False;
 	}
+
+	{ +++UnloadLibraries+++ }
 
 	// Last yield for logging
 	yield;

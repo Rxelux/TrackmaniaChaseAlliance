@@ -13,6 +13,7 @@
 #Include "ChaseAlliance/Libs/Common/FakeUserController.Script.txt" as Controller
 #Include "ChaseAlliance/Libs/Common/GameState.Script.txt" as GameState
 #Include "ChaseAlliance/Libs/ChaseAlliance/Players.Script.txt" as PlayersL
+#Include "ChaseAlliance/Libs/ChaseAlliance/Telemetry.Script.txt" as Telemetry
 #Include "ChaseAlliance/Libs/ChaseAlliance/Settings.Script.txt" as Settings
 #Include "ChaseAlliance/Libs/ChaseAlliance/ChaseTeams.Script.txt" as ChaseTeams
 #Include "ChaseAlliance/Libs/ChaseAlliance/Markers.Script.txt" as MarkersL
@@ -45,6 +46,9 @@
 
 
 #Setting S_Env 0 as "0 = prod, 1 = test, 2 = dev"
+#Setting S_TelemetryMatchId "matchId" as "Match id for telemetry"
+#Setting S_TelemetryEndPoint "" as "Telemetry end-point"
+#Setting S_TelemetryAuth "" as "Telemetry Authentification"
 
 ***StartServer***
 ***
@@ -88,6 +92,7 @@ Log("StartScript");
 Log("StartMatch");
 ChaseTeams::ResetTeamsMapPoint();
 ChaseTeams::ToNet();
+Telemetry::InitMatchResult(S_TelemetryMatchId,S_TelemetryEndPoint,S_TelemetryAuth);
 ***
 
 ***BeforeLoadMap***
@@ -109,6 +114,7 @@ Sleep(S_MapIntroDuration);
 Log("StartMap");
 ChaseTeams::ResetTeamsRoundPoint();
 ChaseTeams::ToNet();
+Telemetry::InitMapResult();
 if(!GameState::Is(GameStates::C_Pause)){
 	GameState::Set(GameStates::C_WarmUp);
 }
@@ -130,6 +136,8 @@ Settings::ToNet();
 ChaseTeams::ResetTeamsRelay();
 ChaseTeams::SetTeamsNamesAndColors(S_Team1Name,S_Team1Color,S_Team2Name,S_Team2Color);
 ChaseTeams::ToNet();
+Telemetry::InitRoundResult();
+
 if(GameState::Is(GameStates::C_WarmUp)){
 	Messages::SendStatus(UIManager.UIAll,"$"^TL::ColorToText(Colors::C_WarmUp)^"Warm-Up",0, CUIConfig::EUISound::Warning);
 	EndTime = Now + S_WarmUpDuration;
@@ -191,6 +199,7 @@ if(WinningClan > 0){
 	Messages::SendStatus(UIManager.UIAll,ChaseTeams::GetWinStateString(),S_EndRoundPause,CUIConfig::EUISound::Warning);
 	Log(Teams[WinningClan-1].Name^" wins the round: "^ChaseTeams::GetWinStateString(),True);
 	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the round." ,S_EndRoundPause,CUIConfig::EUISound::VictoryPoint );
+	Telemetry::UpdateRoundResult(WinningClan);
 	if(ChaseTeams::GetTeamRoundPoint(WinningClan) >= Settings::GetRoundCount()){
 		ChaseTeams::IncrementTeamMapPoint(WinningClan);
 		StopMap();
@@ -222,6 +231,7 @@ Log("EndMap");
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 declare Integer WinningClan = ChaseTeams::GetWinClan();
 if(WinningClan > 0){
+	Telemetry::UpdateMapResult(WinningClan);
 	Log(Teams[WinningClan-1].Name^" wins the map.",True);
 	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the map." ,S_EndMapPause,CUIConfig::EUISound::EndRound);
 	if(ChaseTeams::GetTeamMapPoint(WinningClan) >= Settings::GetMapCount()){
@@ -230,9 +240,11 @@ if(WinningClan > 0){
 	}
 }
 
+XmlRpc_Base::SendPodium_Start();//For pyplanet to queue the next map properly
 GameState::Set(GameStates::C_Outro);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 Sleep(S_EndMapPause);
+XmlRpc_Base::SendPodium_End();
 ***
 	
 ***EndMatch***
@@ -242,11 +254,15 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 declare Integer WinningClan = ChaseTeams::GetWinClan();
 if(WinningClan > 0){
 	Log(Teams[WinningClan-1].Name^" wins the match.",True);
+	Telemetry::UpdateMatchResult(WinningClan);
 	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the match." ,S_EndMatchPause,CUIConfig::EUISound::EndMatch);
 }
+XmlRpc_Base::SendPodium_Start();//For pyplanet to queue the next map properly
 GameState::Set(GameStates::C_Podium);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
 Sleep(S_EndMatchPause);
+XmlRpc_Base::SendPodium_End();
+
 ***
 
 ***BeforeUnloadMap***
@@ -347,4 +363,5 @@ foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
 Controller::Yield();
 Messages::Yield();
 ChaseTeams::Yield();
+Telemetry::SendToEndPointUpdate();
 ***

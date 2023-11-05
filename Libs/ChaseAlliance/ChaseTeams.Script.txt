@@ -103,6 +103,10 @@ Void _IncrementTeamRelayPoint(Integer _Clan){
 	_SetTeamRelayPoint(_Clan,G_ChaseTeams[_Clan-1].RelayPoints + 1);
 }
 
+Integer GetTeamRelayPoint(Integer _Clan){
+	return G_ChaseTeams[_Clan-1].RelayPoints;
+}
+
 Void _ResetTeamRelay(Integer _Clan){
 	_SetTeamRelayPoint(_Clan,0);
 	_SetTeamCurrentCp(_Clan,0);
