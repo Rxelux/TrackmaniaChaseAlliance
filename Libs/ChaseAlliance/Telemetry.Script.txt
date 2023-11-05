@@ -46,8 +46,7 @@ declare Text G_Auth;
 Void _SendToEndPoint(){
 
 	if(G_EndPoint == "") return;
-	Log("""Sending following match results to endpoint {{{G_EndPoint^"/"^G_MatchResult.matchId}}}""",True);
-	Log(""^G_MatchResult.tojson(),True);
+	Log("""Sending following match results to endpoint...""",True);
 	declare Text Header = "";
 	if(G_Auth == ""){
 		Header = """Content-Type: application/json
@@ -57,7 +56,6 @@ Accept: application/xml""";
 Accept: application/xml
 Authorization: {{{G_Auth}}}""";
 	}
-	Log(Header,True);
 	G_Request = Http.CreatePost(G_EndPoint^"/"^G_MatchResult.matchId, G_MatchResult.tojson(),Header);
 }
 
