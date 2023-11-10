@@ -1,10 +1,20 @@
 {
 	"folders": [
 		{
-			"path": "./"
+			"path": "../"
 		},
 		{
 			"path": "../../../../../../OpenplanetNext/Extract/Titles/Trackmania/Scripts"
 		}
-	]
+	],
+	"settings": {
+		"files.exclude": {
+			"MROTW": true,
+			"Repro": true,
+			"rmxseeding": true,
+			"ChaseAlliance.zip": true,
+			"RX_TimeKnockout_Online.Script.txt": true
+		},
+		"explorerExclude.backup": {}
+	}
 }
