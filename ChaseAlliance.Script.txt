@@ -90,6 +90,14 @@ Log("StartScript");
 ***StartMatch***
 ***
 Log("StartMatch");
+Settings::SetRelayerCount(S_RelayerCount);
+Settings::SetRelayGap(S_RelayGap);
+Settings::SetRelaySortDelay(S_RelaySortDelay);
+Settings::SetMapCount(S_MapCount);
+Settings::SetRoundCount(S_RoundCount);
+Settings::SetLapCount(S_LapCount);
+Settings::ToNet();
+ChaseTeams::SetTeamsNamesAndColors(S_Team1Name,S_Team1Color,S_Team2Name,S_Team2Color);
 ChaseTeams::ResetTeamsMapPoint();
 ChaseTeams::ToNet();
 Telemetry::InitMatchResult(S_TelemetryMatchId,S_TelemetryEndPoint,S_TelemetryAuth);
@@ -126,15 +134,7 @@ UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
 Log("StartRound");
 //ValidateSettings
 Env::SetEnv(S_Env);
-Settings::SetRelayerCount(S_RelayerCount);
-Settings::SetRelayGap(S_RelayGap);
-Settings::SetRelaySortDelay(S_RelaySortDelay);
-Settings::SetMapCount(S_MapCount);
-Settings::SetRoundCount(S_RoundCount);
-Settings::SetLapCount(S_LapCount);
-Settings::ToNet();
 ChaseTeams::ResetTeamsRelay();
-ChaseTeams::SetTeamsNamesAndColors(S_Team1Name,S_Team1Color,S_Team2Name,S_Team2Color);
 ChaseTeams::ToNet();
 Telemetry::InitRoundResult();
 
