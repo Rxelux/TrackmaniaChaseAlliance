@@ -100,7 +100,7 @@ Settings::ToNet();
 ChaseTeams::SetTeamsNamesAndColors(S_Team1Name,S_Team1Color,S_Team2Name,S_Team2Color);
 ChaseTeams::ResetTeamsMapPoint();
 ChaseTeams::ToNet();
-Telemetry::InitMatchResult(S_TelemetryMatchId,S_TelemetryEndPoint,S_TelemetryAuth);
+Telemetry::InitMatchResult();
 ***
 
 ***BeforeLoadMap***
@@ -134,6 +134,7 @@ UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
 Log("StartRound");
 //ValidateSettings
 Env::SetEnv(S_Env);
+ChaseTeams::SetTeamsNamesAndColors(S_Team1Name,S_Team1Color,S_Team2Name,S_Team2Color);
 ChaseTeams::ResetTeamsRelay();
 ChaseTeams::ToNet();
 Telemetry::InitRoundResult();
@@ -200,6 +201,7 @@ if(WinningClan > 0){
 	Log(Teams[WinningClan-1].Name^" wins the round: "^ChaseTeams::GetWinStateString(),True);
 	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the round." ,S_EndRoundPause,CUIConfig::EUISound::VictoryPoint );
 	Telemetry::UpdateRoundResult(WinningClan);
+	Telemetry::SendToEndPoint(S_TelemetryMatchId,S_TelemetryEndPoint,S_TelemetryAuth);
 	if(ChaseTeams::GetTeamRoundPoint(WinningClan) >= Settings::GetRoundCount()){
 		ChaseTeams::IncrementTeamMapPoint(WinningClan);
 		StopMap();
@@ -231,9 +233,10 @@ Log("EndMap");
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 declare Integer WinningClan = ChaseTeams::GetWinClan();
 if(WinningClan > 0){
-	Telemetry::UpdateMapResult(WinningClan);
 	Log(Teams[WinningClan-1].Name^" wins the map.",True);
 	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the map." ,S_EndMapPause,CUIConfig::EUISound::EndRound);
+	Telemetry::UpdateMapResult(WinningClan);
+	Telemetry::SendToEndPoint(S_TelemetryMatchId,S_TelemetryEndPoint,S_TelemetryAuth);
 	if(ChaseTeams::GetTeamMapPoint(WinningClan) >= Settings::GetMapCount()){
 		StopMatch();
 		Log(Teams[0].Name^": Maps "^ChaseTeams::GetTeamMapPoint(1)^"/"^Settings::GetMapCount()^"\t"^Teams[1].Name^": Maps "^ChaseTeams::GetTeamMapPoint(2)^"/"^Settings::GetMapCount(),True);
@@ -254,11 +257,20 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 declare Integer WinningClan = ChaseTeams::GetWinClan();
 if(WinningClan > 0){
 	Log(Teams[WinningClan-1].Name^" wins the match.",True);
-	Telemetry::UpdateMatchResult(WinningClan);
 	Messages::SendBig(UIManager.UIAll,"$"^TL::ColorToText(Teams[WinningClan-1].ColorUI)^Teams[WinningClan-1].Name^" wins the match." ,S_EndMatchPause,CUIConfig::EUISound::EndMatch);
+	Telemetry::UpdateMatchResult(WinningClan);
+	Telemetry::SendToEndPoint(S_TelemetryMatchId,S_TelemetryEndPoint,S_TelemetryAuth);
 }
 XmlRpc_Base::SendPodium_Start();//For pyplanet to queue the next map properly
 GameState::Set(GameStates::C_Podium);
+declare Text[] WinnerLogins;
+declare Text[] LoserLogins;
+foreach(Player in Players){
+	if(Player.CurrentClan == WinningClan){
+		WinnerLogins.add(Player.User.Login);
+	}
+}
+UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",",WinnerLogins);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Manual;
 Sleep(S_EndMatchPause);
 XmlRpc_Base::SendPodium_End();
@@ -364,4 +376,41 @@ Controller::Yield();
 Messages::Yield();
 ChaseTeams::Yield();
 Telemetry::SendToEndPointUpdate();
+if(Settings::GetLapCount() != S_LapCount){
+	Settings::SetLapCount(S_LapCount);
+	Settings::ToNet();
+}
+if(Settings::GetRelayerCount() != S_RelayerCount){
+	Settings::SetRelayerCount(S_RelayerCount);
+	Settings::ToNet();
+}
+if(Settings::GetRelayGap() != S_RelayGap){
+	Settings::SetRelayGap(S_RelayGap);
+	Settings::ToNet();
+}
+if(Settings::GetRelaySortDelay() != S_RelaySortDelay){
+	Settings::SetRelaySortDelay(S_RelaySortDelay);
+	Settings::ToNet();
+}
+if(Settings::GetMapCount() != S_MapCount){
+	Settings::SetMapCount(S_MapCount);
+	Settings::ToNet();
+}
+if(Settings::GetRoundCount() != S_RoundCount){
+	Settings::SetRoundCount(S_RoundCount);
+	Settings::ToNet();
+}
+if(ChaseTeams::GetTeam1Name() != S_Team1Name){
+	ChaseTeams::SetTeam1Name(S_Team1Name);
+}
+if(ChaseTeams::GetTeam2Name() != S_Team2Name){
+	ChaseTeams::SetTeam2Name(S_Team2Name);
+}
+if(ChaseTeams::GetTeam1ColorText() != S_Team1Color){
+	ChaseTeams::SetTeam1Color(S_Team1Color);
+}
+if(ChaseTeams::GetTeam2ColorText() != S_Team2Color){
+	ChaseTeams::SetTeam2Color(S_Team2Color);
+}
+
 ***

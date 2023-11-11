@@ -41,22 +41,21 @@ declare K_MatchResult G_MatchResult;
 
 declare CHttpRequest G_Request;
 
-declare Text G_EndPoint;
-declare Text G_Auth;
-Void _SendToEndPoint(){
-
-	if(G_EndPoint == "") return;
+Void SendToEndPoint(Text _MatchId,Text _EndPoint, Text _Auth){
+	if(_EndPoint == "") return;
 	Log("""Sending following match results to endpoint...""",True);
 	declare Text Header = "";
-	if(G_Auth == ""){
+	if(_Auth == ""){
 		Header = """Content-Type: application/json
 Accept: application/xml""";
 	}else{
 		Header = """Content-Type: application/json
 Accept: application/xml
-Authorization: {{{G_Auth}}}""";
+Authorization: {{{_Auth}}}""";
 	}
-	G_Request = Http.CreatePost(G_EndPoint^"/"^G_MatchResult.matchId, G_MatchResult.tojson(),Header);
+	G_MatchResult.matchId = _MatchId;
+	Log(G_MatchResult.tojson(),True);
+	G_Request = Http.CreatePost(_EndPoint^"/"^_MatchId, G_MatchResult.tojson(),Header);
 }
 
 Void SendToEndPointUpdate(){
@@ -77,24 +76,24 @@ Void SendToEndPointUpdate(){
 	}
 }
 
-Void InitMatchResult(Text _MatchId,Text _EndPoint, Text _Auth){
-	G_EndPoint = _EndPoint;
-	G_Auth = _Auth;
+K_Config GetConfig(){
+	return K_Config{
+		bestOfMaps = 2*Settings::GetMapCount() - 1,
+		bestOfRounds = 2*Settings::GetRoundCount() - 1,
+		lapCount = Settings::GetLapCount(),
+		playersPerTeam = Settings::GetRelayerCount(),
+		checkpointDifferenceThreshold = Settings::GetRelayGap()
+	};
+}
+
+Void InitMatchResult(){
 	G_MatchResult = K_MatchResult{
-		matchId = _MatchId,
-		configuration = K_Config{
-			bestOfMaps = 2*Settings::GetMapCount() - 1,
-			bestOfRounds = 2*Settings::GetRoundCount() - 1,
-			lapCount = Settings::GetLapCount(),
-			playersPerTeam = Settings::GetRelayerCount(),
-			checkpointDifferenceThreshold = Settings::GetRelayGap()
-		},
+		configuration = GetConfig(),
 		winnerIndex = -1,
 		teams = [Teams[0].Name,Teams[1].Name],
 		mapScores = [0,0],
 		maps = []
 	};
-	_SendToEndPoint();
 }
 
 Void InitMapResult(){
@@ -172,7 +171,6 @@ Void UpdateRoundResult(Integer _WinningClan){
 	G_MatchResult.maps[mc].rounds[rc].checkpointScores = [ChaseTeams::GetTeamRelayPoint(1),ChaseTeams::GetTeamRelayPoint(2)];
 	G_MatchResult.maps[mc].rounds[rc].winningRule = C_WinNames[ChaseTeams::GetWinState()];
 	G_MatchResult.maps[mc].roundScores = [ChaseTeams::GetTeamRoundPoint(1),ChaseTeams::GetTeamRoundPoint(2)];
-	_SendToEndPoint();
 }
 
 Void UpdateMapResult(Integer _WinningClan){
@@ -181,11 +179,9 @@ Void UpdateMapResult(Integer _WinningClan){
 	if(mc < 0) return;
 	G_MatchResult.maps[mc].winnerIndex = _WinningClan -1; 
 	G_MatchResult.mapScores = [ChaseTeams::GetTeamMapPoint(1),ChaseTeams::GetTeamMapPoint(2)];
-	_SendToEndPoint();
 }
 
 Void UpdateMatchResult(Integer _WinningClan){
 	if(_WinningClan == -1) return;
 	G_MatchResult.winnerIndex = _WinningClan - 1;
-	_SendToEndPoint();
 }

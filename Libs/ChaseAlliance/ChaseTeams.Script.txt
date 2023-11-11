@@ -380,28 +380,64 @@ Void Yield(){
 	}
 }
 
-Void SetTeamsNamesAndColors(Text _Team1Name, Text _Team1Color, Text _Team2Name, Text _Team2Color){
-
+Void SetTeam1Name(Text _Team1Name){
 	if(_Team1Name == ""){
 		Teams[0].Name = "Team Azure";
 	}else{
 		Teams[0].Name = _Team1Name;
 	}
+}
+
+Text GetTeam1Name(){
+	return Teams[0].Name;
+}
+
+Void SetTeam2Name(Text _Team2Name){
 	if(_Team2Name == ""){
 		Teams[1].Name = "Team Orange";
 	}else{
 		Teams[1].Name = _Team2Name;
 	}
+}
+
+Text GetTeam2Name(){
+	return Teams[1].Name;
+}
+
+Void SetTeam1Color(Text _Team1Color){
 	if(_Team1Color == ""){
 		Teams[0].ColorUI = Colors::C_Team0;
+		Teams[0].EmblemUrl = "";
 	}else{
 		Teams[0].ColorUI = CL::HexToRgb(_Team1Color);
+		Teams[0].EmblemUrl = _Team1Color;
 	}
+}
+
+Text GetTeam1ColorText(){
+	return Teams[0].EmblemUrl;
+}
+
+Void SetTeam2Color(Text _Team2Color){
 	if(_Team2Color == ""){
 		Teams[1].ColorUI = Colors::C_Team1;
+		Teams[1].EmblemUrl = "";
 	}else{
 		Teams[1].ColorUI = CL::HexToRgb(_Team2Color);
+		Teams[1].EmblemUrl = _Team2Color;
 	}
+}
+
+Text GetTeam2ColorText(){
+	return Teams[1].EmblemUrl;
+}
+
+Void SetTeamsNamesAndColors(Text _Team1Name, Text _Team1Color, Text _Team2Name, Text _Team2Color){
+
+	SetTeam1Name(_Team1Name);
+	SetTeam1Color(_Team1Color);
+	SetTeam2Name(_Team2Name);
+	SetTeam2Color(_Team2Color);
 }
 
 declare Boolean G_Loaded;
