@@ -54,6 +54,8 @@ Accept: application/xml
 Authorization: {{{_Auth}}}""";
 	}
 	G_MatchResult.matchId = _MatchId;
+	G_MatchResult.configuration = GetConfig();
+	G_MatchResult.teams = [Teams[0].Name,Teams[1].Name];
 	Log(G_MatchResult.tojson(),True);
 	G_Request = Http.CreatePost(_EndPoint^"/"^_MatchId, G_MatchResult.tojson(),Header);
 }
