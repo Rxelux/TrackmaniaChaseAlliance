@@ -41,6 +41,16 @@ declare K_MatchResult G_MatchResult;
 
 declare CHttpRequest G_Request;
 
+K_Config GetConfig(){
+	return K_Config{
+		bestOfMaps = 2*Settings::GetMapCount() - 1,
+		bestOfRounds = 2*Settings::GetRoundCount() - 1,
+		lapCount = Settings::GetLapCount(),
+		playersPerTeam = Settings::GetRelayerCount(),
+		checkpointDifferenceThreshold = Settings::GetRelayGap()
+	};
+}
+
 Void SendToEndPoint(Text _MatchId,Text _EndPoint, Text _Auth){
 	if(_EndPoint == "") return;
 	Log("""Sending following match results to endpoint...""",True);
@@ -54,6 +64,8 @@ Accept: application/xml
 Authorization: {{{_Auth}}}""";
 	}
 	G_MatchResult.matchId = _MatchId;
+	G_MatchResult.configuration = GetConfig();
+	G_MatchResult.teams = [Teams[0].Name,Teams[1].Name];
 	Log(G_MatchResult.tojson(),True);
 	G_Request = Http.CreatePost(_EndPoint^"/"^_MatchId, G_MatchResult.tojson(),Header);
 }
@@ -74,16 +86,6 @@ Void SendToEndPointUpdate(){
 		Http.Destroy(G_Request);
 		G_Request = Null;
 	}
-}
-
-K_Config GetConfig(){
-	return K_Config{
-		bestOfMaps = 2*Settings::GetMapCount() - 1,
-		bestOfRounds = 2*Settings::GetRoundCount() - 1,
-		lapCount = Settings::GetLapCount(),
-		playersPerTeam = Settings::GetRelayerCount(),
-		checkpointDifferenceThreshold = Settings::GetRelayGap()
-	};
 }
 
 Void InitMatchResult(){
